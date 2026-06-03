@@ -125,6 +125,7 @@ const [equipos, setEquipos] = useState<EquipoRow[]>([]);
 const [requerimientos, setRequerimientos] = useState<ReqRow[]>([]);
 const [ubicaciones, setUbicaciones] = useState<{ id: string; dispositivo_nombre: string; cantidad: number }[]>([]);
 const [dispositivosDB, setDispositivosDB] = useState<string[]>([]);
+const [dispositivosInv, setDispositivosInv] = useState<Record<string, boolean>>({});
 const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 const [editUsuario, setEditUsuario] = useState<string | null>(null);
 const [editUsuarioVal, setEditUsuarioVal] = useState('');
@@ -226,11 +227,14 @@ const [qrExiste, setQrExiste] = useState(false);
 
         const { data: dispData } = await supabase
           .from('configuracion_dispositivos')
-          .select('nombre')
+          .select('nombre, inventariable')
           .eq('activo', true)
           .order('nombre');
         if (dispData && dispData.length > 0) {
           setDispositivosDB(dispData.map((d: { nombre: string }) => d.nombre));
+          const invMap: Record<string, boolean> = {};
+          dispData.forEach((d: { nombre: string; inventariable: boolean }) => { invMap[d.nombre] = d.inventariable; });
+          setDispositivosInv(invMap);
         }
       } catch (err) {
         if (isMounted) {
@@ -562,7 +566,7 @@ const [qrExiste, setQrExiste] = useState(false);
                           id_lugar: l.id, id_establecimiento: idEstablecimiento,
                           dispositivo_nombre: device, cantidad: n, activo: true,
                         }, { onConflict: 'id_lugar, dispositivo_nombre', ignoreDuplicates: false });
-                        await asegurarEquipo(device, l.id);
+                        if (dispositivosInv[device] !== false) await asegurarEquipo(device, l.id);
                         dispatch({ type: 'SET_DRAG_DEVICE', payload: null });
                         await seleccionarLugar(l);
                       }}
@@ -824,8 +828,10 @@ const [qrExiste, setQrExiste] = useState(false);
                       }, { onConflict: 'id_lugar, dispositivo_nombre', ignoreDuplicates: false }).select();
                       if (fallbackErr) { console.error('Error al guardar ubicación:', fallbackErr); alert('Error al guardar. Revisa consola (F12).'); return; }
                     }
-                    const eqErr = await asegurarEquipo(device, ui.selected.id);
-                    if (eqErr) { console.error('Error al crear equipo:', eqErr); alert('Error al crear el equipo. Revisa consola (F12).'); return; }
+                    if (dispositivosInv[device] !== false) {
+                      const eqErr = await asegurarEquipo(device, ui.selected.id);
+                      if (eqErr) { console.error('Error al crear equipo:', eqErr); alert('Error al crear el equipo. Revisa consola (F12).'); return; }
+                    }
                     await cargarUbicaciones(ui.selected.id);
                   } catch (err: any) {
                     console.error('Error en onDrop equipos:', err);

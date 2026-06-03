@@ -431,6 +431,7 @@ export interface ConfiguracionDispositivo {
   id_establecimiento: string;
   nombre: string;
   activo: boolean;
+  inventariable: boolean;
   created_at: string;
   updated_at: string;
 }

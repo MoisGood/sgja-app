@@ -13,6 +13,7 @@ interface DispositivoRow {
   id: string;
   nombre: string;
   activo: boolean;
+  inventariable?: boolean;
 }
 
 interface QrCodeRow { id: string; codigo: string; tipo: string; id_referencia: string; created_at: string }
@@ -83,7 +84,7 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
     setErrorMsg('');
     const { data, error } = await supabase
       .from('configuracion_dispositivos')
-      .select('id, nombre, activo')
+      .select('id, nombre, activo, inventariable')
       .eq('id_establecimiento', idEstablecimiento)
       .eq('activo', true)
       .order('nombre');
@@ -182,15 +183,29 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
     const nombre = nombreDisp.trim();
     if (!nombre) return;
     if (editId) {
+      setDispositivos(prev => prev.map(d => d.id === editId ? { ...d, nombre } : d));
       await supabase.from('configuracion_dispositivos').update({ nombre }).eq('id', editId);
     } else {
-      await supabase.from('configuracion_dispositivos').insert({
+      const { data } = await supabase.from('configuracion_dispositivos').insert({
         id_establecimiento: idEstablecimiento, nombre,
-      });
+      }).select('id, nombre, activo, inventariable');
+      if (data) setDispositivos(prev => [...prev, ...(data as DispositivoRow[])]);
+      else load();
     }
     setEditId(null);
     setNombreDisp('');
-    load();
+  }
+
+  async function toggleInventariable(d: DispositivoRow) {
+    const nuevo = !d.inventariable;
+    setDispositivos(prev => prev.map(x => x.id === d.id ? { ...x, inventariable: nuevo } : x));
+    await supabase.from('configuracion_dispositivos').update({ inventariable: nuevo }).eq('id', d.id);
+  }
+
+  async function eliminarDispositivo(id: string) {
+    if (!confirm('¿Anular este dispositivo?')) return;
+    setDispositivos(prev => prev.filter(x => x.id !== id));
+    await supabase.from('configuracion_dispositivos').update({ activo: false }).eq('id', id);
   }
 
   async function guardarDiag() {
@@ -275,12 +290,6 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
     if (!confirm('¿Anular esta observación?')) return;
     await supabase.from('posibles_observaciones').update({ activo: false }).eq('id', id);
     loadObservaciones();
-  }
-
-  async function eliminarDispositivo(id: string) {
-    if (!confirm('¿Anular este dispositivo?')) return;
-    await supabase.from('configuracion_dispositivos').update({ activo: false }).eq('id', id);
-    load();
   }
 
   if (cargando) return <p style={{ color: '#6B7280', padding: 24 }}>⏳ Cargando configuración…</p>;
@@ -405,8 +414,56 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
       <div style={{ marginTop: 20 }}>
         {/* Tab: Dispositivos */}
         {tab === 'dispositivos' && (
-          <Card titulo="📦 Dispositivos" descripcion="Lista maestra de dispositivos del establecimiento.">
-            {renderItemList('Dispositivo', dispositivos.slice(paginaDisp * POR_PAGINA, (paginaDisp + 1) * POR_PAGINA), nombreDisp, setNombreDisp, editId, setEditId, guardarDispositivo, eliminarDispositivo, 'Sin dispositivos registrados.')}
+          <Card titulo="📦 Dispositivos" descripcion="Lista maestra de dispositivos. 📦 = inventariable, 🔌 = no inventariable.">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <input
+                  placeholder="Nombre del dispositivo"
+                  value={nombreDisp}
+                  onChange={e => setNombreDisp(e.target.value)}
+                  style={inputStyle}
+                  maxLength={200}
+                  onKeyDown={e => { if (e.key === 'Enter') guardarDispositivo(); }}
+                />
+                <Button tipo={editId ? 'primario' : 'exito'} tamaño="pequeño" onClick={guardarDispositivo}>
+                  {editId ? '💾 Actualizar' : '➕ Agregar'}
+                </Button>
+                {editId && (
+                  <Button tipo="secundario" tamaño="pequeño" onClick={() => { setEditId(null); setNombreDisp(''); }}>
+                    ❌ Cancelar
+                  </Button>
+                )}
+              </div>
+              {dispositivos.length === 0 ? (
+                <p style={{ color: '#9CA3AF', fontSize: 13, fontStyle: 'italic', margin: 0 }}>Sin dispositivos registrados.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {dispositivos.slice(paginaDisp * POR_PAGINA, (paginaDisp + 1) * POR_PAGINA).map(d => (
+                    <div key={d.id} style={itemRowStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <button
+                          onClick={() => toggleInventariable(d)}
+                          title={d.inventariable ? 'Inventariable — clic para cambiar' : 'No inventariable — clic para cambiar'}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: 0, lineHeight: 1,
+                            opacity: d.inventariable ? 1 : 0.5,
+                          }}
+                        >{d.inventariable ? '📦' : '🔌'}</button>
+                        <span style={{ color: '#1F2937', fontSize: 14 }}>{d.nombre}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <Button tamaño="pequeño" tipo="secundario" onClick={() => { setNombreDisp(d.nombre); setEditId(d.id); }}>
+                          ✏️
+                        </Button>
+                        <Button tamaño="pequeño" tipo="peligro" onClick={() => eliminarDispositivo(d.id)}>
+                          🚫
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <Paginador total={dispositivos.length} pagina={paginaDisp} setPagina={setPaginaDisp} />
           </Card>
         )}
