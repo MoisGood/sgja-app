@@ -1,7 +1,9 @@
 import { useEffect, useState, type JSX } from 'react';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination } from 'swiper/modules';
 import 'swiper/css';
+import 'swiper/css/pagination';
 import QRCode from 'qrcode';
 import { AlertTriangle, Search, CheckCircle2, FileText, Smartphone, X, ChevronRight } from 'lucide-react';
 import MobileSwipeWrapper from '../components/MobileSwipeWrapper';
@@ -119,10 +121,13 @@ export default function MobileConfigTecnico({ idEstablecimiento: _idEst }: Props
       </div>
 
       <Swiper
+        modules={[Pagination]}
         spaceBetween={0}
         slidesPerView={1}
+        pagination={{ clickable: true }}
+        autoHeight={true}
         onSlideChangeTransitionEnd={(s) => setTab(TABS[s.activeIndex].key)}
-        style={{ minHeight: 260 }}
+        style={{ minHeight: 260, paddingBottom: 32 }}
       >
         {TABS.map(t => (
           <SwiperSlide key={t.key}>
