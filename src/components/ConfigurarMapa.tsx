@@ -44,16 +44,16 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
 
   async function toggleActivo(lugar: Lugar) {
     const nuevoActivo = !lugar.activo;
-    const { error } = await supabase.from('lugares').update({ activo: nuevoActivo }).eq('id', lugar.id);
+    const { data, error } = await supabase.from('lugares').update({ activo: nuevoActivo }).eq('id', lugar.id).select('activo, soporte').single();
     if (error) { console.error('Error toggleActivo:', error); alert('Error al guardar Activo: ' + error.message); return; }
-    setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, activo: nuevoActivo } : l));
+    if (data) setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, activo: data.activo, soporte: data.soporte } : l));
   }
 
   async function toggleSoporte(lugar: Lugar) {
     const nuevoSoporte = !(lugar.soporte !== false);
-    const { error } = await supabase.from('lugares').update({ soporte: nuevoSoporte }).eq('id', lugar.id);
+    const { data, error } = await supabase.from('lugares').update({ soporte: nuevoSoporte }).eq('id', lugar.id).select('activo, soporte').single();
     if (error) { console.error('Error toggleSoporte:', error); alert('Error al guardar Soporte: ' + error.message); return; }
-    setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, soporte: nuevoSoporte } : l));
+    if (data) setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, activo: data.activo, soporte: data.soporte } : l));
   }
 
   if (cargando) return <p style={{ color: '#6b7280' }}>⏳ Cargando ubicaciones…</p>;
