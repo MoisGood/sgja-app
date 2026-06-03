@@ -570,13 +570,13 @@ const [qrExiste, setQrExiste] = useState(false);
                         ...STYLES.lugar.container,
                         left: l.left_pos, top: l.top_pos,
                         width: l.width, height: l.height,
-                        border: isSelected ? '2px solid #2563eb' : isDropTarget ? '2px dashed #f59e0b' : isHovered ? '2px solid #fbbf24' : '1px solid rgba(0,0,0,0.1)',
-                        background: sinSoporte ? '#e5e7eb' : ZONE_COLORS[l.zona] || '#6366f1',
-                        color: sinSoporte ? '#9ca3af' : l.zona === 'patio' || l.zona === 'acceso' ? '#14532d' : '#fff',
+                        border: isSelected ? '2px solid #2563eb' : isDropTarget ? '2px dashed #f59e0b' : isHovered ? '2px solid #fbbf24' : sinSoporte ? '2px solid #e5e7eb' : '1px solid rgba(0,0,0,0.1)',
+                        background: sinSoporte ? '#fef2f2' : ZONE_COLORS[l.zona] || '#6366f1',
+                        color: sinSoporte ? '#dc2626' : l.zona === 'patio' || l.zona === 'acceso' ? '#14532d' : '#fff',
                         boxShadow: isSelected ? '0 0 0 2px rgba(37,99,235,0.3)' : isDropTarget ? '0 0 0 3px rgba(245,158,11,0.5)' : isHovered ? '0 0 8px rgba(251,191,36,0.4)' : 'none',
                         zIndex: isSelected ? 10 : isDropTarget ? 6 : isHovered ? 5 : 1,
-                        cursor: sinSoporte ? 'pointer' : 'pointer',
-                        opacity: sinSoporte ? 0.5 : 1,
+                        cursor: 'pointer',
+                        opacity: 1,
                       }}
                       aria-label={`Lugar: ${l.nombre}${sinSoporte ? ' (sin soporte)' : ''}`}
                       aria-pressed={isSelected}
