@@ -3,6 +3,10 @@ import { supabase } from '../lib/supabase';
 import { LUGARES_POR_PISO, type LugarData } from '../data/lugares';
 import QRCode from 'qrcode';
 import ModalRequerimiento from './ModalRequerimiento';
+import {
+  uiReducer, PISOS, ZONE_COLORS, ZONE_LABELS, ESTADO_COLORS,
+  type LugarRow, type EquipoRow, type ReqRow,
+} from './mapaPisoTypes';
 
 const MAP_W = 508;
 const MAP_H = 344;
@@ -81,7 +85,7 @@ const STYLES = {
       textAlign: 'center' as const,
       padding: 2,
       lineHeight: 1.15,
-      overflow: 'hidden' as const,
+      overflow: 'visible' as const,
       cursor: 'pointer',
       transition: 'border 150ms ease-out, box-shadow 150ms ease-out, background 150ms ease-out',
     },
@@ -104,136 +108,9 @@ const STYLES = {
   },
 } as const;
 
-interface LugarRow {
-  id: string;
-  piso: number;
-  nombre: string;
-  zona: string;
-  left_pos: number;
-  top_pos: number;
-  width: number;
-  height: number;
-}
-
-interface EquipoRow {
-  id: string;
-  nombre: string;
-  marca: string | null;
-  modelo: string | null;
-  tipo_equipo: string | null;
-  estado: string;
-  numero_serie: string | null;
-}
-
-interface ReqRow {
-  id: string;
-  tipo_requerimiento: string;
-  descripcion: string;
-  estado: string;
-  prioridad: string;
-  created_at: string;
-}
-
 interface Props {
   idEstablecimiento: string;
   piso?: number;
-}
-
-const ZONE_COLORS: Record<string, string> = {
-  lab: '#0891b2', patio: '#4ade80', pasillo: '#64748b',
-  admin: '#3b82f6', sala: '#8b5cf6', com: '#d97706',
-  acceso: '#22c55e', park: '#78716c', internado: '#f43f5e',
-  pie: '#a21caf', bib: '#0ea5e9', other: '#6366f1', empty: '#cbd5e1',
-};
-
-const ZONE_LABELS: Record<string, string> = {
-  lab: 'Laboratorios', bib: 'Biblioteca', sala: 'Salas',
-  admin: 'Administración', com: 'Comedor / Fitness', patio: 'Patio',
-  pasillo: 'Pasillo', acceso: 'Acceso', park: 'Estacionamiento',
-  internado: 'Internado', pie: 'PIE', other: 'Equipo Mult.', empty: 'Sin uso',
-};
-
-
-const PISOS = [
-  { label: 'Subterráneo', valor: 0 },
-  { label: 'Piso 1', valor: 1 },
-  { label: 'Piso 2', valor: 2 },
-  { label: 'Piso 3', valor: 3 },
-];
-
-const ESTADO_COLORS: Record<string, string> = {
-  Operativo: '#16a34a', 'Con Fallas': '#ea580c',
-  'En Reparación': '#ca8a04', Baja: '#6b7280',
-};
-
-interface UIState {
-  piso: number;
-  cargando: boolean;
-  scale: number;
-  scaleAuto: boolean;
-  hovered: string | null;
-  selected: LugarRow | null;
-  cargandoDetalle: boolean;
-  qrUrl: string | null;
-  qrCodeString: string | null;
-  qrCopied: boolean;
-  qrCargando: boolean;
-  modalReqAbierto: boolean;
-  historialModalAbierto: boolean;
-  dragDevice: string | null;
-  dropHover: string | null;
-  esMobil: boolean;
-  panelWidth: number;
-  panelMaxH: number;
-}
-
-type UIAction =
-  | { type: 'SET_PISO'; payload: number }
-  | { type: 'SET_CARGANDO'; payload: boolean }
-  | { type: 'SET_SCALE'; payload: number }
-  | { type: 'SET_SCALE_AUTO'; payload: boolean }
-  | { type: 'SET_HOVERED'; payload: string | null }
-  | { type: 'SET_SELECTED'; payload: LugarRow | null }
-  | { type: 'SET_CARGANDO_DETALLE'; payload: boolean }
-  | { type: 'SET_QR_URL'; payload: string | null }
-  | { type: 'SET_QR_CODE_STRING'; payload: string | null }
-  | { type: 'SET_QR_COPIED'; payload: boolean }
-  | { type: 'SET_QR_CARGANDO'; payload: boolean }
-  | { type: 'SET_MODAL_REQ'; payload: boolean }
-  | { type: 'SET_HISTORIAL_MODAL'; payload: boolean }
-  | { type: 'SET_DRAG_DEVICE'; payload: string | null }
-  | { type: 'SET_DROP_HOVER'; payload: string | null }
-  | { type: 'HANDLE_RESIZE'; payload: { width: number; height: number } }
-  | { type: 'RESET_SELECTION' };
-
-function uiReducer(state: UIState, action: UIAction): UIState {
-  switch (action.type) {
-    case 'SET_PISO': return { ...state, piso: action.payload };
-    case 'SET_CARGANDO': return { ...state, cargando: action.payload };
-    case 'SET_SCALE': return { ...state, scale: action.payload, scaleAuto: false };
-    case 'SET_SCALE_AUTO': return { ...state, scaleAuto: action.payload };
-    case 'SET_HOVERED': return { ...state, hovered: action.payload };
-    case 'SET_SELECTED': return { ...state, selected: action.payload };
-    case 'SET_CARGANDO_DETALLE': return { ...state, cargandoDetalle: action.payload };
-    case 'SET_QR_URL': return { ...state, qrUrl: action.payload };
-    case 'SET_QR_CARGANDO': return { ...state, qrCargando: action.payload };
-    case 'SET_QR_CODE_STRING': return { ...state, qrCodeString: action.payload };
-    case 'SET_QR_COPIED': return { ...state, qrCopied: action.payload };
-    case 'SET_MODAL_REQ': return { ...state, modalReqAbierto: action.payload };
-    case 'SET_HISTORIAL_MODAL': return { ...state, historialModalAbierto: action.payload };
-    case 'SET_DRAG_DEVICE': return { ...state, dragDevice: action.payload };
-    case 'SET_DROP_HOVER': return { ...state, dropHover: action.payload };
-    case 'HANDLE_RESIZE':
-      return {
-        ...state,
-        esMobil: action.payload.width < 768,
-        panelWidth: Math.min(420, Math.max(300, action.payload.width * 0.32)),
-        panelMaxH: action.payload.height - 130,
-      };
-    case 'RESET_SELECTION':
-      return { ...state, selected: null, qrUrl: null, qrCodeString: null, qrCopied: false };
-    default: return state;
-  }
 }
 
 export default function MapaPiso({ idEstablecimiento, piso: pisoInicial = 1 }: Props) {
@@ -249,6 +126,10 @@ const [requerimientos, setRequerimientos] = useState<ReqRow[]>([]);
 const [ubicaciones, setUbicaciones] = useState<{ id: string; dispositivo_nombre: string; cantidad: number }[]>([]);
 const [dispositivosDB, setDispositivosDB] = useState<string[]>([]);
 const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+const [searchTerm, setSearchTerm] = useState('');
+interface PendienteResumen { id: string; tipo_requerimiento: string; prioridad: string; estado: string; }
+const [pendientesPorLugar, setPendientesPorLugar] = useState<Record<string, PendienteResumen[]>>({});
+const [qrExiste, setQrExiste] = useState(false);
   
   const [ui, dispatch] = useReducer(uiReducer, {
     piso: pisoInicial,
@@ -288,11 +169,7 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
     let isMounted = true;
 
     dispatch({ type: 'SET_CARGANDO', payload: true });
-    dispatch({ type: 'RESET_SELECTION' });
-    setEquipos([]);
-    setRequerimientos([]);
-    setUbicaciones([]);
-    setDispositivosDB([]);
+    setSearchTerm('');
     
     (async () => {
       try {
@@ -308,11 +185,12 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
         
         if (!isMounted) return;
 
+        let lugaresPiso: LugarRow[];
         if (lugaresData && lugaresData.length > 0) {
-          setLugares(lugaresData.map((r: LugarRow) => ({ ...r, zona: cleanZone(r.zona) })));
+          lugaresPiso = lugaresData.map((r: LugarRow) => ({ ...r, zona: cleanZone(r.zona) }));
         } else {
           const fallback = LUGARES_POR_PISO[ui.piso] || [];
-          setLugares(fallback.map((l: LugarData, i) => ({
+          lugaresPiso = fallback.map((l: LugarData, i) => ({
             id: `fallback-${ui.piso}-${i}`,
             piso: ui.piso,
             nombre: l.text,
@@ -321,7 +199,27 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
             top_pos: l.top,
             width: l.width,
             height: l.height,
-          })));
+          }));
+        }
+        setLugares(lugaresPiso);
+
+        // Cargar detalles de requerimientos pendientes para estos lugares
+        const idsLugar = lugaresPiso.map(l => l.id).filter(id => !id.startsWith('fallback-'));
+        if (idsLugar.length > 0) {
+          const { data: reqs } = await supabase.from('requerimientos')
+            .select('id_lugar,id,tipo_requerimiento,prioridad,estado')
+            .in('id_lugar', idsLugar).eq('activo', true)
+            .neq('estado', 'Completada').neq('estado', 'Cancelada');
+          if (reqs) {
+            const agrupado: Record<string, PendienteResumen[]> = {};
+            for (const r of reqs) {
+              if (!agrupado[r.id_lugar]) agrupado[r.id_lugar] = [];
+              agrupado[r.id_lugar].push({ id: r.id, tipo_requerimiento: r.tipo_requerimiento, prioridad: r.prioridad, estado: r.estado });
+            }
+            setPendientesPorLugar(agrupado);
+          }
+        } else {
+          setPendientesPorLugar({});
         }
 
         const { data: dispData } = await supabase
@@ -405,14 +303,17 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
     dispatch({ type: 'SET_SELECTED', payload: lugar });
     dispatch({ type: 'SET_QR_URL', payload: null });
     dispatch({ type: 'SET_CARGANDO_DETALLE', payload: true });
-    const [eqData, reqData] = await Promise.all([
+    setQrExiste(false);
+    const [eqData, reqData, qrData] = await Promise.all([
       supabase.from('equipos').select('id, nombre, marca, modelo, tipo_equipo, estado, numero_serie')
         .eq('id_lugar', lugar.id).eq('activo', true),
       supabase.from('requerimientos').select('id, tipo_requerimiento, descripcion, estado, prioridad, created_at')
         .eq('id_lugar', lugar.id).eq('activo', true).order('created_at', { ascending: false }).limit(10),
+      supabase.from('qr_codes').select('id').eq('id_referencia', lugar.id).eq('activo', true).maybeSingle(),
     ]);
     setEquipos((eqData.data || []) as EquipoRow[]);
     setRequerimientos((reqData.data || []) as ReqRow[]);
+    if (qrData.data) setQrExiste(true);
     await cargarUbicaciones(lugar.id);
     dispatch({ type: 'SET_CARGANDO_DETALLE', payload: false });
   }, [cargarUbicaciones]);
@@ -423,6 +324,27 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
       dispatch({ type: 'SET_QR_CODE_STRING', payload: null });
       return;
     }
+    if (qrExiste) {
+      // Cargar QR existente desde la DB
+      dispatch({ type: 'SET_QR_CARGANDO', payload: true });
+      const { data: qr } = await supabase.from('qr_codes')
+        .select('codigo')
+        .eq('id_referencia', lugar.id)
+        .eq('activo', true)
+        .maybeSingle();
+      if (qr) {
+        const url = `${window.location.origin}/#/tecnico/qr?c=${encodeURIComponent(qr.codigo)}`;
+        const svg = await QRCode.toString(url, {
+          type: 'svg', width: 250, margin: 2, color: { dark: '#1f2937', light: '#ffffff' },
+          errorCorrectionLevel: 'H',
+        });
+        dispatch({ type: 'SET_QR_URL', payload: `data:image/svg+xml,${encodeURIComponent(svg)}` });
+        dispatch({ type: 'SET_QR_CODE_STRING', payload: qr.codigo });
+      }
+      dispatch({ type: 'SET_QR_CARGANDO', payload: false });
+      return;
+    }
+    // Generar QR nuevo
     dispatch({ type: 'SET_QR_CARGANDO', payload: true });
     try {
       // Generar código legible desde el nombre
@@ -494,7 +416,11 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
     }
   }
 
-  const zonasUsadas = useMemo(() => [...new Set(lugares.map(l => l.zona))], [lugares]);
+  const lugaresFiltrados = useMemo(
+    () => searchTerm ? lugares.filter(l => l.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : lugares,
+    [lugares, searchTerm],
+  );
+  const zonasUsadas = useMemo(() => [...new Set(lugaresFiltrados.map(l => l.zona))], [lugaresFiltrados]);
 
   return (
     <div style={{ 
@@ -524,6 +450,17 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
               {PISOS.map(p => <option key={p.valor} value={p.valor}>{p.label}</option>)}
             </select>
 
+            <input
+              type="text"
+              placeholder="Buscar lugar…"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{
+                padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db',
+                fontSize: 13, outline: 'none', width: 140, background: '#fff', color: '#1f2937',
+              }}
+              aria-label="Buscar lugar en el mapa"
+            />
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
               <button
                 onClick={() => dispatch({ type: 'SET_SCALE', payload: Math.max(0.3, ui.scale - 0.1) })}
@@ -586,7 +523,7 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
                 role="main"
                 aria-label="Mapa interactivo del edificio"
               >
-                {lugares.map(l => {
+                {lugaresFiltrados.map(l => {
                   const isSelected = ui.selected?.id === l.id;
                   const isDropTarget = ui.dropHover === l.id;
                   const isHovered = ui.hovered === l.id;
@@ -634,6 +571,20 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
                       <span style={STYLES.lugar.text}>
                         {l.nombre}
                       </span>
+                      {pendientesPorLugar[l.id]?.map((p, i) => (
+                        <span
+                          key={p.id}
+                          title={`${p.tipo_requerimiento} (${p.estado})`}
+                          style={{
+                            position: 'absolute',
+                            width: 7, height: 7, borderRadius: '50%',
+                            background: p.prioridad === 'Urgente' || p.prioridad === 'Alta' ? '#dc2626' : p.estado === 'En Proceso' ? '#2563eb' : '#f59e0b',
+                            top: 3,
+                            left: 3 + (i * 10),
+                            boxShadow: '0 0 0 1.5px rgba(255,255,255,0.9)',
+                          }}
+                        />
+                      ))}
                     </button>
                   );
                 })}
@@ -761,9 +712,9 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
           <div style={{ padding: '12px 16px', display: 'flex', gap: 8, flexWrap: 'wrap', borderBottom: '1px solid #e5e7eb' }}>
             <button onClick={() => ui.selected && generarQR(ui.selected)}
               style={STYLES.button.primary}
-              aria-label={ui.qrUrl ? 'Cerrar código QR' : 'Generar código QR'}
+              aria-label={ui.qrUrl ? 'Cerrar código QR' : qrExiste ? 'Ver código QR' : 'Generar código QR'}
               disabled={ui.qrCargando}>
-              {ui.qrCargando ? '⏳' : ui.qrUrl ? '✕ Cerrar QR' : '📱 Generar QR'}
+              {ui.qrCargando ? '⏳' : ui.qrUrl ? '✕ Cerrar QR' : qrExiste ? '📱 Ver QR' : '📱 Generar QR'}
             </button>
             <button onClick={() => dispatch({ type: 'SET_MODAL_REQ', payload: true })}
               style={STYLES.button.secondary}
@@ -808,51 +759,7 @@ const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
             <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 12 }} aria-live="polite">⏳ Cargando…</div>
           ) : (
             <>
-              <div 
-                  onDragOver={e => { e.preventDefault(); dispatch({ type: 'SET_DROP_HOVER', payload: 'equipos-panel' }); }}
-                  onDragLeave={() => dispatch({ type: 'SET_DROP_HOVER', payload: null })}
-                   onDrop={async e => {
-                    e.preventDefault();
-                    dispatch({ type: 'SET_DROP_HOVER', payload: null });
-                    try {
-                      let device = e.dataTransfer.getData('text/plain') || ui.dragDevice || '';
-                      if (!device) {
-                        device = prompt('Nombre del dispositivo:') || '';
-                        if (!device) return;
-                      }
-                      if (!ui.selected) return;
-                      const q = prompt(`¿Cuántos "${device}" hay en ${ui.selected.nombre}?`, '1');
-                      if (q === null) return;
-                      const n = parseInt(q);
-                      if (isNaN(n) || n < 0) return;
-                      const { error: upsertErr } = await supabase.rpc('upsertar_ubicacion', {
-                        p_id_lugar: ui.selected.id,
-                        p_id_establecimiento: idEstablecimiento,
-                        p_dispositivo_nombre: device,
-                        p_cantidad: n,
-                      });
-                      if (upsertErr) {
-                        console.error('Error al guardar ubicación (RPC):', upsertErr);
-                        const { error: fallbackErr } = await supabase.from('ubicaciones').upsert({
-                          id_lugar: ui.selected.id, id_establecimiento: idEstablecimiento,
-                          dispositivo_nombre: device, cantidad: n, activo: true,
-                        }, { onConflict: 'id_lugar, dispositivo_nombre', ignoreDuplicates: false }).select();
-                        if (fallbackErr) { console.error('Error al guardar ubicación (fallback):', fallbackErr); alert('Error al guardar la ubicación. Revisa la consola (F12).'); return; }
-                      }
-                      const eqErr = await asegurarEquipo(device, ui.selected.id);
-                      if (eqErr) { console.error('Error al crear equipo:', eqErr); alert('Error al crear el equipo. Revisa la consola (F12) para más detalles.'); return; }
-                      await cargarUbicaciones(ui.selected.id);
-                      dispatch({ type: 'SET_DRAG_DEVICE', payload: null });
-                    } catch (err: any) {
-                      console.error('Error en onDrop:', err);
-                      alert('Error inesperado. Revisa la consola (F12) para más detalles.');
-                    }
-                  }}
-                style={{ 
-                  padding: '12px 16px', borderBottom: '1px solid #e5e7eb',
-                  background: ui.dropHover === 'equipos-panel' ? '#f0f9ff' : 'transparent',
-                  transition: 'background 150ms ease'
-                }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
                 <h4 style={{ margin: '0 0 8px 0', fontSize: 13, fontWeight: 600, color: '#374151', display: 'flex', alignItems: 'center', gap: 4 }}>
                   🖥️ Equipos
                 </h4>
