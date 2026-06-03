@@ -433,13 +433,16 @@ const [qrExiste, setQrExiste] = useState(false);
 
   return (
     <div style={{ 
-      position: 'relative',
+      display: 'flex', 
+      gap: 20, 
+      flexDirection: ui.esMobil ? 'column' : 'row',
+      alignItems: 'flex-start',
       width: '100%',
       maxWidth: '1600px',
       margin: '0 auto'
     }}>
       {/* Sección del Mapa */}
-      <div className="map-container-fluid" style={{ width: '100%', minWidth: 0 }}>
+      <div className="map-container-fluid" style={{ flex: 1, width: '100%', minWidth: 0 }}>
         <div style={{ background: '#fff', padding: '16px', borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: '#111827' }}>Distribución de Planta</h2>
@@ -699,19 +702,15 @@ const [qrExiste, setQrExiste] = useState(false);
         <div
           ref={panelRef}
           style={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            zIndex: 100,
-            width: ui.panelWidth,
+            width: ui.esMobil ? '100%' : ui.panelWidth,
             flexShrink: 0,
             background: '#fff',
             border: '1px solid #e5e7eb',
             borderRadius: 10,
-            boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
             overflow: 'hidden',
             fontSize: 13,
-            maxHeight: ui.panelMaxH,
+            maxHeight: ui.esMobil ? 'none' : ui.panelMaxH,
             overflowY: 'auto',
           }}
           role="complementary"
@@ -889,7 +888,7 @@ const [qrExiste, setQrExiste] = useState(false);
                               <span style={{ fontSize: 10, transition: 'transform .15s', transform: isExpanded ? 'rotate(90deg)' : 'none' }}>▶</span>
                               <span style={{ flex: 1 }}>{key} ({count})</span>
                               <button
-                                onClick={async e => { e.stopPropagation(); if (!ui.selected) { alert('DEBUG: ui.selected es null'); return; } const u = ubicaciones.find(x => x.dispositivo_nombre === key); if (!u) { alert('DEBUG: ubicacion no encontrada para key=' + key + ' ubicaciones=' + JSON.stringify(ubicaciones.map(x=>x.dispositivo_nombre))); return; } if (groupEquipos.length > 0 && !confirm(`Hay ${groupEquipos.length} equipo(s) asignado(s) a "${key}". ¿Borrar todo?`)) return; const eqResult = await Promise.all(groupEquipos.map(eq => supabase.from('equipos').update({ activo: false }).eq('id', eq.id).eq('id_establecimiento', idEstablecimiento))); const eqErrors = eqResult.filter(r => r.error).map(r => r.error?.message); if (eqErrors.length) { alert('Error equipos: ' + eqErrors.join(', ')); return; } const ubResult = await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id).eq('id_establecimiento', idEstablecimiento); if (ubResult.error) { alert('Error ubicacion: ' + ubResult.error.message); return; } await cargarUbicaciones(ui.selected.id); }}
+                                onClick={async e => { e.stopPropagation(); console.log('[grupo X] clicked, key=', key, 'ui.selected=', ui.selected); if (!ui.selected) { console.warn('[grupo X] ui.selected es null'); return; } const u = ubicaciones.find(x => x.dispositivo_nombre === key); if (!u) { console.warn('[grupo X] ubicacion no encontrada para key=', key, 'ubicaciones=', ubicaciones.map(x => x.dispositivo_nombre)); return; } if (groupEquipos.length > 0 && !confirm(`Hay ${groupEquipos.length} equipo(s) asignado(s) a "${key}". ¿Borrar todo?`)) { console.log('[grupo X] cancelado por usuario'); return; } try { const eqResult = await Promise.all(groupEquipos.map(eq => supabase.from('equipos').update({ activo: false }).eq('id', eq.id).eq('id_establecimiento', idEstablecimiento))); const eqErrors = eqResult.filter(r => r.error); if (eqErrors.length) { console.error('[grupo X] error equipos:', eqErrors.map(r => r.error)); return; } console.log('[grupo X] equipos actualizados:', eqResult.map(r => ({ data: r.data, status: r.status, count: r.count }))); const ubResult = await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id).eq('id_establecimiento', idEstablecimiento); if (ubResult.error) { console.error('[grupo X] error ubicacion:', ubResult.error); return; } console.log('[grupo X] ubicacion actualizada:', { data: ubResult.data, status: ubResult.status, count: ubResult.count }); await cargarUbicaciones(ui.selected.id); console.log('[grupo X] recarga completada'); } catch (err) { console.error('[grupo X] exception:', err); } }}
                                 style={{ cursor: 'pointer', fontSize: 13, color: '#1e40af', opacity: 0.4, background: 'none', border: 'none', padding: 0, lineHeight: 1 }}
                                 title="Anular grupo"
                               >✕</button>
@@ -904,7 +903,7 @@ const [qrExiste, setQrExiste] = useState(false);
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                       <span style={{ fontWeight: 500, color: '#1f2937' }}>{eq.nombre}</span>
                                       <button
-                                        onClick={async e => { e.stopPropagation(); if (!ui.selected) { alert('DEBUG per-equipo: ui.selected es null'); return; } if (!confirm(`¿Quitar "${eq.nombre}" de ${ui.selected.nombre}?`)) return; const eqResult = await supabase.from('equipos').update({ activo: false }).eq('id', eq.id).eq('id_establecimiento', idEstablecimiento); if (eqResult.error) { alert('Error equipo: ' + eqResult.error.message); return; } const ubic = ubicaciones.find(u => u.dispositivo_nombre === key); if (ubic) { if (ubic.cantidad <= 1) { const r = await supabase.from('ubicaciones').update({ activo: false }).eq('id', ubic.id).eq('id_establecimiento', idEstablecimiento); if (r.error) { alert('Error ubicacion desactivar: ' + r.error.message); return; } } else { const r = await supabase.from('ubicaciones').update({ cantidad: ubic.cantidad - 1 }).eq('id', ubic.id).eq('id_establecimiento', idEstablecimiento); if (r.error) { alert('Error ubicacion decrementar: ' + r.error.message); return; } } } await cargarUbicaciones(ui.selected.id); }}
+                                        onClick={async e => { e.stopPropagation(); console.log('[equipo X] clicked, eq=', eq.nombre, 'id=', eq.id, 'ui.selected=', ui.selected?.nombre); if (!ui.selected) { console.warn('[equipo X] ui.selected es null'); return; } if (!confirm(`¿Quitar "${eq.nombre}" de ${ui.selected.nombre}?`)) { console.log('[equipo X] cancelado por usuario'); return; } try { const eqResult = await supabase.from('equipos').update({ activo: false }).eq('id', eq.id).eq('id_establecimiento', idEstablecimiento); if (eqResult.error) { console.error('[equipo X] error equipo:', eqResult.error); return; } console.log('[equipo X] equipo actualizado:', { data: eqResult.data, status: eqResult.status, count: eqResult.count }); const ubic = ubicaciones.find(u => u.dispositivo_nombre === key); if (ubic) { if (ubic.cantidad <= 1) { const r = await supabase.from('ubicaciones').update({ activo: false }).eq('id', ubic.id).eq('id_establecimiento', idEstablecimiento); if (r.error) { console.error('[equipo X] error ubicacion desactivar:', r.error); return; } console.log('[equipo X] ubicacion desactivada:', { data: r.data, status: r.status, count: r.count }); } else { const r = await supabase.from('ubicaciones').update({ cantidad: ubic.cantidad - 1 }).eq('id', ubic.id).eq('id_establecimiento', idEstablecimiento); if (r.error) { console.error('[equipo X] error ubicacion decrementar:', r.error); return; } console.log('[equipo X] ubicacion decrementada:', { data: r.data, status: r.status, count: r.count }); } } else { console.warn('[equipo X] ubicacion no encontrada para key=', key, 'ubicaciones=', ubicaciones.map(x => x.dispositivo_nombre)); } await cargarUbicaciones(ui.selected.id); console.log('[equipo X] recarga completada'); } catch (err) { console.error('[equipo X] exception:', err); } }}
                                         style={{ cursor: 'pointer', fontSize: 12, color: '#ef4444', opacity: 0.5, background: 'none', border: 'none', padding: '0 2px', lineHeight: 1, fontWeight: 700 }}
                                         title={`Eliminar ${eq.nombre}`}
                                       >✕</button>
