@@ -385,10 +385,7 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
           if ('serviceWorker' in navigator) {
             const regs = await navigator.serviceWorker.getRegistrations();
             for (const reg of regs) await reg.unregister();
-            const keys = await caches.keys();
-            for (const key of keys) await caches.delete(key);
-            alert('Cache y Service Worker desactivados. La página se recargará.');
-            window.location.reload();
+            alert('Cache y Service Worker desactivados. Refrescá la página manualmente.');
           }
         }}>🧹 Desactivar cache</Button>
       </div>

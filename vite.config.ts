@@ -7,6 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: { enabled: false },
       includeAssets: ['favicon.ico', 'icon.svg'],
       manifest: {
         name: 'SGJA - Sistema Gestión Justificaciones',
