@@ -791,7 +791,37 @@ const [qrExiste, setQrExiste] = useState(false);
             <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 12 }} aria-live="polite">⏳ Cargando…</div>
           ) : (
             <>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
+              <div
+                onDragOver={e => { e.preventDefault(); dispatch({ type: 'SET_DROP_HOVER', payload: 'equipos-panel' }); }}
+                onDragLeave={() => dispatch({ type: 'SET_DROP_HOVER', payload: null })}
+                onDrop={async e => {
+                  e.preventDefault();
+                  dispatch({ type: 'SET_DROP_HOVER', payload: null });
+                  try {
+                    const device = e.dataTransfer.getData('text/plain') || ui.dragDevice || '';
+                    if (!device) return;
+                    dispatch({ type: 'SET_DRAG_DEVICE', payload: null });
+                    if (!ui.selected) return;
+                    if (!confirm(`¿Asignar "${device}" a ${ui.selected.nombre}?`)) return;
+                    const { error: upsertError } = await supabase.from('ubicaciones').upsert({
+                      dispositivo_nombre: device, id_lugar: ui.selected.id,
+                      id_establecimiento: idEstablecimiento, activo: true, cantidad: 1,
+                    }, { onConflict: 'dispositivo_nombre, id_lugar' });
+                    if (!upsertError) {
+                      await asegurarEquipo(device, idEstablecimiento);
+                      await cargarUbicaciones(ui.selected.id);
+                      await recargarRequerimientos(ui.selected.id);
+                    }
+                  } catch (err: any) {
+                    console.error('Error en onDrop equipos:', err);
+                    alert('Error inesperado. Revisa la consola (F12) para más detalles.');
+                  }
+                }}
+                style={{
+                  padding: '12px 16px', borderBottom: '1px solid #e5e7eb',
+                  background: ui.dropHover === 'equipos-panel' ? '#f0f9ff' : 'transparent',
+                  transition: 'background 150ms ease',
+                }}>
                 <h4 style={{ margin: '0 0 8px 0', fontSize: 13, fontWeight: 600, color: '#374151', display: 'flex', alignItems: 'center', gap: 4 }}>
                   🖥️ Equipos
                 </h4>
@@ -855,7 +885,14 @@ const [qrExiste, setQrExiste] = useState(false);
                                     padding: '6px 8px', background: '#fff', borderRadius: 4,
                                     border: '1px solid #f3f4f6', fontSize: 11,
                                   }}>
-                                    <div style={{ fontWeight: 500, color: '#1f2937' }}>{eq.nombre}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                      <span style={{ fontWeight: 500, color: '#1f2937' }}>{eq.nombre}</span>
+                                      <button
+                                        onClick={async e => { e.stopPropagation(); if (!ui.selected) return; if (!confirm(`¿Eliminar "${eq.nombre}"?`)) return; await supabase.from('equipos').update({ activo: false }).eq('id', eq.id); await cargarUbicaciones(ui.selected.id); }}
+                                        style={{ cursor: 'pointer', fontSize: 12, color: '#ef4444', opacity: 0.5, background: 'none', border: 'none', padding: '0 2px', lineHeight: 1, fontWeight: 700 }}
+                                        title={`Eliminar ${eq.nombre}`}
+                                      >✕</button>
+                                    </div>
                                     <div style={{ display: 'flex', gap: 6, marginTop: 1, color: '#6b7280', fontSize: 10, flexWrap: 'wrap' }}>
                                       {eq.marca && <span>{eq.marca}</span>}
                                       {eq.modelo && <span>{eq.modelo}</span>}
