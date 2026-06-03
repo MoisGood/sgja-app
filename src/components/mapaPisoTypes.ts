@@ -18,6 +18,8 @@ export interface EquipoRow {
   tipo_equipo: string | null;
   estado: string;
   numero_serie: string | null;
+  cod_inventario: string | null;
+  usuario: string | null;
 }
 
 export interface ReqRow {

@@ -126,6 +126,8 @@ const [requerimientos, setRequerimientos] = useState<ReqRow[]>([]);
 const [ubicaciones, setUbicaciones] = useState<{ id: string; dispositivo_nombre: string; cantidad: number }[]>([]);
 const [dispositivosDB, setDispositivosDB] = useState<string[]>([]);
 const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+const [editUsuario, setEditUsuario] = useState<string | null>(null);
+const [editUsuarioVal, setEditUsuarioVal] = useState('');
 const [searchTerm, setSearchTerm] = useState('');
 interface PendienteResumen { id: string; tipo_requerimiento: string; prioridad: string; estado: string; }
 const [pendientesPorLugar, setPendientesPorLugar] = useState<Record<string, PendienteResumen[]>>({});
@@ -311,7 +313,7 @@ const [qrExiste, setQrExiste] = useState(false);
     dispatch({ type: 'SET_CARGANDO_DETALLE', payload: true });
     setQrExiste(false);
     const [eqData, reqData, qrData] = await Promise.all([
-      supabase.from('equipos').select('id, nombre, marca, modelo, tipo_equipo, estado, numero_serie')
+      supabase.from('equipos').select('id, nombre, marca, modelo, tipo_equipo, estado, numero_serie, cod_inventario, usuario')
         .eq('id_lugar', lugar.id).eq('activo', true),
       supabase.from('requerimientos').select('id, tipo_requerimiento, descripcion, estado, prioridad, created_at')
         .eq('id_lugar', lugar.id).eq('activo', true).order('created_at', { ascending: false }).limit(10),
@@ -901,19 +903,53 @@ const [qrExiste, setQrExiste] = useState(false);
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                       <span style={{ fontWeight: 500, color: '#1f2937' }}>{eq.nombre}</span>
                                       <button
-                                        onClick={async e => { e.stopPropagation(); if (!ui.selected) return; if (!confirm(`¿Eliminar "${eq.nombre}"?`)) return; await supabase.from('equipos').update({ activo: false }).eq('id', eq.id); await cargarUbicaciones(ui.selected.id); }}
+                                        onClick={async e => { e.stopPropagation(); if (!ui.selected) return; if (!confirm(`¿Quitar "${eq.nombre}" de ${ui.selected.nombre}?`)) return; await supabase.from('equipos').update({ activo: false }).eq('id', eq.id); const ubic = ubicaciones.find(u => u.dispositivo_nombre === key); if (ubic) { if (ubic.cantidad <= 1) { await supabase.from('ubicaciones').update({ activo: false }).eq('id', ubic.id); } else { await supabase.from('ubicaciones').update({ cantidad: ubic.cantidad - 1 }).eq('id', ubic.id); } } await cargarUbicaciones(ui.selected.id); }}
                                         style={{ cursor: 'pointer', fontSize: 12, color: '#ef4444', opacity: 0.5, background: 'none', border: 'none', padding: '0 2px', lineHeight: 1, fontWeight: 700 }}
                                         title={`Eliminar ${eq.nombre}`}
                                       >✕</button>
                                     </div>
                                     <div style={{ display: 'flex', gap: 6, marginTop: 1, color: '#6b7280', fontSize: 10, flexWrap: 'wrap' }}>
+                                      {eq.cod_inventario && <span><strong>Cod:</strong> {eq.cod_inventario}</span>}
                                       {eq.marca && <span>{eq.marca}</span>}
                                       {eq.modelo && <span>{eq.modelo}</span>}
                                       {eq.numero_serie && <span>S/N: {eq.numero_serie}</span>}
                                     </div>
-                                    <span style={{ ...STYLES.tag, marginTop: 2, fontSize: 10, background: `${ESTADO_COLORS[eq.estado] || '#6b7280'}18`, color: ESTADO_COLORS[eq.estado] || '#6b7280' }}>
-                                      {eq.estado}
-                                    </span>
+                                    <div style={{ display: 'flex', gap: 4, marginTop: 2, alignItems: 'center' }}>
+                                      {editUsuario === eq.id ? (
+                                        <input
+                                          autoFocus
+                                          value={editUsuarioVal}
+                                          onChange={e => setEditUsuarioVal(e.target.value)}
+                                          onBlur={async () => {
+                                            await supabase.from('equipos').update({ usuario: editUsuarioVal || null }).eq('id', eq.id);
+                                            setEditUsuario(null);
+                                            if (ui.selected) cargarUbicaciones(ui.selected.id);
+                                          }}
+                                          onKeyDown={async e => {
+                                            if (e.key === 'Enter') {
+                                              await supabase.from('equipos').update({ usuario: editUsuarioVal || null }).eq('id', eq.id);
+                                              setEditUsuario(null);
+                                              if (ui.selected) cargarUbicaciones(ui.selected.id);
+                                            }
+                                            if (e.key === 'Escape') setEditUsuario(null);
+                                          }}
+                                          style={{ width: 140, padding: '2px 6px', fontSize: 10, border: '1px solid #3b82f6', borderRadius: 4, outline: 'none' }}
+                                          placeholder="Usuario"
+                                          maxLength={200}
+                                        />
+                                      ) : (
+                                        <span
+                                          onClick={() => { setEditUsuario(eq.id); setEditUsuarioVal(eq.usuario || ''); }}
+                                          style={{ fontSize: 10, color: eq.usuario ? '#374151' : '#9ca3af', cursor: 'pointer', fontWeight: 500 }}
+                                          title="Click para asignar usuario"
+                                        >
+                                          👤 {eq.usuario || 'Asignar usuario'}
+                                        </span>
+                                      )}
+                                      <span style={{ ...STYLES.tag, fontSize: 10, background: `${ESTADO_COLORS[eq.estado] || '#6b7280'}18`, color: ESTADO_COLORS[eq.estado] || '#6b7280' }}>
+                                        {eq.estado}
+                                      </span>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
