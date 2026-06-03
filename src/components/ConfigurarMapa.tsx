@@ -44,13 +44,15 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
 
   async function toggleActivo(lugar: Lugar) {
     const nuevoActivo = !lugar.activo;
-    await supabase.from('lugares').update({ activo: nuevoActivo }).eq('id', lugar.id);
+    const { error } = await supabase.from('lugares').update({ activo: nuevoActivo }).eq('id', lugar.id);
+    if (error) { console.error('Error toggleActivo:', error); alert('Error al guardar Activo: ' + error.message); return; }
     setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, activo: nuevoActivo } : l));
   }
 
   async function toggleSoporte(lugar: Lugar) {
     const nuevoSoporte = !(lugar.soporte !== false);
-    await supabase.from('lugares').update({ soporte: nuevoSoporte }).eq('id', lugar.id);
+    const { error } = await supabase.from('lugares').update({ soporte: nuevoSoporte }).eq('id', lugar.id);
+    if (error) { console.error('Error toggleSoporte:', error); alert('Error al guardar Soporte: ' + error.message); return; }
     setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, soporte: nuevoSoporte } : l));
   }
 
