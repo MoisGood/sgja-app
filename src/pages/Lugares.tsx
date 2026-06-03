@@ -15,7 +15,7 @@ export default function Lugares({ idEstablecimiento }: Props) {
   const [form, setForm] = useState({ nombre: '', zona: 'z-other', jefe: '', piso: 0 });
 
   async function load() {
-    const { data } = await supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('piso').order('nombre');
+    const { data } = await supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('piso').order('nombre');
     if (data) setLugares(data);
     setCargando(false);
   }
@@ -97,8 +97,11 @@ export default function Lugares({ idEstablecimiento }: Props) {
           </thead>
           <tbody>
             {lugares.map(l => (
-              <tr key={l.id} style={{ borderBottom: '1px solid #1e293b' }}>
-                <td style={tdS}>{l.nombre}</td>
+              <tr key={l.id} style={{ borderBottom: '1px solid #1e293b', opacity: l.soporte === false ? 0.45 : 1 }}>
+                <td style={tdS}>
+                  {l.nombre}
+                  {l.soporte === false && <span style={{ marginLeft: 8, fontSize: 10, color: '#ef4444', fontWeight: 600 }}>🔒 Sin soporte</span>}
+                </td>
                 <td style={tdS}>{PISOS[l.piso] || l.piso}</td>
                 <td style={tdS}><span style={{ background: '#1e293b', padding: '2px 6px', borderRadius: 4, fontSize: 11 }}>{l.zona}</span></td>
                 <td style={tdS}>{l.left_pos},{l.top_pos}</td>

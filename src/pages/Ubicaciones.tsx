@@ -33,7 +33,7 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
   async function load() {
     const [ubiRes, lugRes] = await Promise.all([
       supabase.from('ubicaciones').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('dispositivo_nombre'),
-      supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('nombre'),
+      supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
     ]);
     if (ubiRes.data) setUbicaciones(ubiRes.data);
     if (lugRes.data) setLugares(lugRes.data);
@@ -107,7 +107,7 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
               <label style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 2 }}>Lugar</label>
               <select value={form.id_lugar} onChange={e => setForm({ ...form, id_lugar: e.target.value })} style={styleInp}>
                 <option value="">— Seleccionar —</option>
-                {lugares.map(l => <option key={l.id} value={l.id}>{l.nombre} (Piso {l.piso})</option>)}
+                {lugares.map(l => <option key={l.id} value={l.id} disabled={l.soporte === false} style={{ opacity: l.soporte === false ? 0.5 : 1 }}>{l.nombre} (Piso {l.piso}){l.soporte === false ? ' 🔒' : ''}</option>)}
               </select>
             </div>
             <div>

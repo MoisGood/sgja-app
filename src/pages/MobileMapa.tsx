@@ -16,7 +16,7 @@ const itemVariants = {
 
 interface Props { idEstablecimiento: string }
 
-interface Lugar { id: string; nombre: string; piso: number; zona: string }
+interface Lugar { id: string; nombre: string; piso: number; zona: string; soporte?: boolean }
 interface ReqPendiente { id: string; tipo_requerimiento: string; prioridad: string; created_at: string }
 
 const ZONE_COLORS: Record<string, string> = {
@@ -62,8 +62,8 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
       }
 
       // Sync desde Supabase
-      const { data } = await supabase.from('lugares').select('id,nombre,piso,zona')
-        .eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('nombre');
+      const { data } = await supabase.from('lugares').select('id,nombre,piso,zona,soporte')
+        .eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre');
       if (!data) { setCargando(false); return; }
       setLugares(data as Lugar[]);
       const ids = data.map(l => l.id);
@@ -132,22 +132,24 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
                 >
                   {lugaresFiltrados.map(l => {
                     const pends = pendientes(l.id);
+                    const sinSoporte = l.soporte === false;
                     return (
                       <motion.div
                         key={l.id}
                         variants={itemVariants}
                         layout
-                        whileTap={{ scale: 0.98 }}
+                        whileTap={sinSoporte ? {} : { scale: 0.98 }}
                         style={{
                           background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12,
                           overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                          opacity: sinSoporte ? 0.5 : 1,
                         }}
                       >
                         <div
-                          onClick={() => setExpanded(expanded === l.id ? null : l.id)}
+                          onClick={() => { if (sinSoporte) return; setExpanded(expanded === l.id ? null : l.id); }}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
-                            cursor: 'pointer',
+                            cursor: sinSoporte ? 'default' : 'pointer',
                           }}
                         >
                           <span style={{
@@ -155,10 +157,10 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
                             background: ZONE_COLORS[l.zona] || '#6366f1',
                           }} />
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 14, fontWeight: 600, color: '#1F2937' }}>{l.nombre}</div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: sinSoporte ? '#9CA3AF' : '#1F2937' }}>{l.nombre}</div>
                             <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 1 }}>
                               {ZONE_LABELS[l.zona] || l.zona}
-                              {pends.length > 0 && ` · ${pends.length} pendiente${pends.length > 1 ? 's' : ''}`}
+                              {sinSoporte ? ' · 🔒 Sin soporte' : pends.length > 0 && ` · ${pends.length} pendiente${pends.length > 1 ? 's' : ''}`}
                             </div>
                           </div>
                           <motion.span
@@ -175,6 +177,9 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
                             transition={{ duration: 0.2, ease: 'easeOut' }}
                             style={{ padding: '0 14px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}
                           >
+                            {sinSoporte ? (
+                              <div style={{ padding: '10px', fontSize: 12, color: '#ef4444', textAlign: 'center', fontWeight: 500 }}>🔒 Lugar sin soporte activo</div>
+                            ) : (<>
                             <motion.button
                               whileTap={{ scale: 0.95 }}
                               onClick={() => irA(`/ticket?lugar=${l.id}`)}
@@ -219,7 +224,8 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
                                   </span>
                                 )}
                               </div>
-                            )}
+                              )}
+                            </>)}
                           </motion.div>
                         )}
                       </motion.div>

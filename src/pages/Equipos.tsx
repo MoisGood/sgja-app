@@ -29,7 +29,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
   async function load() {
     const [eqRes, lugRes] = await Promise.all([
       supabase.from('equipos').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
-      supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('nombre'),
+      supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
     ]);
     if (eqRes.data) setEquipos(eqRes.data);
     if (lugRes.data) setLugares(lugRes.data);
@@ -234,7 +234,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
               <label style={sLab}>Ubicación</label>
               <select value={form.id_lugar} onChange={e => setForm({ ...form, id_lugar: e.target.value })} style={sInp}>
                 <option value="">— Sin lugar —</option>
-                {lugares.map(l => <option key={l.id} value={l.id}>{l.nombre} (Piso {l.piso})</option>)}
+                {lugares.map(l => <option key={l.id} value={l.id} disabled={l.soporte === false} style={{ opacity: l.soporte === false ? 0.5 : 1 }}>{l.nombre} (Piso {l.piso}){l.soporte === false ? ' 🔒' : ''}</option>)}
               </select>
             </div>
           </div>

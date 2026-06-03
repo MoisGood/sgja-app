@@ -93,7 +93,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
     }
 
     Promise.all([
-      supabase.from('lugares').select('id, nombre, piso').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true),
+      supabase.from('lugares').select('id, nombre, piso, soporte').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
       supabase.from('equipos').select('id, nombre, id_lugar').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
     ]).then(([lugRes, eqRes]) => {
       const todosLugares = (lugRes.data || []) as Lugar[];

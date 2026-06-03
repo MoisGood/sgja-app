@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 interface Props { idEstablecimiento: string }
 
-interface Lugar { id: string; nombre: string; piso: number }
+interface Lugar { id: string; nombre: string; piso: number; soporte?: boolean }
 interface Equipo { id: string; nombre: string; id_lugar?: string }
 interface ReqItem {
   id: string; tipo_requerimiento: string; descripcion: string;
@@ -37,7 +37,7 @@ export default function AccesosRapidos({ idEstablecimiento }: Props) {
 
   function load() {
     Promise.all([
-      supabase.from('lugares').select('id,nombre,piso').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('nombre'),
+      supabase.from('lugares').select('id,nombre,piso,soporte').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
       supabase.from('equipos').select('id,nombre,id_lugar').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
     ]).then(([lugRes, eqRes]) => {
       if (lugRes.data) setLugares(lugRes.data);
@@ -227,7 +227,7 @@ export default function AccesosRapidos({ idEstablecimiento }: Props) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <select value={lugarSel} onChange={e => { setLugarSel(e.target.value); setEquipoSel(''); }} style={sInp}>
             <option value="">📍 Selecciona un lugar</option>
-            {lugares.map(l => <option key={l.id} value={l.id}>{l.nombre} (Piso {l.piso})</option>)}
+            {lugares.map(l => <option key={l.id} value={l.id} disabled={l.soporte === false} style={{ opacity: l.soporte === false ? 0.5 : 1 }}>{l.nombre} (Piso {l.piso}){l.soporte === false ? ' 🔒' : ''}</option>)}
           </select>
           <select value={equipoSel} onChange={e => setEquipoSel(e.target.value)} style={sInp} disabled={!lugarSel}>
             <option value="">🔧 Todos los equipos</option>
