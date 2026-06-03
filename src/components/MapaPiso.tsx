@@ -888,7 +888,7 @@ const [qrExiste, setQrExiste] = useState(false);
                               <span style={{ fontSize: 10, transition: 'transform .15s', transform: isExpanded ? 'rotate(90deg)' : 'none' }}>▶</span>
                               <span style={{ flex: 1 }}>{key} ({count})</span>
                               <button
-                                onClick={async e => { e.stopPropagation(); if (!ui.selected) return; const u = ubicaciones.find(x => x.dispositivo_nombre === key); if (u) { await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id); await cargarUbicaciones(ui.selected.id); } }}
+                                onClick={async e => { e.stopPropagation(); if (!ui.selected) return; const u = ubicaciones.find(x => x.dispositivo_nombre === key); if (!u) return; if (groupEquipos.length > 0 && !confirm(`Hay ${groupEquipos.length} equipo(s) asignado(s) a "${key}". ¿Borrar todo?`)) return; await Promise.all(groupEquipos.map(eq => supabase.from('equipos').update({ activo: false }).eq('id', eq.id))); await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id); await cargarUbicaciones(ui.selected.id); }}
                                 style={{ cursor: 'pointer', fontSize: 13, color: '#1e40af', opacity: 0.4, background: 'none', border: 'none', padding: 0, lineHeight: 1 }}
                                 title="Anular grupo"
                               >✕</button>
