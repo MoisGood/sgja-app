@@ -45,7 +45,7 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
   async function guardar() {
     if (!form.dispositivo_nombre.trim() || !form.id_lugar) return;
     if (editId) {
-      await supabase.from('ubicaciones').update({ cantidad: form.cantidad }).eq('id', editId);
+      await supabase.from('ubicaciones').update({ cantidad: form.cantidad }).eq('id', editId).eq('id_establecimiento', idEstablecimiento);
     } else {
       await supabase.from('ubicaciones').insert({
         id_lugar: form.id_lugar,
@@ -59,9 +59,20 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
     load();
   }
 
-  async function eliminar(id: string) {
-    if (!confirm('¿Eliminar esta asignación?')) return;
-    await supabase.from('ubicaciones').update({ activo: false }).eq('id', id);
+  async function eliminar(u: UbicacionRow & { lugar_nombre?: string; lugar_piso?: number }) {
+    const { data: equipos } = await supabase.from('equipos')
+      .select('id, nombre, tipo_equipo')
+      .eq('id_lugar', u.id_lugar)
+      .eq('id_establecimiento', idEstablecimiento)
+      .eq('activo', true);
+    const matching = (equipos || []).filter(eq => (eq.tipo_equipo || eq.nombre) === u.dispositivo_nombre);
+    if (matching.length > 0) {
+      if (!confirm(`Hay ${matching.length} equipo(s) asignado(s) a "${u.dispositivo_nombre}". ¿Borrar todo?`)) return;
+      await Promise.all(matching.map(eq => supabase.from('equipos').update({ activo: false }).eq('id', eq.id).eq('id_establecimiento', idEstablecimiento)));
+    } else {
+      if (!confirm(`¿Eliminar asignación de "${u.dispositivo_nombre}"?`)) return;
+    }
+    await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id).eq('id_establecimiento', idEstablecimiento);
     load();
   }
 
@@ -168,7 +179,7 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
                   </td>
                   <td style={tdS}>
                     <button onClick={() => editar(u)} style={{ ...styleBtn, padding: '3px 8px', fontSize: 11, marginRight: 4 }}>✏️</button>
-                    <button onClick={() => eliminar(u.id)} style={{ ...styleBtn, padding: '3px 8px', fontSize: 11 }}>🗑️</button>
+                    <button onClick={() => eliminar(u)} style={{ ...styleBtn, padding: '3px 8px', fontSize: 11 }}>🗑️</button>
                   </td>
                 </tr>
               );
