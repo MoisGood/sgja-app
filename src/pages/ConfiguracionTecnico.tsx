@@ -67,8 +67,13 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
   const [lugaresMap, setLugaresMap] = useState<Record<string, string>>({});
   const [equiposMap, setEquiposMap] = useState<Record<string, string>>({});
   const [qrModalId, setQrModalId] = useState<string | null>(null);
-  const [qrPagina, setQrPagina] = useState(0);
   const POR_PAGINA = 10;
+  const [paginaDisp, setPaginaDisp] = useState(0);
+  const [paginaFallas, setPaginaFallas] = useState(0);
+  const [paginaDiag, setPaginaDiag] = useState(0);
+  const [paginaSol, setPaginaSol] = useState(0);
+  const [paginaObs, setPaginaObs] = useState(0);
+  const [qrPagina, setQrPagina] = useState(0);
   const [cargando, setCargando] = useState(true);
   const [editId, setEditId] = useState<string | null>(null);
   const [nombreDisp, setNombreDisp] = useState('');
@@ -280,6 +285,22 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
 
   if (cargando) return <p style={{ color: '#6B7280', padding: 24 }}>⏳ Cargando configuración…</p>;
 
+  function Paginador({ total, pagina, setPagina }: { total: number; pagina: number; setPagina: (n: number) => void }) {
+    if (total <= POR_PAGINA) return null;
+    const totalPag = Math.ceil(total / POR_PAGINA);
+    return (
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', marginTop: 12, paddingTop: 8, borderTop: '1px solid #E5E7EB' }}>
+        <button disabled={pagina === 0} onClick={() => setPagina(pagina - 1)} style={{
+          ...pagBtnStyle, opacity: pagina === 0 ? 0.4 : 1, cursor: pagina === 0 ? 'default' : 'pointer',
+        }}>← Anterior</button>
+        <span style={{ color: '#6B7280', fontSize: 13 }}>Pág. {pagina + 1} de {totalPag}</span>
+        <button disabled={pagina + 1 >= totalPag} onClick={() => setPagina(pagina + 1)} style={{
+          ...pagBtnStyle, opacity: pagina + 1 >= totalPag ? 0.4 : 1, cursor: pagina + 1 >= totalPag ? 'default' : 'pointer',
+        }}>Siguiente →</button>
+      </div>
+    );
+  }
+
   function renderItemList(
     label: string,
     items: DispositivoRow[],
@@ -385,35 +406,40 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
         {/* Tab: Dispositivos */}
         {tab === 'dispositivos' && (
           <Card titulo="📦 Dispositivos" descripcion="Lista maestra de dispositivos del establecimiento.">
-            {renderItemList('Dispositivo', dispositivos, nombreDisp, setNombreDisp, editId, setEditId, guardarDispositivo, eliminarDispositivo, 'Sin dispositivos registrados.')}
+            {renderItemList('Dispositivo', dispositivos.slice(paginaDisp * POR_PAGINA, (paginaDisp + 1) * POR_PAGINA), nombreDisp, setNombreDisp, editId, setEditId, guardarDispositivo, eliminarDispositivo, 'Sin dispositivos registrados.')}
+            <Paginador total={dispositivos.length} pagina={paginaDisp} setPagina={setPaginaDisp} />
           </Card>
         )}
 
         {/* Tab: Fallas */}
         {tab === 'fallas' && (
           <Card titulo="⚠️ Posibles Fallas" descripcion="Catálogo de fallas sugeridas al crear tickets.">
-            {renderItemList('Posible Falla', fallas, nombreFalla, setNombreFalla, editFalla, setEditFalla, guardarFalla, eliminarFalla, 'Sin posibles fallas registradas.')}
+            {renderItemList('Posible Falla', fallas.slice(paginaFallas * POR_PAGINA, (paginaFallas + 1) * POR_PAGINA), nombreFalla, setNombreFalla, editFalla, setEditFalla, guardarFalla, eliminarFalla, 'Sin posibles fallas registradas.')}
+            <Paginador total={fallas.length} pagina={paginaFallas} setPagina={setPaginaFallas} />
           </Card>
         )}
 
         {/* Tab: Diagnósticos */}
         {tab === 'diagnosticos' && (
           <Card titulo="🔍 Diagnósticos" descripcion="Catálogo de diagnósticos predefinidos.">
-            {renderItemList('Diagnóstico', diagnosticos, nombreDiag, setNombreDiag, editDiag, setEditDiag, guardarDiag, eliminarDiag, 'Sin diagnósticos registrados.')}
+            {renderItemList('Diagnóstico', diagnosticos.slice(paginaDiag * POR_PAGINA, (paginaDiag + 1) * POR_PAGINA), nombreDiag, setNombreDiag, editDiag, setEditDiag, guardarDiag, eliminarDiag, 'Sin diagnósticos registrados.')}
+            <Paginador total={diagnosticos.length} pagina={paginaDiag} setPagina={setPaginaDiag} />
           </Card>
         )}
 
         {/* Tab: Soluciones */}
         {tab === 'soluciones' && (
           <Card titulo="✅ Soluciones" descripcion="Catálogo de soluciones frecuentes.">
-            {renderItemList('Solución', soluciones, nombreSol, setNombreSol, editSol, setEditSol, guardarSol, eliminarSol, 'Sin soluciones registradas.')}
+            {renderItemList('Solución', soluciones.slice(paginaSol * POR_PAGINA, (paginaSol + 1) * POR_PAGINA), nombreSol, setNombreSol, editSol, setEditSol, guardarSol, eliminarSol, 'Sin soluciones registradas.')}
+            <Paginador total={soluciones.length} pagina={paginaSol} setPagina={setPaginaSol} />
           </Card>
         )}
 
         {/* Tab: Observaciones */}
         {tab === 'observaciones' && (
           <Card titulo="📝 Observaciones" descripcion="Catálogo de observaciones predefinidas.">
-            {renderItemList('Observación', observaciones, nombreObs, setNombreObs, editObs, setEditObs, guardarObs, eliminarObs, 'Sin observaciones registradas.')}
+            {renderItemList('Observación', observaciones.slice(paginaObs * POR_PAGINA, (paginaObs + 1) * POR_PAGINA), nombreObs, setNombreObs, editObs, setEditObs, guardarObs, eliminarObs, 'Sin observaciones registradas.')}
+            <Paginador total={observaciones.length} pagina={paginaObs} setPagina={setPaginaObs} />
           </Card>
         )}
 
@@ -456,18 +482,7 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
                       );
                     })}
                   </div>
-                  <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', marginTop: 16 }}>
-                    <button disabled={qrPagina === 0} onClick={() => setQrPagina(p => p - 1)} style={{
-                      ...pagBtnStyle, opacity: qrPagina === 0 ? 0.4 : 1, cursor: qrPagina === 0 ? 'default' : 'pointer',
-                    }}>← Anterior</button>
-                    <span style={{ color: '#6B7280', fontSize: 13 }}>
-                      Pág. {qrPagina + 1} de {Math.ceil(qrCodes.length / POR_PAGINA)}
-                    </span>
-                    <button disabled={(qrPagina + 1) * POR_PAGINA >= qrCodes.length} onClick={() => setQrPagina(p => p + 1)} style={{
-                      ...pagBtnStyle, opacity: (qrPagina + 1) * POR_PAGINA >= qrCodes.length ? 0.4 : 1,
-                      cursor: (qrPagina + 1) * POR_PAGINA >= qrCodes.length ? 'default' : 'pointer',
-                    }}>Siguiente →</button>
-                  </div>
+                  <Paginador total={qrCodes.length} pagina={qrPagina} setPagina={setQrPagina} />
                 </>
               )}
             </div>

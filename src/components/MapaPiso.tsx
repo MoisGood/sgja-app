@@ -798,23 +798,36 @@ const [qrExiste, setQrExiste] = useState(false);
                   e.preventDefault();
                   dispatch({ type: 'SET_DROP_HOVER', payload: null });
                   try {
-                    const device = e.dataTransfer.getData('text/plain') || ui.dragDevice || '';
-                    if (!device) return;
+                    let device = e.dataTransfer.getData('text/plain') || ui.dragDevice || '';
+                    if (!device) {
+                      device = prompt('Nombre del dispositivo:') || '';
+                      if (!device) return;
+                    }
                     dispatch({ type: 'SET_DRAG_DEVICE', payload: null });
                     if (!ui.selected) return;
-                    if (!confirm(`¿Asignar "${device}" a ${ui.selected.nombre}?`)) return;
-                    const { error: upsertError } = await supabase.from('ubicaciones').upsert({
-                      dispositivo_nombre: device, id_lugar: ui.selected.id,
-                      id_establecimiento: idEstablecimiento, activo: true, cantidad: 1,
-                    }, { onConflict: 'dispositivo_nombre, id_lugar' });
-                    if (!upsertError) {
-                      await asegurarEquipo(device, idEstablecimiento);
-                      await cargarUbicaciones(ui.selected.id);
-                      await recargarRequerimientos(ui.selected.id);
+                    const q = prompt(`¿Cuántos "${device}" hay en ${ui.selected.nombre}?`, '1');
+                    if (q === null) return;
+                    const n = parseInt(q);
+                    if (isNaN(n) || n < 0) return;
+                    const { error: upsertErr } = await supabase.rpc('upsertar_ubicacion', {
+                      p_id_lugar: ui.selected.id,
+                      p_id_establecimiento: idEstablecimiento,
+                      p_dispositivo_nombre: device,
+                      p_cantidad: n,
+                    });
+                    if (upsertErr) {
+                      const { error: fallbackErr } = await supabase.from('ubicaciones').upsert({
+                        id_lugar: ui.selected.id, id_establecimiento: idEstablecimiento,
+                        dispositivo_nombre: device, cantidad: n, activo: true,
+                      }, { onConflict: 'id_lugar, dispositivo_nombre', ignoreDuplicates: false }).select();
+                      if (fallbackErr) { console.error('Error al guardar ubicación:', fallbackErr); alert('Error al guardar. Revisa consola (F12).'); return; }
                     }
+                    const eqErr = await asegurarEquipo(device, ui.selected.id);
+                    if (eqErr) { console.error('Error al crear equipo:', eqErr); alert('Error al crear el equipo. Revisa consola (F12).'); return; }
+                    await cargarUbicaciones(ui.selected.id);
                   } catch (err: any) {
                     console.error('Error en onDrop equipos:', err);
-                    alert('Error inesperado. Revisa la consola (F12) para más detalles.');
+                    alert('Error inesperado. Revisa consola (F12).');
                   }
                 }}
                 style={{
