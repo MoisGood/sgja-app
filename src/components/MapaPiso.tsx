@@ -300,6 +300,12 @@ const [qrExiste, setQrExiste] = useState(false);
   }, []);
 
   const seleccionarLugar = useCallback(async (lugar: LugarRow) => {
+    if (lugar.soporte === false) {
+      dispatch({ type: 'SET_SELECTED', payload: lugar });
+      dispatch({ type: 'SET_QR_URL', payload: null });
+      dispatch({ type: 'SET_CARGANDO_DETALLE', payload: false });
+      return;
+    }
     dispatch({ type: 'SET_SELECTED', payload: lugar });
     dispatch({ type: 'SET_QR_URL', payload: null });
     dispatch({ type: 'SET_CARGANDO_DETALLE', payload: true });
@@ -319,6 +325,7 @@ const [qrExiste, setQrExiste] = useState(false);
   }, [cargarUbicaciones]);
 
   async function generarQR(lugar: LugarRow) {
+    if (lugar.soporte === false) return;
     if (ui.qrUrl) {
       dispatch({ type: 'SET_QR_URL', payload: null });
       dispatch({ type: 'SET_QR_CODE_STRING', payload: null });
@@ -647,7 +654,16 @@ const [qrExiste, setQrExiste] = useState(false);
                 {ZONE_LABELS[ui.selected.zona] || ui.selected.zona}
               </span>
             </div>
-            <h4 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 600, color: '#1A3C6B' }}>🖥️ Equipos</h4>
+            {ui.selected.soporte === false ? (
+              <div style={{
+                padding: '16px', background: '#FFF3F0', borderRadius: 8,
+                border: '1px solid #FFCDB8', color: '#B43A1C', textAlign: 'center',
+                fontSize: 13, fontWeight: 500,
+              }}>
+                ⛔ Lugar sin soporte activo
+              </div>
+            ) : (
+              <><h4 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 600, color: '#1A3C6B' }}>🖥️ Equipos</h4>
             {equipos.length === 0 ? (
               <p style={{ color: '#9CA3AF', fontSize: 13, padding: '12px 0' }}>Sin equipos asignados</p>
             ) : (
@@ -674,6 +690,7 @@ const [qrExiste, setQrExiste] = useState(false);
                   </div>
                 ))}
               </div>
+            )}</>
             )}
           </div>
         </div>
