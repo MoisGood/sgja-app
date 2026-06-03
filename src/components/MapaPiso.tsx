@@ -888,7 +888,7 @@ const [qrExiste, setQrExiste] = useState(false);
                               <span style={{ fontSize: 10, transition: 'transform .15s', transform: isExpanded ? 'rotate(90deg)' : 'none' }}>▶</span>
                               <span style={{ flex: 1 }}>{key} ({count})</span>
                               <button
-                                onClick={async e => { e.stopPropagation(); if (!ui.selected) return; const u = ubicaciones.find(x => x.dispositivo_nombre === key); if (u) { setUbicaciones(prev => prev.filter(x => x.id !== u.id)); const r = await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id); console.log('grupo X result:', r); if (r.error) alert('Error: ' + JSON.stringify(r.error)); } }}
+                                onClick={async e => { e.stopPropagation(); if (!ui.selected) return; const u = ubicaciones.find(x => x.dispositivo_nombre === key); if (!u && groupEquipos.length === 0) return; if (groupEquipos.length > 0 && !confirm(`Hay ${groupEquipos.length} equipo(s) asignado(s) a "${key}". ¿Borrar todo?`)) return; if (groupEquipos.length > 0) { const ids = new Set(groupEquipos.map(e => e.id)); setEquipos(prev => prev.filter(e => !ids.has(e.id))); await Promise.all(groupEquipos.map(eq => supabase.from('equipos').update({ activo: false }).eq('id', eq.id))); } if (u) { setUbicaciones(prev => prev.filter(x => x.id !== u.id)); await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id); } }}
                                 style={{ cursor: 'pointer', fontSize: 13, color: '#1e40af', opacity: 0.4, background: 'none', border: 'none', padding: 0, lineHeight: 1 }}
                                 title="Anular grupo"
                               >✕</button>
@@ -903,7 +903,7 @@ const [qrExiste, setQrExiste] = useState(false);
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                       <span style={{ fontWeight: 500, color: '#1f2937' }}>{eq.nombre}</span>
                                       <button
-                                        onClick={async e => { e.stopPropagation(); if (!ui.selected) return; if (!confirm(`¿Eliminar "${eq.nombre}"?`)) return; setEquipos(prev => prev.filter(e => e.id !== eq.id)); const r = await supabase.from('equipos').update({ activo: false }).eq('id', eq.id); console.log('equipo X result:', r); if (r.error) alert('Error: ' + JSON.stringify(r.error)); }}
+                                        onClick={async e => { e.stopPropagation(); if (!ui.selected) return; if (!confirm(`¿Quitar "${eq.nombre}" de ${ui.selected.nombre}?`)) return; setEquipos(prev => prev.filter(e => e.id !== eq.id)); await supabase.from('equipos').update({ activo: false }).eq('id', eq.id); const ubic = ubicaciones.find(u => u.dispositivo_nombre === key); if (ubic) { if (ubic.cantidad <= 1) { setUbicaciones(prev => prev.filter(x => x.id !== ubic.id)); await supabase.from('ubicaciones').update({ activo: false }).eq('id', ubic.id); } else { setUbicaciones(prev => prev.map(x => x.id === ubic.id ? { ...x, cantidad: x.cantidad - 1 } : x)); await supabase.from('ubicaciones').update({ cantidad: ubic.cantidad - 1 }).eq('id', ubic.id); } } }}
                                         style={{ cursor: 'pointer', fontSize: 12, color: '#ef4444', opacity: 0.5, background: 'none', border: 'none', padding: '0 2px', lineHeight: 1, fontWeight: 700 }}
                                         title={`Eliminar ${eq.nombre}`}
                                       >✕</button>
