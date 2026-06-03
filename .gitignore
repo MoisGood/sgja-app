@@ -6,3 +6,5 @@ temp/
 *.zip
 .DS_Store
 *.log
+.env
+.env.local
