@@ -45,7 +45,7 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
   async function guardar() {
     if (!form.dispositivo_nombre.trim() || !form.id_lugar) return;
     if (editId) {
-      await supabase.from('ubicaciones').update({ cantidad: form.cantidad }).eq('id', editId).eq('id_establecimiento', idEstablecimiento);
+      await supabase.from('ubicaciones').update({ cantidad: form.cantidad }).eq('id', editId);
     } else {
       await supabase.from('ubicaciones').insert({
         id_lugar: form.id_lugar,
@@ -68,11 +68,11 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
     const matching = (equipos || []).filter(eq => (eq.tipo_equipo || eq.nombre) === u.dispositivo_nombre);
     if (matching.length > 0) {
       if (!confirm(`Hay ${matching.length} equipo(s) asignado(s) a "${u.dispositivo_nombre}". ¿Borrar todo?`)) return;
-      await Promise.all(matching.map(eq => supabase.from('equipos').update({ activo: false }).eq('id', eq.id).eq('id_establecimiento', idEstablecimiento)));
+      await Promise.all(matching.map(eq => supabase.from('equipos').update({ activo: false }).eq('id', eq.id)));
     } else {
       if (!confirm(`¿Eliminar asignación de "${u.dispositivo_nombre}"?`)) return;
     }
-    await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id).eq('id_establecimiento', idEstablecimiento);
+    await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id);
     load();
   }
 
