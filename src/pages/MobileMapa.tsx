@@ -63,7 +63,7 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
 
       // Sync desde Supabase
       const { data } = await supabase.from('lugares').select('id,nombre,piso,zona')
-        .eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre');
+        .eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('nombre');
       if (!data) { setCargando(false); return; }
       setLugares(data as Lugar[]);
       const ids = data.map(l => l.id);

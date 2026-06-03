@@ -91,7 +91,7 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
     setErrorMsg('');
     const [qrRes, lugRes, eqRes] = await Promise.all([
       supabase.from('qr_codes').select('id, codigo, tipo, id_referencia, created_at').eq('activo', true).order('created_at', { ascending: false }),
-      supabase.from('lugares').select('id, nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
+      supabase.from('lugares').select('id, nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true),
       supabase.from('equipos').select('id, nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
     ]);
     if (qrRes.error) { setErrorMsg('QR: ' + qrRes.error.message); return; }

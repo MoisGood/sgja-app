@@ -15,7 +15,7 @@ export default function Lugares({ idEstablecimiento }: Props) {
   const [form, setForm] = useState({ nombre: '', zona: 'z-other', jefe: '', piso: 0 });
 
   async function load() {
-    const { data } = await supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('piso').order('nombre');
+    const { data } = await supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('piso').order('nombre');
     if (data) setLugares(data);
     setCargando(false);
   }

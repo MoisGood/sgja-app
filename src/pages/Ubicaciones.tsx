@@ -33,7 +33,7 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
   async function load() {
     const [ubiRes, lugRes] = await Promise.all([
       supabase.from('ubicaciones').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('dispositivo_nombre'),
-      supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
+      supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('nombre'),
     ]);
     if (ubiRes.data) setUbicaciones(ubiRes.data);
     if (lugRes.data) setLugares(lugRes.data);

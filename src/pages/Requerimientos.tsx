@@ -35,7 +35,7 @@ export default function Requerimientos({ idEstablecimiento }: Props) {
     const [rRes, eqRes, lugRes, fRes, dRes, sRes] = await Promise.all([
       supabase.from('requerimientos').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('created_at', { ascending: false }),
       supabase.from('equipos').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
-      supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
+      supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true),
       supabase.from('posibles_fallas').select('nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
       supabase.from('posibles_diagnosticos').select('nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
       supabase.from('posibles_soluciones').select('nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true),

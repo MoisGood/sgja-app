@@ -341,6 +341,7 @@ export interface Lugar {
   jefe?: string;
   qr_url?: string;
   activo: boolean;
+  soporte?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -527,15 +527,17 @@ const [qrExiste, setQrExiste] = useState(false);
                   const isSelected = ui.selected?.id === l.id;
                   const isDropTarget = ui.dropHover === l.id;
                   const isHovered = ui.hovered === l.id;
+                  const sinSoporte = l.soporte === false;
                   return (
                     <button
                       key={l.id}
                       onMouseEnter={() => dispatch({ type: 'SET_HOVERED', payload: l.id })}
                       onMouseLeave={() => dispatch({ type: 'SET_HOVERED', payload: null })}
                       onClick={() => seleccionarLugar(l)}
-                      onDragOver={e => { e.preventDefault(); dispatch({ type: 'SET_DROP_HOVER', payload: l.id }); }}
+                      onDragOver={e => { if (!sinSoporte) { e.preventDefault(); dispatch({ type: 'SET_DROP_HOVER', payload: l.id }); } }}
                       onDragLeave={() => dispatch({ type: 'SET_DROP_HOVER', payload: null })}
                       onDrop={async e => {
+                        if (sinSoporte) return;
                         e.preventDefault();
                         dispatch({ type: 'SET_DROP_HOVER', payload: null });
                         let device = e.dataTransfer.getData('text/plain') || ui.dragDevice || '';
@@ -560,16 +562,20 @@ const [qrExiste, setQrExiste] = useState(false);
                         left: l.left_pos, top: l.top_pos,
                         width: l.width, height: l.height,
                         border: isSelected ? '2px solid #2563eb' : isDropTarget ? '2px dashed #f59e0b' : isHovered ? '2px solid #fbbf24' : '1px solid rgba(0,0,0,0.1)',
-                        background: ZONE_COLORS[l.zona] || '#6366f1',
-                        color: l.zona === 'patio' || l.zona === 'acceso' ? '#14532d' : '#fff',
+                        background: sinSoporte ? '#e5e7eb' : ZONE_COLORS[l.zona] || '#6366f1',
+                        color: sinSoporte ? '#9ca3af' : l.zona === 'patio' || l.zona === 'acceso' ? '#14532d' : '#fff',
                         boxShadow: isSelected ? '0 0 0 2px rgba(37,99,235,0.3)' : isDropTarget ? '0 0 0 3px rgba(245,158,11,0.5)' : isHovered ? '0 0 8px rgba(251,191,36,0.4)' : 'none',
                         zIndex: isSelected ? 10 : isDropTarget ? 6 : isHovered ? 5 : 1,
+                        cursor: sinSoporte ? 'pointer' : 'pointer',
+                        opacity: sinSoporte ? 0.5 : 1,
                       }}
-                      aria-label={`Lugar: ${l.nombre}. Zona: ${ZONE_LABELS[l.zona] || l.zona}`}
+                      aria-label={`Lugar: ${l.nombre}${sinSoporte ? ' (sin soporte)' : ''}`}
                       aria-pressed={isSelected}
+                      disabled={false}
                     >
                       <span style={STYLES.lugar.text}>
                         {l.nombre}
+                        {sinSoporte && <span style={{ fontSize: 8, display: 'block', opacity: 0.7 }}>sin soporte</span>}
                       </span>
                       {pendientesPorLugar[l.id]?.map((p, i) => (
                         <span
@@ -706,9 +712,18 @@ const [qrExiste, setQrExiste] = useState(false);
               <span style={{ ...STYLES.tag, background: `${ZONE_COLORS[ui.selected.zona] || '#6366f1'}20`, color: ZONE_COLORS[ui.selected.zona] || '#6366f1' }}>
                 {ZONE_LABELS[ui.selected.zona] || ui.selected.zona}
               </span>
+              {ui.selected.soporte === false && (
+                <span style={{ ...STYLES.tag, background: '#fef9c3', color: '#92400e' }}>Sin soporte</span>
+              )}
             </div>
           </div>
 
+          {ui.selected.soporte === false ? (
+            <div style={{ padding: '24px 16px', textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
+              Lugar sin soporte activo — no se pueden crear tickets, generar QR ni asignar dispositivos.
+            </div>
+          ) : (
+            <>
           <div style={{ padding: '12px 16px', display: 'flex', gap: 8, flexWrap: 'wrap', borderBottom: '1px solid #e5e7eb' }}>
             <button onClick={() => ui.selected && generarQR(ui.selected)}
               style={STYLES.button.primary}
@@ -915,6 +930,8 @@ const [qrExiste, setQrExiste] = useState(false);
               </div>
             </>
           )}
+            </>
+          )}  
         </div>
       )}
 

@@ -37,7 +37,7 @@ export default function AccesosRapidos({ idEstablecimiento }: Props) {
 
   function load() {
     Promise.all([
-      supabase.from('lugares').select('id,nombre,piso').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
+      supabase.from('lugares').select('id,nombre,piso').eq('id_establecimiento', idEstablecimiento).eq('activo', true).eq('soporte', true).order('nombre'),
       supabase.from('equipos').select('id,nombre,id_lugar').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
     ]).then(([lugRes, eqRes]) => {
       if (lugRes.data) setLugares(lugRes.data);

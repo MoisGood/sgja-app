@@ -7,6 +7,7 @@ export interface LugarRow {
   top_pos: number;
   width: number;
   height: number;
+  soporte?: boolean;
 }
 
 export interface EquipoRow {

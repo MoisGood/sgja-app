@@ -48,6 +48,12 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
     setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, activo: nuevoActivo } : l));
   }
 
+  async function toggleSoporte(lugar: Lugar) {
+    const nuevoSoporte = !(lugar.soporte !== false);
+    await supabase.from('lugares').update({ soporte: nuevoSoporte }).eq('id', lugar.id);
+    setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, soporte: nuevoSoporte } : l));
+  }
+
   if (cargando) return <p style={{ color: '#6b7280' }}>⏳ Cargando ubicaciones…</p>;
 
   return (
@@ -111,7 +117,8 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
                 <tr style={{ background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' }}>
                   <th style={thS}>Nombre del lugar</th>
                   <th style={thS}>Piso</th>
-                  <th style={{ ...thS, width: 80, textAlign: 'center' }}>Activo</th>
+                  <th style={{ ...thS, width: 70, textAlign: 'center' }}>Activo</th>
+                  <th style={{ ...thS, width: 70, textAlign: 'center' }}>Soporte</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,10 +139,23 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
                         {l.activo ? 'Sí' : 'No'}
                       </button>
                     </td>
+                    <td style={{ ...tdS, textAlign: 'center' }}>
+                      <button
+                        onClick={() => toggleSoporte(l)}
+                        style={{
+                          padding: '4px 12px', borderRadius: 6, border: 'none',
+                          background: l.soporte !== false ? '#dcfce7' : '#fef9c3',
+                          color: l.soporte !== false ? '#166534' : '#92400e',
+                          fontSize: 12, cursor: 'pointer', fontWeight: 500,
+                        }}
+                      >
+                        {l.soporte !== false ? 'Sí' : 'No'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
-                {paginados.length === 0 && (
-                  <tr><td colSpan={3} style={{ textAlign: 'center', padding: 32, color: '#9ca3af' }}>Sin ubicaciones</td></tr>
+                  {paginados.length === 0 && (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: 32, color: '#9ca3af' }}>Sin ubicaciones</td></tr>
                 )}
               </tbody>
             </table>
