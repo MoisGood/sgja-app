@@ -888,7 +888,7 @@ const [qrExiste, setQrExiste] = useState(false);
                               <span style={{ fontSize: 10, transition: 'transform .15s', transform: isExpanded ? 'rotate(90deg)' : 'none' }}>▶</span>
                               <span style={{ flex: 1 }}>{key} ({count})</span>
                               <button
-                                onClick={async e => { e.stopPropagation(); if (!ui.selected) return; const u = ubicaciones.find(x => x.dispositivo_nombre === key); if (u) { const { error } = await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id); if (error) { alert('Error: ' + JSON.stringify(error)); return; } await cargarUbicaciones(ui.selected.id); } }}
+                                onClick={async e => { e.stopPropagation(); if (!ui.selected) return; const u = ubicaciones.find(x => x.dispositivo_nombre === key); if (u) { setUbicaciones(prev => prev.filter(x => x.id !== u.id)); await supabase.from('ubicaciones').update({ activo: false }).eq('id', u.id); } }}
                                 style={{ cursor: 'pointer', fontSize: 13, color: '#1e40af', opacity: 0.4, background: 'none', border: 'none', padding: 0, lineHeight: 1 }}
                                 title="Anular grupo"
                               >✕</button>
@@ -903,7 +903,7 @@ const [qrExiste, setQrExiste] = useState(false);
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                       <span style={{ fontWeight: 500, color: '#1f2937' }}>{eq.nombre}</span>
                                       <button
-                                        onClick={async e => { e.stopPropagation(); if (!ui.selected) return; if (!confirm(`¿Eliminar "${eq.nombre}"?`)) return; const { error } = await supabase.from('equipos').update({ activo: false }).eq('id', eq.id); if (error) { alert('Error: ' + JSON.stringify(error)); return; } await cargarUbicaciones(ui.selected.id); }}
+                                        onClick={async e => { e.stopPropagation(); if (!ui.selected) return; if (!confirm(`¿Eliminar "${eq.nombre}"?`)) return; setEquipos(prev => prev.filter(e => e.id !== eq.id)); await supabase.from('equipos').update({ activo: false }).eq('id', eq.id); }}
                                         style={{ cursor: 'pointer', fontSize: 12, color: '#ef4444', opacity: 0.5, background: 'none', border: 'none', padding: '0 2px', lineHeight: 1, fontWeight: 700 }}
                                         title={`Eliminar ${eq.nombre}`}
                                       >✕</button>

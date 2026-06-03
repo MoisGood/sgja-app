@@ -45,6 +45,7 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
   async function guardar() {
     if (!form.dispositivo_nombre.trim() || !form.id_lugar) return;
     if (editId) {
+      setUbicaciones(prev => prev.map(u => u.id === editId ? { ...u, cantidad: form.cantidad } : u));
       await supabase.from('ubicaciones').update({ cantidad: form.cantidad }).eq('id', editId);
     } else {
       await supabase.from('ubicaciones').insert({
@@ -53,18 +54,16 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
         dispositivo_nombre: form.dispositivo_nombre,
         cantidad: form.cantidad,
       });
+      load();
     }
     setShowForm(false); setEditId(null);
     setForm({ id_lugar: '', dispositivo_nombre: '', cantidad: 1 });
-    load();
   }
 
   async function eliminar(id: string) {
     if (!confirm('¿Eliminar esta asignación?')) return;
-    const r = await supabase.from('ubicaciones').update({ activo: false }).eq('id', id);
-    if (r.error) { alert('Error: ' + JSON.stringify(r.error)); return; }
-    if (r.status === 204 || r.status === 200) { load(); }
-    else { alert('Status inesperado: ' + r.status + ' ' + r.statusText); }
+    setUbicaciones(prev => prev.filter(u => u.id !== id));
+    await supabase.from('ubicaciones').update({ activo: false }).eq('id', id);
   }
 
   function editar(u: UbicacionRow & { lugar_nombre?: string; lugar_piso?: number }) {
