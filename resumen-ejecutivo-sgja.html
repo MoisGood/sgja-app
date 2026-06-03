@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SGJA — Resumen Ejecutivo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #F0F4F8; color: #1A202C; line-height: 1.6; }
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 28px; color: #1A3C6B; margin-bottom: 4px; }
+  .fecha { color: #6B7280; font-size: 14px; margin-bottom: 24px; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-right: 4px; }
+  .tag-critico { background: #FEE2E2; color: #DC2626; }
+  .tag-importante { background: #FEF3C7; color: #D97706; }
+  .tag-mejora { background: #DBEAFE; color: #2563EB; }
+  .tag-opcional { background: #E5E7EB; color: #6B7280; }
+  .tag-hecho { background: #D1FAE5; color: #059669; }
+  .card { background: #FFF; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card h2 { font-size: 16px; font-weight: 700; color: #1A3C6B; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #E5E7EB; }
+  .card h3 { font-size: 14px; font-weight: 600; color: #374151; margin: 12px 0 6px; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 4px 0; font-size: 13.5px; position: relative; padding-left: 16px; }
+  li::before { content: "•"; position: absolute; left: 4px; color: #1A3C6B; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .badge-critico { background: #FEE2E2; color: #DC2626; }
+  .badge-nuevo { background: #DBEAFE; color: #1D4ED8; }
+  .badge-hecho { background: #D1FAE5; color: #059669; }
+  .badge-gratis { background: #F3E8FF; color: #7C3AED; }
+  .badge-limitado { background: #FFF7ED; color: #C2410C; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #E5E7EB; }
+  th { font-weight: 600; color: #6B7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .wrapper { margin-bottom: 24px; }
+  @media (max-width: 640px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>📋 SGJA — Resumen Ejecutivo</h1>
+<p class="fecha">19–23 Mayo 2026 · Análisis general del sistema</p>
+
+<!-- ============ ESTADO DEL PROYECTO ============ -->
+<div class="card">
+  <h2>📌 Estado del Proyecto</h2>
+  <div class="grid3">
+    <div><span class="badge badge-hecho">✅ Hecho</span><br><small>Justificaciones, Biblioteca, Auto-logout, Cache, PWA, Sistema de correos, Plantillas, Contactos</small></div>
+    <div><span class="badge badge-critico">🔴 Crítico</span><br><small>Paginación en 3 mantenedores, MantenedorFuncionarios incompleto, Ruta PROFESOR inconsistente</small></div>
+    <div><span class="badge badge-nuevo">🆕 Planificado</span><br><small>2FA/MFA, Detección de sesiones, Edge Functions, Re-verify timer, Content filter</small></div>
+  </div>
+</div>
+
+<!-- ============ MÓDULOS EXISTENTES ============ -->
+<div class="card">
+  <h2>🏗️ Módulos Existentes</h2>
+  <div class="grid2">
+    <div>
+      <h3>Biblioteca</h3>
+      <ul>
+        <li>Catálogo, Préstamos, Devoluciones, Renovaciones</li>
+        <li>Email de vencimiento, Multas, Suspensiones</li>
+        <li>✅ Completo — 6 rutas operativas</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Secretaría</h3>
+      <ul>
+        <li>Ausentes, Enviar Correo, Plantillas, Contactos</li>
+        <li>Variables solo <code>{{rut}}</code>, autocomplete destinatario</li>
+        <li>⚠️ MantenedorFuncionarios con TODOs pendientes</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Justificaciones</h3>
+      <ul>
+        <li>Registrar, Ver, Pases, Atrasos — multi-rol</li>
+        <li>⚠️ PROFESOR tiene acceso en código pero no en sidebar</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Seguridad / Administración</h3>
+      <ul>
+        <li>Roles, Permisos, Inactividad (12-15min auto-logout)</li>
+        <li>Monitoreo-correos, Monitoreo-fallos, Técnico</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NUEVAS FUNCIONALIDADES PLANIFICADAS ============ -->
+<div class="card">
+  <h2>🆕 Funcionalidades Incorporadas (Mayo 23)</h2>
+  <div class="grid2">
+    <div>
+      <h3>✅ Ya implementado</h3>
+      <ul>
+        <li><span class="tag tag-hecho">Hecho</span> MFA/2FA — QR + verify con Supabase Auth TOTP</li>
+        <li><span class="tag tag-hecho">Hecho</span> MFA obligatorio por rol en página Seguridad</li>
+        <li><span class="tag tag-hecho">Hecho</span> Re-verify timer (2FA antes de enviar email si expiró)</li>
+        <li><span class="tag tag-hecho">Hecho</span> Content filter (palabras bloqueadas por categoría)</li>
+        <li><span class="tag tag-hecho">Hecho</span> Duplicate tab detection (BroadcastChannel API)</li>
+        <li><span class="tag tag-hecho">Hecho</span> Modal blocker con botón "Cerrar pestaña"</li>
+      </ul>
+    </div>
+    <div>
+      <h3>📋 Analizado / Por definir</h3>
+      <ul>
+        <li><span class="tag tag-importante">En análisis</span> **Detección multi-dispositivo** — saber si abrieron desde otro navegador o celular</li>
+        <li><span class="tag tag-importante">En análisis</span> **Edge Functions** — para soporte (cerrar sesiones remotas), correo server-side, auditoría</li>
+        <li><span class="tag tag-importante">En análisis</span> **Supabase Realtime vs tabla directa** — cómo notificar sesiones duplicadas entre dispositivos sin consumir cuota free</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DECISIONES DE ARQUITECTURA ============ -->
+<div class="card">
+  <h2>🏛️ Decisiones de Arquitectura (Discutidas)</h2>
+
+  <h3>Detección de sesiones entre navegadores/dispositivos</h3>
+  <table>
+    <tr><th>Enfoque</th><th>Costo</th><th>Pros</th><th>Contras</th></tr>
+    <tr>
+      <td><strong>Tabla Supabase directa</strong><br><small>upsert + SELECT cada 30s</small></td>
+      <td><span class="badge badge-gratis">$0</span></td>
+      <td>Simple, 0 infraestructura, funcional</td>
+      <td>Cada ~30s hace 1 write + 1 read (100 usuarios activos ~13 ops/s)</td>
+    </tr>
+    <tr>
+      <td><strong>Supabase Realtime</strong><br><small>Canal WebSocket por usuario</small></td>
+      <td><span class="badge badge-gratis">$0</span></td>
+      <td>Notificación inmediata, elegante</td>
+      <td>Hasta 100 canales simultáneos en plan free</td>
+    </tr>
+    <tr>
+      <td><strong>Edge Function + DB</strong></td>
+      <td><span class="badge badge-limitado">Limitado</span></td>
+      <td>Puede cerrar sesiones con service_role</td>
+      <td>Heartbeat cada 30s × 100 usuarios = excede 500k/mes free</td>
+    </tr>
+    <tr>
+      <td><strong>fly.io (WebSockets)</strong></td>
+      <td><span class="badge badge-limitado">$</span></td>
+      <td>Control total</td>
+      <td>Servidor extra, mantenimiento, costo</td>
+    </tr>
+  </table>
+
+  <h3>Cuándo usar Edge Functions (resuelto)</h3>
+  <ul>
+    <li>✅ **Soporte** — cerrar sesión de un usuario específico (uso ocasional, no supera límite)</li>
+    <li>✅ **Envío de correos** — `/api/send-email` server-side con credenciales de `email_config`</li>
+    <li>✅ **Auditoría** — registrar acciones con UID real, bypass RLS</li>
+    <li>✅ **Webhooks** — notificar APIs externas (ministerio, etc.)</li>
+    <li>❌ **No usar para heartbeat/ping de sesiones** — muy caro en cuota</li>
+  </ul>
+</div>
+
+<!-- ============ CONSUMO Y COSTOS ============ -->
+<div class="card">
+  <h2>💰 Consumo y Costos (Proyección)</h2>
+  <table>
+    <tr><th>Componente</th><th>Plan Actual</th><th>100 usuarios (estimado)</th><th>¿Alcanza?</th></tr>
+    <tr><td>Supabase rows</td><td>50,000/mes</td><td>~15,000 (con paginación)</td><td>✅ Sí</td></tr>
+    <tr><td>Supabase bandwidth</td><td>2 GB</td><td>~500 MB</td><td>✅ Sí</td></tr>
+    <tr><td>Supabase Realtime</td><td>100 canales</td><td>~100 canales</td><td>⚠️ Al límite</td></tr>
+    <tr><td>Vercel invocations</td><td>100,000/mes</td><td>~1,000 (API send-email + SSR)</td><td>✅ Sí</td></tr>
+    <tr><td>Edge Functions</td><td>500,000/mes</td><td>~20,000 (solo uso ocasional/soporte)</td><td>✅ Sí</td></tr>
+  </table>
+  <p style="margin-top:8px;font-size:13px;color:#6B7280;">⚠️ Sin paginación en 3 mantenedores se multiplican los rows consumidos. Prioridad crítica.</p>
+</div>
+
+<!-- ============ PRIORIDADES ============ -->
+<div class="card">
+  <h2>🎯 Prioridades de Desarrollo</h2>
+  <div class="grid3">
+    <div>
+      <h3>🔴 Crítico (Corto plazo)</h3>
+      <ul>
+        <li>Paginación en Cursos, Funcionarios, Motivos</li>
+        <li>Completar MantenedorFuncionarios</li>
+        <li>Corregir ruta PROFESOR (sidebar vs AppContent)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>🟡 Importante (Mediano plazo)</h3>
+      <ul>
+        <li>Detección sesiones multi-dispositivo</li>
+        <li>Responsive móvil dashboards</li>
+        <li>Ubicaciones y categorías estructuradas (Biblioteca)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>🟢 Mejora (Largo plazo)</h3>
+      <ul>
+        <li>Edge Functions para soporte/auditoría</li>
+        <li>Reportes y estadísticas</li>
+        <li>Carga masiva CSV estudiantes</li>
+        <li>Log de accesos</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DIAGRAMA DE DECISIÓN ============ -->
+<div class="card">
+  <h2>🧭 Hoja de Ruta — Sesiones Remotas</h2>
+  <div style="font-family:monospace;font-size:13px;background:#F9FAFB;padding:16px;border-radius:8px;line-height:2;">
+    ¿Detectar entre navegadores?<br>
+    │<br>
+    ├─ ❌ No → BroadcastChannel (ya implementado, $0, solo misma ventana)<br>
+    │<br>
+    ├─ ✅ Sí, solo mostrar aviso → Tabla Supabase (upsert+SELECT, $0)<br>
+    │   └── Pendiente: implementar heartbeats cada 30s<br>
+    │<br>
+    └─ ✅ Sí, cerrar sesión remota → Edge Function + Tabla<br>
+        └── Requiere: service_role, función en Supabase<br>
+        └── Uso: solo para soporte (ocasional, < 500k/mes)<br>
+        <br>
+    Decisión final: <strong>Tabla directa + Edge Function ocasional</strong>
+  </div>
+</div>
+
+<!-- ============ RIESGOS ============ -->
+<div class="card">
+  <h2>⚠️ Riesgos Identificados</h2>
+  <ul>
+    <li><span class="tag tag-critico">Alto</span> Sin paginación en 3 mantenedores → Supabase puede llegar al límite de 50k rows</li>
+    <li><span class="tag tag-critico">Alto</span> Sin RLS en tablas → cualquier request autenticado accede a todas las tablas</li>
+    <li><span class="tag tag-importante">Medio</span> Dashboard Profesor: 8 queries simultáneas → posible lentitud</li>
+    <li><span class="tag tag-importante">Medio</span> 2FA implementado pero falta probar recovery (códigos de respaldo)</li>
+    <li><span class="tag tag-mejora">Bajo</span> Sin monitoreo (Vercel Analytics, Sentry) → ciegos ante errores reales</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

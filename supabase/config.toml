@@ -1,0 +1,4 @@
+[auth]
+enabled = true
+site_url = "https://sgja-app-blue.vercel.app"
+additional_redirect_urls = ["https://sgja-app.vercel.app/**", "https://sgja-app-blue.vercel.app/**", "http://localhost:5173/**", "http://localhost:5174/**"]

@@ -1,0 +1,2035 @@
+{
+  "usuarios": [
+    {
+      "id": "203aLdGYTedycIAqNGHgRYRlPKO2",
+      "id_usuario": "203aLdGYTedycIAqNGHgRYRlPKO2",
+      "email": "moises.zepedar@andaliensur.cl",
+      "nombre_completo": "Moi",
+      "rol": "PROFESOR",
+      "id_establecimiento": "est001",
+      "activo": true,
+      "foto_url": null,
+      "fecha_creacion": "2026-03-24T17:15:34.352Z"
+    },
+    {
+      "id": "4DW4jB6eVvWof4h6djbWvfGgbuh1",
+      "id_usuario": "4DW4jB6eVvWof4h6djbWvfGgbuh1",
+      "email": "soymoizelo@gmail.com",
+      "nombre_completo": "Mois",
+      "id_establecimiento": "est001",
+      "foto_url": null,
+      "fecha_creacion": "2026-03-28T02:10:15.719Z",
+      "activo": true,
+      "rol": "ADMIN"
+    },
+    {
+      "id": "Bg9RUgCRrEcSSKVrU2eW5PngIwr1",
+      "id_usuario": "Bg9RUgCRrEcSSKVrU2eW5PngIwr1",
+      "email": "moiseszepedar@gmail.com",
+      "nombre_completo": "Inspector Moi",
+      "id_establecimiento": "est001",
+      "activo": true,
+      "foto_url": null,
+      "fecha_creacion": "2026-03-31T02:18:19.060Z",
+      "rol": "PROFESOR"
+    },
+    {
+      "id": "FQiBt92jG0XQNGD1oG1IEMk7Xtp1",
+      "id_usuario": "FQiBt92jG0XQNGD1oG1IEMk7Xtp1",
+      "email": "soportetipresente@gmail.com",
+      "nombre_completo": "Administrador CRAReservas",
+      "foto_url": null,
+      "rol": "ADMIN",
+      "activo": true,
+      "created_at": {
+        "_seconds": 1773673364,
+        "_nanoseconds": 986000000
+      },
+      "updated_at": {
+        "_seconds": 1773673364,
+        "_nanoseconds": 986000000
+      },
+      "id_establecimiento": "est001"
+    },
+    {
+      "id": "admin001",
+      "email": "admin@sgja.cl",
+      "nombre_completo": "Administrador Sistema",
+      "rol": "ADMIN",
+      "id_establecimiento": "est001",
+      "activo": true,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 345000000
+      }
+    },
+    {
+      "id": "apoderado001",
+      "email": "apoderado@sgja.cl",
+      "nombre_completo": "María González López",
+      "rol": "APODERADO",
+      "id_establecimiento": "est001",
+      "activo": true,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 615000000
+      }
+    },
+    {
+      "id": "estudiante001",
+      "email": "estudiante@sgja.cl",
+      "nombre_completo": "Juan Pérez González",
+      "rol": "ESTUDIANTE",
+      "id_establecimiento": "est001",
+      "activo": true,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 568000000
+      }
+    },
+    {
+      "id": "inspector001",
+      "email": "inspector@sgja.cl",
+      "nombre_completo": "Inspector Educacional",
+      "rol": "INSPECTOR",
+      "id_establecimiento": "est001",
+      "activo": true,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 449000000
+      }
+    },
+    {
+      "id": "profesor001",
+      "email": "profesor@sgja.cl",
+      "nombre_completo": "Profesor de Matemáticas",
+      "rol": "PROFESOR",
+      "id_establecimiento": "est001",
+      "activo": true,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 505000000
+      }
+    }
+  ],
+  "estudiantes": [
+    {
+      "id": "1N636h9I9rG4gKEU6TCt",
+      "id_establecimiento": "est001",
+      "rut": "31234568-9",
+      "nombre_completo": "Joaquín Gallardo Fernández",
+      "curso": "1D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_c2ya0zqb9",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "1i8AMdZWCGbHHejssrxt",
+      "id_establecimiento": "est001",
+      "rut": "15654321-3",
+      "nombre_completo": "Daniela Sepúlveda López",
+      "curso": "2D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_n3ewk47zg",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "29gbOpZbnkXzRbiziWIF",
+      "id_establecimiento": "est001",
+      "rut": "3210987-5",
+      "nombre_completo": "Paula Espinoza Pérez",
+      "curso": "4B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_l8eokyuac",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "2cXQBGomQrWFc6gRkPoQ",
+      "id_establecimiento": "est001",
+      "rut": "16234589-7",
+      "nombre_completo": "Lucas Herrera Soto",
+      "curso": "4C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427264_5cflsu93l",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "3oFDJw46fxVeMAgQiuH0",
+      "id_establecimiento": "est001",
+      "rut": "13456789-6",
+      "nombre_completo": "Benjamín Castro Díaz",
+      "curso": "2B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_mrr0tvv3j",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "3q5Y2vd9rHaTZp1z6upD",
+      "id_establecimiento": "est001",
+      "rut": "39012346-8",
+      "nombre_completo": "Maximiliano Ulloa Díaz",
+      "curso": "1C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427271_sz6k73ue7",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "3ztxSK8hL607KVFh4T4b",
+      "id_establecimiento": "est001",
+      "rut": "25789012-3",
+      "nombre_completo": "Maximiliano Ortiz Soto",
+      "curso": "2C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_8wpyy3y72",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "48OHjYP2cS1CpUXy7ccP",
+      "id_establecimiento": "est001",
+      "rut": "18321098-2",
+      "nombre_completo": "Simón Escobar Castillo",
+      "curso": "3B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_q2sfo5y4n",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "59jo02WxYJaNymGbKyNX",
+      "id_establecimiento": "est001",
+      "rut": "25345678-3",
+      "nombre_completo": "Carlos Martínez Silva",
+      "curso": "3A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427264_lh8zivr0c",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "5ZmLncV92IT0gj3JzRZX",
+      "id_establecimiento": "est001",
+      "rut": "17345689-9",
+      "nombre_completo": "Agustín Morales Vargas",
+      "curso": "3C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_8rd7pt3nt",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "5r3tIsfkCxuANMFkBbOo",
+      "id_establecimiento": "est001",
+      "rut": "8765432-6",
+      "nombre_completo": "Felipe Reyes Fernández",
+      "curso": "1C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_v7dqolvp6",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "6Tu3PwS7yWKJfqMKbOVV",
+      "id_establecimiento": "est001",
+      "rut": "17890124-0",
+      "nombre_completo": "Ignacio León Morales",
+      "curso": "3C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_zjk7sljzd",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "77gWNeiaa4MjlbRkoVTm",
+      "id_establecimiento": "est001",
+      "rut": "19234567-8",
+      "nombre_completo": "Tomás Fuentes Rojas",
+      "curso": "1C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427264_0kcap8yqg",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "7vEchZafOsERpYjUd2vV",
+      "id_establecimiento": "est001",
+      "rut": "20109876-1",
+      "nombre_completo": "Iván Toledo Soto",
+      "curso": "1D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_cjasue08c",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "7xLI2GJsnwRiM90U9yr6",
+      "id_establecimiento": "est001",
+      "rut": "10345678-9",
+      "nombre_completo": "Nicolás Vargas Morales",
+      "curso": "3A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_b9cy9ru6j",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "9Csi8pyyHhSmIwdSPIA3",
+      "id_establecimiento": "est001",
+      "rut": "2109876-2",
+      "nombre_completo": "Rodrigo Bustos Rojas",
+      "curso": "3D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_aufs0457w",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "A8bhDh9gwIKSPpowNy3y",
+      "id_establecimiento": "est001",
+      "rut": "24678901-6",
+      "nombre_completo": "Florencia Araya Muñoz",
+      "curso": "1D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_3xbq7pl9p",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "AYnWDEXlEMDPZHZNA0yV",
+      "id_establecimiento": "est001",
+      "rut": "25654321-5",
+      "nombre_completo": "Laura Zúñiga Torres",
+      "curso": "4D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_j5s014nzz",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "AevN4WdUwHFGiFxVvod7",
+      "id_establecimiento": "est001",
+      "rut": "25123456-1",
+      "nombre_completo": "Juan García López",
+      "curso": "4A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427263_81z24856f",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "ArCp2pYsGCtb7ZLNdsEz",
+      "id_establecimiento": "est001",
+      "rut": "13456780-8",
+      "nombre_completo": "Andrés Riquelme Rojas",
+      "curso": "3B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_dbyqwd7xc",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "BhOdR3zAoDG8LF9Zy20S",
+      "id_establecimiento": "est001",
+      "rut": "6543210-4",
+      "nombre_completo": "Pablo Maldonado Castillo",
+      "curso": "3C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_p3e4n9l90",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "D8ED5OD2LKUjG9vDCtw6",
+      "id_establecimiento": "est001",
+      "rut": "7654321-8",
+      "nombre_completo": "Camila Peña Herrera",
+      "curso": "4D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_eq025ziqc",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "DlM9bDVI1FIRMMhJYHan",
+      "id_establecimiento": "est001",
+      "rut": "26890123-9",
+      "nombre_completo": "Catalina Bravo Pérez",
+      "curso": "4A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_mghford5b",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "FAOYUG47Ct6Q5KefXnJh",
+      "id_establecimiento": "est001",
+      "rut": "23567890-1",
+      "nombre_completo": "Vicente Méndez Castillo",
+      "curso": "3D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_6pgdoaw0d",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "FaYykRyfwBSBluDpod0V",
+      "id_establecimiento": "est001",
+      "rut": "1098765-0",
+      "nombre_completo": "Andrea Parra Silva",
+      "curso": "2C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_ajai42bf3",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "GK3eNiu5L1F2uEMRYfoE",
+      "id_establecimiento": "est001",
+      "rut": "27890124-6",
+      "nombre_completo": "Matías Zamorano Díaz",
+      "curso": "1B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_xur0q1f3j",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "GwHQVjstVFPgcF2zWy5c",
+      "id_establecimiento": "est001",
+      "rut": "20123456-7",
+      "nombre_completo": "Isidora Vega López",
+      "curso": "1B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_o6aqd4hfy",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "Ib92eVUXM84XcFw0uQPk",
+      "id_establecimiento": "est001",
+      "rut": "30234567-2",
+      "nombre_completo": "Daniela Godoy Torres",
+      "curso": "4C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_7ku9a3b7l",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "IlJbYCoDb0UQF8rco9o1",
+      "id_establecimiento": "est001",
+      "rut": "21234568-6",
+      "nombre_completo": "Tomás Ríos Castillo",
+      "curso": "3A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_ixgbcr8tv",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "JGwQDPIt7j4WCFFgex81",
+      "id_establecimiento": "est001",
+      "rut": "36789013-1",
+      "nombre_completo": "Emilia Donoso Pérez",
+      "curso": "4D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427271_b82lhsa36",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "MjCg17Md3zsAQIPDaK8y",
+      "id_establecimiento": "est001",
+      "rut": "15678902-1",
+      "nombre_completo": "Felipe Bustos Díaz",
+      "curso": "1D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_n1l0hp218",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "P9UMtzRbrHoLAmA1OCLJ",
+      "id_establecimiento": "est001",
+      "rut": "19210987-4",
+      "nombre_completo": "Ángela Yáñez Muñoz",
+      "curso": "2A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_hdg50jbwh",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "PEYuob4Bzq2D7Ijwgy8S",
+      "id_establecimiento": "est001",
+      "rut": "13876543-7",
+      "nombre_completo": "Karla Valdés Torres",
+      "curso": "4A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_s0qynziyo",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "PrBUKcykZNvmc08CopBo",
+      "id_establecimiento": "est001",
+      "rut": "28901235-4",
+      "nombre_completo": "Fernanda Cuevas Torres",
+      "curso": "4C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_9c4k3ssjw",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "R8dtJSLf0oDPV5BMFTXa",
+      "id_establecimiento": "est001",
+      "rut": "9876543-3",
+      "nombre_completo": "Constanza Tapia López",
+      "curso": "2B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_7by31qg3c",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "ROijQunaBnQUmMsBjQ3B",
+      "id_establecimiento": "est001",
+      "rut": "23876543-0",
+      "nombre_completo": "Daniela Farías Silva",
+      "curso": "2B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_sw48uaxi1",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "SIcEjQnzTrXtEnAmHTL6",
+      "id_establecimiento": "est001",
+      "rut": "30123457-5",
+      "nombre_completo": "Isidora Henríquez López",
+      "curso": "2A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_6vc7mrrgz",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "SUCAfJ2ZpGqYwDC3XAKF",
+      "id_establecimiento": "est001",
+      "rut": "25678902-9",
+      "nombre_completo": "Nicolás Fuenzalida Rojas",
+      "curso": "3D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_7c04yg161",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "TFqDEGJPGc38ftibHvWN",
+      "id_establecimiento": "est001",
+      "rut": "30109876-4",
+      "nombre_completo": "Claudio Olivares Castillo",
+      "curso": "3A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_7x8i60zhd",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "TrGnTz15rt8exBlBh1F3",
+      "id_establecimiento": "est001",
+      "rut": "28012345-8",
+      "nombre_completo": "Fernanda Carrasco Silva",
+      "curso": "2D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_qi8z5gsfa",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "VFZgPTDOZ1AAJHRQgQ1M",
+      "id_establecimiento": "est001",
+      "rut": "26543210-1",
+      "nombre_completo": "Rafael Cornejo Morales",
+      "curso": "3D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_emv4wy1ca",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "VJHIf0eEQrkjPTeS0MhD",
+      "id_establecimiento": "est001",
+      "rut": "24567891-0",
+      "nombre_completo": "Antonia Carrillo Pérez",
+      "curso": "4A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_cjoqtk3ax",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "VsyRzhvbOdZWUyOjS2M9",
+      "id_establecimiento": "est001",
+      "rut": "12345679-3",
+      "nombre_completo": "Camila Navarro Pérez",
+      "curso": "4C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_45i0nhr8h",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "WGIhCznZ4faUUl160280",
+      "id_establecimiento": "est001",
+      "rut": "17432109-6",
+      "nombre_completo": "Marcela Quiroz Herrera",
+      "curso": "4C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_yxueorgsm",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "WIGOLUDqoqOnxPog9LQo",
+      "id_establecimiento": "est001",
+      "rut": "12987654-1",
+      "nombre_completo": "Esteban Saavedra Díaz",
+      "curso": "1B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_bpdb63d2u",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "WIkOXG3xO2yze9CRr3qv",
+      "id_establecimiento": "est001",
+      "rut": "32345679-4",
+      "nombre_completo": "Martina Valenzuela Herrera",
+      "curso": "4B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_qnzskhc0y",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "XBsCh1RAnFZp8OGPCiMj",
+      "id_establecimiento": "est001",
+      "rut": "35678902-6",
+      "nombre_completo": "Lucas Villagra Soto",
+      "curso": "1A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427271_gjjewswds",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "ZvsGQNnd4NhJtRF18Ci6",
+      "id_establecimiento": "est001",
+      "rut": "18901235-7",
+      "nombre_completo": "Daniela Mella López",
+      "curso": "2B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_rrwue9fdv",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "bfE4no670sER33PBLCLQ",
+      "id_establecimiento": "est001",
+      "rut": "38901235-0",
+      "nombre_completo": "Florencia Arcos Silva",
+      "curso": "2D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427271_vedmhbt7c",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "cGYHyQYxd5rEEIrmo2Mh",
+      "id_establecimiento": "est001",
+      "rut": "11234567-9",
+      "nombre_completo": "Diego Jara Soto",
+      "curso": "1C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_dlk2y002l",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "cJD3KlFU1XHuyWtcdVe5",
+      "id_establecimiento": "est001",
+      "rut": "31098765-2",
+      "nombre_completo": "Patricia Sanhueza Muñoz",
+      "curso": "2D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_vny28eutr",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "dNfXEFkDhXNZ8OnKyZeX",
+      "id_establecimiento": "est001",
+      "rut": "19012346-5",
+      "nombre_completo": "Cristóbal Toledo Fernández",
+      "curso": "1A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_txbdj82br",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "elTdcXMv41vHdVSRZFRE",
+      "id_establecimiento": "est001",
+      "rut": "5432109-7",
+      "nombre_completo": "Javiera Leiva Muñoz",
+      "curso": "2A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_in9ogisd3",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "eq9ZebxX8cwv0QDNUUXu",
+      "id_establecimiento": "est001",
+      "rut": "16543210-8",
+      "nombre_completo": "Renato Villalobos Fernández",
+      "curso": "1C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_aibmritij",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "est001",
+      "nombre_completo": "Juan Pérez González",
+      "rut": "20.123.456-K",
+      "anno_ingreso": 2024,
+      "curso": "1A",
+      "id_usuario": "estudiante001",
+      "id_apoderado": "apoderado001",
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 650000000
+      }
+    },
+    {
+      "id": "est002",
+      "nombre_completo": "María García López",
+      "rut": "20.234.567-3",
+      "anno_ingreso": 2024,
+      "curso": "1A",
+      "id_usuario": null,
+      "id_apoderado": "apoderado001",
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 678000000
+      }
+    },
+    {
+      "id": "est003",
+      "nombre_completo": "Carlos Rodríguez Silva",
+      "rut": "20.345.678-4",
+      "anno_ingreso": 2024,
+      "curso": "1B",
+      "id_usuario": null,
+      "id_apoderado": null,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 725000000
+      }
+    },
+    {
+      "id": "est004",
+      "nombre_completo": "Ana Martínez Hernández",
+      "rut": "20.456.789-5",
+      "anno_ingreso": 2024,
+      "curso": "1B",
+      "id_usuario": null,
+      "id_apoderado": "apoderado002",
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 753000000
+      }
+    },
+    {
+      "id": "est005",
+      "nombre_completo": "Pedro López Flores",
+      "rut": "20.567.890-6",
+      "anno_ingreso": 2024,
+      "curso": "2A",
+      "id_usuario": null,
+      "id_apoderado": null,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 781000000
+      }
+    },
+    {
+      "id": "est006",
+      "nombre_completo": "Sofia Fernández Castro",
+      "rut": "20.678.901-7",
+      "anno_ingreso": 2024,
+      "curso": "2A",
+      "id_usuario": null,
+      "id_apoderado": "apoderado003",
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 814000000
+      }
+    },
+    {
+      "id": "est007",
+      "nombre_completo": "Diego Sánchez Ramírez",
+      "rut": "20.789.012-8",
+      "anno_ingreso": 2024,
+      "curso": "2B",
+      "id_usuario": null,
+      "id_apoderado": null,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 843000000
+      }
+    },
+    {
+      "id": "est008",
+      "nombre_completo": "Lucia Torres Molina",
+      "rut": "20.890.123-9",
+      "anno_ingreso": 2024,
+      "curso": "2B",
+      "id_usuario": null,
+      "id_apoderado": "apoderado002",
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 870000000
+      }
+    },
+    {
+      "id": "est009",
+      "nombre_completo": "Roberto Núñez Vega",
+      "rut": "20.901.234-0",
+      "anno_ingreso": 2024,
+      "curso": "3A",
+      "id_usuario": null,
+      "id_apoderado": null,
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 897000000
+      }
+    },
+    {
+      "id": "est010",
+      "nombre_completo": "Valeria Ortiz Gómez",
+      "rut": "20.012.345-1",
+      "anno_ingreso": 2024,
+      "curso": "3A",
+      "id_usuario": null,
+      "id_apoderado": "apoderado001",
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 937000000
+      }
+    },
+    {
+      "id": "etUCeAgz1qHd6CdtE39Y",
+      "id_establecimiento": "est001",
+      "rut": "12345678-5",
+      "nombre_completo": "Mateo Rivas Castillo",
+      "curso": "3B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427264_8l3qa4itf",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "f85bSLADAgkDt9fi4N6v",
+      "id_establecimiento": "est001",
+      "rut": "21456789-2",
+      "nombre_completo": "Joaquín Rojas Fernández",
+      "curso": "2A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_d6sasnmch",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "fphuzStjfTIpZ768bEIR",
+      "id_establecimiento": "est001",
+      "rut": "16789013-4",
+      "nombre_completo": "Valentina Cáceres Torres",
+      "curso": "4B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_9a2gra0go",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "i4hmYTM3WtzKlIOCs67t",
+      "id_establecimiento": "est001",
+      "rut": "22987654-6",
+      "nombre_completo": "Hugo Cabrera Rojas",
+      "curso": "3C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_ju7j5r0qs",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "ipAvkE52fiVgoCPQxrzQ",
+      "id_establecimiento": "est001",
+      "rut": "34567891-8",
+      "nombre_completo": "Sofía Orellana Muñoz",
+      "curso": "2B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427270_wed3k6dmt",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "j8EWMJgAV7YynSCTQf5Y",
+      "id_establecimiento": "est001",
+      "rut": "14876923-2",
+      "nombre_completo": "Sofía Delgado Muñoz",
+      "curso": "1A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427264_24a10o3cb",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "jLJuV0OnwUC7J8CdwPHb",
+      "id_establecimiento": "est001",
+      "rut": "37890124-3",
+      "nombre_completo": "Agustín Riquelme Rojas",
+      "curso": "3A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427271_b4540acqb",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "kArJFbWtiEhFrwJG6gbx",
+      "id_establecimiento": "est001",
+      "rut": "29012346-7",
+      "nombre_completo": "Benjamín Arriagada Morales",
+      "curso": "3B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_49m1a2ocm",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "m9DjSiOqeN4bUbK8gWOG",
+      "id_establecimiento": "est001",
+      "rut": "20123457-8",
+      "nombre_completo": "Paula Sandoval Herrera",
+      "curso": "4D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_l2qokuzin",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "nKLK8pnpe9PGg3dkuFJV",
+      "id_establecimiento": "est001",
+      "rut": "28321098-7",
+      "nombre_completo": "Sergio Pino Fernández",
+      "curso": "1B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_0r155yu54",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "o4y5j3gudUY7oCQxJSTA",
+      "id_establecimiento": "est001",
+      "rut": "26789013-2",
+      "nombre_completo": "Catalina Loyola Silva",
+      "curso": "2C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_wog32768l",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "obUlWlYoA6SXiGBAUZ3W",
+      "id_establecimiento": "est001",
+      "rut": "22345679-1",
+      "nombre_completo": "Javiera Vergara Muñoz",
+      "curso": "2D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_6rwooc4ub",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "pBmqS2WEtYC0PQNDDg0t",
+      "id_establecimiento": "est001",
+      "rut": "25234567-2",
+      "nombre_completo": "María Rodríguez Pérez",
+      "curso": "4B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427264_3jx7nqjgl",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "qvMRKyOPwAjhHfIRCVSe",
+      "id_establecimiento": "est001",
+      "rut": "15658654-9",
+      "nombre_completo": "Lauro Conaf",
+      "curso": "1A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427264_1sck6ruzw",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "r61DUIKre3EMuDOQwAxA",
+      "id_establecimiento": "est001",
+      "rut": "18765432-1",
+      "nombre_completo": "Valentina Soto Pérez",
+      "curso": "2D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427264_zy970nfhh",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "rcPK8owguyvbdpeTqakH",
+      "id_establecimiento": "est001",
+      "rut": "29210987-9",
+      "nombre_completo": "Paula Bustamante Herrera",
+      "curso": "4A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_4u68bv7gq",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "sctXEIBdhVfxyM20nEl1",
+      "id_establecimiento": "est001",
+      "rut": "40123457-6",
+      "nombre_completo": "Daniela Canales Torres",
+      "curso": "4A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427271_efbc7cb1j",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "tsDwzZCfM6tJmMHPCm5V",
+      "id_establecimiento": "est001",
+      "rut": "4321098-1",
+      "nombre_completo": "Cristóbal Figueroa Soto",
+      "curso": "1D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_q8oz9mo9n",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "u1TdIFzwUcOphb6un1oY",
+      "id_establecimiento": "est001",
+      "rut": "10123457-6",
+      "nombre_completo": "Moisés Carrasco Rojas",
+      "curso": "1A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355709247_r1ep19uzk",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "ujMoeiFJgbDthtcBd7lv",
+      "id_establecimiento": "est001",
+      "rut": "27432109-3",
+      "nombre_completo": "Andrea Lagos López",
+      "curso": "2C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_6vd9aosb2",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "vEWDfwEfIaP3i7PiZJ3S",
+      "id_establecimiento": "est001",
+      "rut": "33456780-2",
+      "nombre_completo": "Vicente Poblete Castillo",
+      "curso": "3C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427270_el3zkhukd",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "vNNOfV7CeB3KMt0Dd3Pr",
+      "id_establecimiento": "est001",
+      "rut": "11987654-3",
+      "nombre_completo": "Martina Paredes Silva",
+      "curso": "3A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_iz9418x0y",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "vPUWV24VEY8kg1517i4f",
+      "id_establecimiento": "est001",
+      "rut": "29123456-0",
+      "nombre_completo": "Sebastián Núñez Díaz",
+      "curso": "1A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_rgarugp8r",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "vhjneAHklCJwyvcATEY2",
+      "id_establecimiento": "est001",
+      "rut": "24765432-2",
+      "nombre_completo": "Martín Venegas Díaz",
+      "curso": "1A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_0yma65rrq",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "wQ15sUiD4LCH83E41xsZ",
+      "id_establecimiento": "est001",
+      "rut": "14765432-9",
+      "nombre_completo": "Bruno Cárdenas Morales",
+      "curso": "3A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_n81119a0g",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "wQwS7f3voR4RpZuQlx3q",
+      "id_establecimiento": "est001",
+      "rut": "23456780-3",
+      "nombre_completo": "Sebastián Palma Soto",
+      "curso": "1C",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427269_f2zinaxkx",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "wn0mJT8CqWBrfU22u3Ss",
+      "id_establecimiento": "est001",
+      "rut": "22345678-4",
+      "nombre_completo": "Antonia Silva Herrera",
+      "curso": "4B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_s5bndtfx3",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "wtRu1a0waH8Q9mGlQ4aS",
+      "id_establecimiento": "est001",
+      "rut": "15678912-4",
+      "nombre_completo": "Emilia Navarro Torres",
+      "curso": "4D",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427265_g2g5f00bx",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "xB85vaab7cLx8jNOG4bL",
+      "id_establecimiento": "est001",
+      "rut": "27901234-5",
+      "nombre_completo": "Diego Salinas Rojas",
+      "curso": "3B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427266_u4mucluw4",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "zRjDUaEMZWoQ7JCEiGGB",
+      "id_establecimiento": "est001",
+      "rut": "21098765-7",
+      "nombre_completo": "Verónica Alarcón Pérez",
+      "curso": "4B",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427267_ihvdvqf0s",
+      "id_apoderado": null,
+      "activo": true
+    },
+    {
+      "id": "zYpebJ4nV1OBYLrWZgjK",
+      "id_establecimiento": "est001",
+      "rut": "14567891-6",
+      "nombre_completo": "Francisca Aravena Silva",
+      "curso": "2A",
+      "anno_ingreso": 2026,
+      "id_usuario": "id_est_1775355427268_5ewpvc2to",
+      "id_apoderado": null,
+      "activo": true
+    }
+  ],
+  "solicitudes": [
+    {
+      "id": "sol001",
+      "id_estudiante": "est001",
+      "id_profesor": "profesor001",
+      "tipo": "ATRASO",
+      "estado": "Solicitada",
+      "fecha": {
+        "_seconds": 1773532800,
+        "_nanoseconds": 0
+      },
+      "motivo_descripcion": "Problema de transporte",
+      "observaciones": "Fue causado por tráfico en la ruta 5",
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 966000000
+      }
+    },
+    {
+      "id": "sol002",
+      "id_estudiante": "est002",
+      "id_profesor": "profesor001",
+      "tipo": "INASISTENCIA",
+      "estado": "En revisión",
+      "fecha": {
+        "_seconds": 1773446400,
+        "_nanoseconds": 0
+      },
+      "motivo_descripcion": "Enfermedad",
+      "observaciones": "Requiere certificado médico",
+      "fecha_creacion": {
+        "_seconds": 1775495766,
+        "_nanoseconds": 999000000
+      }
+    },
+    {
+      "id": "sol003",
+      "id_estudiante": "est003",
+      "id_profesor": "profesor001",
+      "tipo": "ATRASO",
+      "estado": "Aprobada",
+      "fecha": {
+        "_seconds": 1773360000,
+        "_nanoseconds": 0
+      },
+      "motivo_descripcion": "Cita médica",
+      "observaciones": null,
+      "fecha_creacion": {
+        "_seconds": 1775495767,
+        "_nanoseconds": 27000000
+      }
+    },
+    {
+      "id": "sol004",
+      "id_estudiante": "est001",
+      "id_profesor": "profesor001",
+      "tipo": "ATRASO",
+      "estado": "Rechazada",
+      "fecha": {
+        "_seconds": 1773273600,
+        "_nanoseconds": 0
+      },
+      "motivo_descripcion": "Retraso personal",
+      "observaciones": "No se consideró justificación válida",
+      "fecha_creacion": {
+        "_seconds": 1775495767,
+        "_nanoseconds": 59000000
+      }
+    }
+  ],
+  "bloques_horarios": [
+    {
+      "id": "02pZFhHeG2jNqegdFcgr",
+      "id_bloque": "02pZFhHeG2jNqegdFcgr",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "nombre_bloque": "Bloque 5",
+      "hora_inicio": "11:30",
+      "hora_fin": "00:15",
+      "duracion_minutos": -675,
+      "tipo": "clase",
+      "orden": 7,
+      "creado_en": {
+        "_seconds": 1775226377,
+        "_nanoseconds": 580000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775226386,
+        "_nanoseconds": 432000000
+      },
+      "activo": false
+    },
+    {
+      "id": "6xXaWJXAmBlHmPaqMTt4",
+      "id_bloque": "6xXaWJXAmBlHmPaqMTt4",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "hora_inicio": "09:45",
+      "duracion_minutos": 30,
+      "tipo": "clase",
+      "orden": 4,
+      "activo": true,
+      "creado_en": {
+        "_seconds": 1775226113,
+        "_nanoseconds": 424000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775226178,
+        "_nanoseconds": 637000000
+      },
+      "hora_fin": "10:30",
+      "nombre_bloque": "Bloque 3"
+    },
+    {
+      "id": "ZJnBwjMlhLvoYEAMvwe3",
+      "id_bloque": "ZJnBwjMlhLvoYEAMvwe3",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "nombre_bloque": "Recreo 2",
+      "hora_inicio": "11:15",
+      "hora_fin": "11:30",
+      "duracion_minutos": 15,
+      "tipo": "recreo",
+      "orden": 6,
+      "activo": true,
+      "creado_en": {
+        "_seconds": 1775226336,
+        "_nanoseconds": 182000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775226336,
+        "_nanoseconds": 182000000
+      }
+    },
+    {
+      "id": "gi5WasyZtsyPzCTWJ9Tg",
+      "id_bloque": "gi5WasyZtsyPzCTWJ9Tg",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "hora_inicio": "09:30",
+      "hora_fin": "09:45",
+      "duracion_minutos": 15,
+      "tipo": "recreo",
+      "orden": 3,
+      "activo": true,
+      "creado_en": {
+        "_seconds": 1775226042,
+        "_nanoseconds": 776000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775226062,
+        "_nanoseconds": 79000000
+      },
+      "nombre_bloque": "Recreo 2"
+    },
+    {
+      "id": "hI7uGEna6ogLvEBY7x2m",
+      "id_bloque": "hI7uGEna6ogLvEBY7x2m",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "nombre_bloque": "Bloque 4",
+      "duracion_minutos": 30,
+      "tipo": "clase",
+      "orden": 5,
+      "activo": true,
+      "creado_en": {
+        "_seconds": 1775226159,
+        "_nanoseconds": 812000000
+      },
+      "hora_inicio": "10:30",
+      "actualizado_en": {
+        "_seconds": 1775226294,
+        "_nanoseconds": 128000000
+      },
+      "hora_fin": "11:15"
+    },
+    {
+      "id": "jk67ML7z22wTNnJn7nz0",
+      "id_bloque": "jk67ML7z22wTNnJn7nz0",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "nombre_bloque": "Bloque 2",
+      "hora_inicio": "08:46",
+      "hora_fin": "09:30",
+      "duracion_minutos": 44,
+      "tipo": "clase",
+      "orden": 2,
+      "activo": true,
+      "creado_en": {
+        "_seconds": 1775225979,
+        "_nanoseconds": 401000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775225979,
+        "_nanoseconds": 401000000
+      }
+    },
+    {
+      "id": "nlOjESO4vHn148DUuvun",
+      "id_bloque": "nlOjESO4vHn148DUuvun",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "nombre_bloque": "Bloque 6",
+      "hora_inicio": "12:15",
+      "hora_fin": "12:40",
+      "duracion_minutos": 25,
+      "tipo": "clase",
+      "orden": 8,
+      "activo": true,
+      "creado_en": {
+        "_seconds": 1775226499,
+        "_nanoseconds": 990000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775226499,
+        "_nanoseconds": 990000000
+      }
+    },
+    {
+      "id": "pLGHlMugs5QmRYHJ4hF8",
+      "id_bloque": "pLGHlMugs5QmRYHJ4hF8",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "nombre_bloque": "Bloque 5",
+      "hora_inicio": "11:30",
+      "hora_fin": "12:15",
+      "duracion_minutos": 45,
+      "tipo": "clase",
+      "orden": 7,
+      "activo": true,
+      "creado_en": {
+        "_seconds": 1775226414,
+        "_nanoseconds": 666000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775226414,
+        "_nanoseconds": 666000000
+      }
+    },
+    {
+      "id": "rRoOOkMwaUgNvedGYKJZ",
+      "id_bloque": "rRoOOkMwaUgNvedGYKJZ",
+      "id_establecimiento": "est001",
+      "numero_bloque": 0,
+      "nombre_bloque": "Bloque 1",
+      "hora_inicio": "08:00",
+      "hora_fin": "08:45",
+      "duracion_minutos": 45,
+      "tipo": "clase",
+      "orden": 1,
+      "activo": true,
+      "creado_en": {
+        "_seconds": 1775200610,
+        "_nanoseconds": 283000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775200610,
+        "_nanoseconds": 283000000
+      }
+    }
+  ],
+  "motivos_justificacion": [
+    {
+      "id": "mot001",
+      "nombre": "Enfermedad",
+      "descripcion": "El estudiante estaba enfermo",
+      "requiere_certificado": true,
+      "activo": true
+    },
+    {
+      "id": "mot002",
+      "nombre": "Cita Médica",
+      "descripcion": "Cita médica agendada",
+      "requiere_certificado": true,
+      "activo": true
+    },
+    {
+      "id": "mot003",
+      "nombre": "Problema de Transporte",
+      "descripcion": "Problema con transporte",
+      "requiere_certificado": false,
+      "activo": true
+    },
+    {
+      "id": "mot004",
+      "nombre": "Razones Familiares",
+      "descripcion": "Asuntos familiares importantes",
+      "requiere_certificado": false,
+      "activo": true
+    },
+    {
+      "id": "mot_1774875345300",
+      "id_motivo": "mot_1774875345300",
+      "id_establecimiento": "est001",
+      "codigo": "ATRASOINTERMEDIOCONP",
+      "descripcion": "Atraso intermedio Con Psicologa",
+      "requiere_detalle": false,
+      "activo": true,
+      "orden": 4,
+      "fecha_creacion": {
+        "_seconds": 1774875531,
+        "_nanoseconds": 975000000
+      },
+      "tipo_registro": "ATRASO",
+      "fecha_actualizacion": {
+        "_seconds": 1775528348,
+        "_nanoseconds": 695000000
+      }
+    },
+    {
+      "id": "mot_1774876507457",
+      "id_motivo": "mot_1774876507457",
+      "id_establecimiento": "est001",
+      "codigo": "ATRASOINTERMEDIOCONP_C",
+      "descripcion": "Atraso intermedio Con Psicologa (Copia)",
+      "requiere_detalle": false,
+      "orden": 4,
+      "fecha_creacion": {
+        "_seconds": 1774876694,
+        "_nanoseconds": 176000000
+      },
+      "fecha_actualizacion": {
+        "_seconds": 1774877503,
+        "_nanoseconds": 577000000
+      },
+      "activo": false
+    },
+    {
+      "id": "mot_1774877205680",
+      "id_motivo": "mot_1774877205680",
+      "id_establecimiento": "est001",
+      "requiere_detalle": false,
+      "activo": true,
+      "orden": 4,
+      "fecha_creacion": {
+        "_seconds": 1774877392,
+        "_nanoseconds": 339000000
+      },
+      "descripcion": "Atraso intermedio Con Trabajador Social",
+      "codigo": "ATRASOINTERMEDIOCONT",
+      "fecha_actualizacion": {
+        "_seconds": 1774877612,
+        "_nanoseconds": 724000000
+      },
+      "tipo_registro": "ATRASO"
+    },
+    {
+      "id": "mot_1774877443655",
+      "id_motivo": "mot_1774877443655",
+      "id_establecimiento": "est001",
+      "requiere_detalle": false,
+      "activo": true,
+      "orden": 4,
+      "fecha_creacion": {
+        "_seconds": 1774877630,
+        "_nanoseconds": 274000000
+      },
+      "descripcion": "Atraso intermedio en CRA",
+      "codigo": "ATRASOINTERMEDIOENCR",
+      "fecha_actualizacion": {
+        "_seconds": 1774877648,
+        "_nanoseconds": 692000000
+      },
+      "tipo_registro": "ATRASO"
+    },
+    {
+      "id": "mot_1774877491847",
+      "id_motivo": "mot_1774877491847",
+      "id_establecimiento": "est001",
+      "requiere_detalle": false,
+      "activo": true,
+      "orden": 4,
+      "fecha_creacion": {
+        "_seconds": 1774877678,
+        "_nanoseconds": 465000000
+      },
+      "tipo_registro": "ATRASO",
+      "descripcion": "Atraso intermedio del Estudiante Incumple el reglamente",
+      "codigo": "ATRASOINTERMEDIODELE",
+      "fecha_actualizacion": {
+        "_seconds": 1775479333,
+        "_nanoseconds": 885000000
+      }
+    },
+    {
+      "id": "mot_1774886961329",
+      "id_motivo": "mot_1774886961329",
+      "id_establecimiento": "est001",
+      "codigo": "LENTITUDTRANSPORTEPB",
+      "descripcion": "Lentitud Transporte Público",
+      "requiere_detalle": false,
+      "activo": true,
+      "orden": 8,
+      "fecha_creacion": {
+        "_seconds": 1774887148,
+        "_nanoseconds": 102000000
+      },
+      "fecha_actualizacion": {
+        "_seconds": 1775479207,
+        "_nanoseconds": 237000000
+      },
+      "tipo_registro": "ATRASO"
+    },
+    {
+      "id": "mot_1774886972433",
+      "id_motivo": "mot_1774886972433",
+      "id_establecimiento": "est001",
+      "codigo": "ATRASOTRANSPORTEPBLI",
+      "descripcion": "Atraso Transporte Público",
+      "requiere_detalle": false,
+      "activo": true,
+      "orden": 9,
+      "fecha_creacion": {
+        "_seconds": 1774887159,
+        "_nanoseconds": 156000000
+      },
+      "fecha_actualizacion": {
+        "_seconds": 1775479224,
+        "_nanoseconds": 464000000
+      },
+      "tipo_registro": "ATRASO"
+    },
+    {
+      "id": "mot_1774886977913",
+      "id_motivo": "mot_1774886977913",
+      "id_establecimiento": "est001",
+      "codigo": "ACCIDENTETRANSPORTEP",
+      "descripcion": "Accidente Transporte Público",
+      "requiere_detalle": false,
+      "activo": true,
+      "orden": 10,
+      "fecha_creacion": {
+        "_seconds": 1774887164,
+        "_nanoseconds": 636000000
+      },
+      "fecha_actualizacion": {
+        "_seconds": 1775479234,
+        "_nanoseconds": 727000000
+      },
+      "tipo_registro": "ATRASO"
+    }
+  ],
+  "establecimientos": [
+    {
+      "id": "est001",
+      "nombre": "Liceo Público San José",
+      "region": "Valparaíso",
+      "ciudad": "Valparaíso",
+      "direccion": "Calle Principal 123",
+      "codigo_rbd": "10500001",
+      "tipo": "Liceo",
+      "activo": true
+    },
+    {
+      "id": "est_001",
+      "nombre": "Liceo Público San José",
+      "region": "Valparaíso",
+      "ciudad": "Valparaíso",
+      "direccion": "Calle Principal 123",
+      "codigo_rbd": "10500001",
+      "tipo": "Liceo",
+      "activo": true
+    }
+  ],
+  "cursos": [
+    {
+      "id": "7TKBpWQBWnc0epNCncuW",
+      "id_establecimiento": "est001",
+      "nombre": "4D",
+      "descripcion": "Cuarto D",
+      "opcional": "4°D",
+      "nivel": 4,
+      "letra": "D",
+      "activo": true,
+      "orden": 16,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      }
+    },
+    {
+      "id": "ArJv3qpN9w3L27hMoGsP",
+      "id_establecimiento": "est001",
+      "nombre": "2B",
+      "descripcion": "Segundo B",
+      "opcional": "2°B",
+      "nivel": 2,
+      "letra": "B",
+      "activo": true,
+      "orden": 6,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      }
+    },
+    {
+      "id": "BVXNTEyBRWFwWMXNbpzL",
+      "id_establecimiento": "est001",
+      "nombre": "2D",
+      "descripcion": "Segundo D",
+      "opcional": "2°D",
+      "nivel": 2,
+      "letra": "D",
+      "activo": true,
+      "orden": 8,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      }
+    },
+    {
+      "id": "CNS0xXF3g6WZAFXeYaJj",
+      "id_establecimiento": "est001",
+      "nombre": "1C",
+      "descripcion": "Primero C",
+      "opcional": "1°C",
+      "nivel": 1,
+      "letra": "C",
+      "activo": true,
+      "orden": 3,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      }
+    },
+    {
+      "id": "GJvf7WtUZ9fqRmT4CDu8",
+      "id_establecimiento": "est001",
+      "nombre": "1A",
+      "descripcion": "Primero A",
+      "opcional": "1°A",
+      "nivel": 1,
+      "letra": "A",
+      "activo": true,
+      "orden": 1,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 96000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 96000000
+      }
+    },
+    {
+      "id": "IVZWirzBIsbvgZwAV9Qu",
+      "id_establecimiento": "est001",
+      "nombre": "3B",
+      "descripcion": "Tercero B",
+      "opcional": "3°B",
+      "nivel": 3,
+      "letra": "B",
+      "activo": true,
+      "orden": 10,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      }
+    },
+    {
+      "id": "LtcToM6RPEgQQMT8b35d",
+      "id_establecimiento": "est001",
+      "nombre": "4A",
+      "descripcion": "Cuarto A",
+      "opcional": "4°A",
+      "nivel": 4,
+      "letra": "A",
+      "activo": true,
+      "orden": 13,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      }
+    },
+    {
+      "id": "MR96wBUTj1wxbV95cAVs",
+      "id_establecimiento": "est001",
+      "nombre": "1D",
+      "descripcion": "Primero D",
+      "opcional": "1°D",
+      "nivel": 1,
+      "letra": "D",
+      "activo": true,
+      "orden": 4,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      }
+    },
+    {
+      "id": "QtAUU1y721w3TEli9T4T",
+      "id_establecimiento": "est001",
+      "nombre": "4C",
+      "descripcion": "Cuarto C",
+      "opcional": "4°C",
+      "nivel": 4,
+      "letra": "C",
+      "activo": true,
+      "orden": 15,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      }
+    },
+    {
+      "id": "Xw0br6yra2soFDN6oOzg",
+      "id_establecimiento": "est001",
+      "nombre": "1B",
+      "descripcion": "Primero B",
+      "opcional": "1°B",
+      "nivel": 1,
+      "letra": "B",
+      "activo": true,
+      "orden": 2,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      }
+    },
+    {
+      "id": "YxfKTGSDHqUYrn0ymeLy",
+      "id_establecimiento": "est001",
+      "nombre": "3D",
+      "descripcion": "Tercero D",
+      "opcional": "3°D",
+      "nivel": 3,
+      "letra": "D",
+      "activo": true,
+      "orden": 12,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      }
+    },
+    {
+      "id": "cXV9qBjS3sOHtH2nA0cy",
+      "id_establecimiento": "est001",
+      "nombre": "2A",
+      "descripcion": "Segundo A",
+      "opcional": "2°A",
+      "nivel": 2,
+      "letra": "A",
+      "activo": true,
+      "orden": 5,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      }
+    },
+    {
+      "id": "curso_3a",
+      "id_curso": "curso_3a",
+      "id_establecimiento": "est001",
+      "nombre": "3°A",
+      "nivel": "3",
+      "paralelo": "A",
+      "activo": true,
+      "createdAt": {
+        "_seconds": 1774369135,
+        "_nanoseconds": 89000000
+      },
+      "updatedAt": {
+        "_seconds": 1774369135,
+        "_nanoseconds": 89000000
+      }
+    },
+    {
+      "id": "curso_4a",
+      "id_curso": "curso_4a",
+      "id_establecimiento": "est001",
+      "nombre": "4°A",
+      "nivel": "4",
+      "paralelo": "A",
+      "activo": true,
+      "createdAt": {
+        "_seconds": 1774369135,
+        "_nanoseconds": 89000000
+      },
+      "updatedAt": {
+        "_seconds": 1774369135,
+        "_nanoseconds": 89000000
+      }
+    },
+    {
+      "id": "curso_4b",
+      "id_curso": "curso_4b",
+      "id_establecimiento": "est001",
+      "nombre": "4°B",
+      "nivel": "4",
+      "paralelo": "B",
+      "activo": true,
+      "createdAt": {
+        "_seconds": 1774369135,
+        "_nanoseconds": 89000000
+      },
+      "updatedAt": {
+        "_seconds": 1774369135,
+        "_nanoseconds": 89000000
+      }
+    },
+    {
+      "id": "gIb1yQ98QA5CS1ySo0XS",
+      "id_establecimiento": "est001",
+      "nombre": "2C",
+      "descripcion": "Segundo C",
+      "opcional": "2°C",
+      "nivel": 2,
+      "letra": "C",
+      "activo": true,
+      "orden": 7,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 97000000
+      }
+    },
+    {
+      "id": "gmCb5e0kn4ff2BxboEFc",
+      "id_establecimiento": "est001",
+      "nombre": "3C",
+      "descripcion": "Tercero C",
+      "opcional": "3°C",
+      "nivel": 3,
+      "letra": "C",
+      "activo": true,
+      "orden": 11,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      }
+    },
+    {
+      "id": "ju2M122tswJaZP11TXO6",
+      "id_establecimiento": "est001",
+      "nombre": "4B",
+      "descripcion": "Cuarto B",
+      "opcional": "4°B",
+      "nivel": 4,
+      "letra": "B",
+      "activo": true,
+      "orden": 14,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      }
+    },
+    {
+      "id": "l7wDbm33liCsdfkGBVjA",
+      "id_establecimiento": "est001",
+      "nombre": "3A",
+      "descripcion": "Tercero A",
+      "opcional": "3°A",
+      "nivel": 3,
+      "letra": "A",
+      "activo": true,
+      "orden": 9,
+      "creado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      },
+      "actualizado_en": {
+        "_seconds": 1775348632,
+        "_nanoseconds": 98000000
+      }
+    }
+  ],
+  "funcionarios": [
+    {
+      "id": "198453560",
+      "rut": "198453560",
+      "nombre_completo": "Macarena Rocio Zuñiga Reynero",
+      "fecha_nacimiento": "1998-01-03",
+      "domicilio": "Avenida Los Presidentes 1336",
+      "comuna": "Concepción",
+      "celular": "945433069",
+      "correo_personal": "macarena.zuniga@example.com",
+      "correo_institucional": "macarena.rocio.zuniga.reynero@andaliensur.cl",
+      "titulo_profesional": "Terapeuta Ocupacional",
+      "universidad": "Universidad Andres Bello",
+      "ano_titulacion": 2022,
+      "fecha_ingreso": "2026-04-08",
+      "horas_contrato": 19,
+      "usuario_registrado_sistema": false,
+      "rut_formateado": "19.845.356-0",
+      "creado_en": {
+        "_seconds": 1775670819,
+        "_nanoseconds": 754000000
+      },
+      "fecha_termino": "2026-04-08",
+      "actualizado_en": {
+        "_seconds": 1775674362,
+        "_nanoseconds": 153000000
+      },
+      "vigente": true
+    }
+  ],
+  "paginas": [],
+  "permisos": []
+}

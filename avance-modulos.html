@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGJA — Avance de Módulos</title>
+<style>
+  @page { margin: 1.5cm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 14px; line-height: 1.6; color: #1f2937;
+    max-width: 960px; margin: 0 auto; padding: 24px 16px;
+    background: #f8fafc;
+  }
+  h1 { font-size: 28px; color: #1a3c6b; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  h1 small { font-size: 14px; font-weight: 400; color: #6b7280; }
+  .subtitle { color: #6b7280; margin: 0 0 24px; font-size: 15px; }
+  h2 {
+    font-size: 20px; color: #1a3c6b; margin: 32px 0 12px;
+    padding-bottom: 6px; border-bottom: 2px solid #dbeafe;
+  }
+  h3 { font-size: 16px; color: #374151; margin: 20px 0 8px; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 16px 0 24px; }
+  .stat-card { background: #fff; border-radius: 10px; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .stat-card .num { font-size: 32px; font-weight: 700; line-height: 1.2; }
+  .stat-card .label { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 13px; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; font-weight: 600; color: #1e40af; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+  tr:nth-child(even) { background: #fafbfc; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .tag-ok { background: #d1fae5; color: #065f46; }
+  .tag-wip { background: #fef3c7; color: #92400e; }
+  .tag-todo { background: #e5e7eb; color: #6b7280; }
+  .tag-future { background: #dbeafe; color: #1e40af; }
+  .tag-cancel { background: #fee2e2; color: #991b1b; }
+
+  .bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin: 4px 0 8px; }
+  .bar-fill { height: 100%; }
+  .bar-ok { background: #10b981; }
+  .bar-wip { background: #f59e0b; }
+  .bar-todo { background: #d1d5db; }
+  .bar-future { background: #3b82f6; }
+
+  ul, ol { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 12px; color: #dc2626; }
+
+  .card { background: #fff; border-radius: 10px; padding: 20px; margin: 12px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; }
+  .card h4 { margin: 0 0 8px; color: #1a3c6b; }
+
+  .section-label { font-size: 12px; font-weight: 600; color: #6b7280; margin-top: 16px; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+  @media print { body { background: #fff; padding: 0; } .card { box-shadow: none; break-inside: avoid; } }
+  @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<h1>🛠️ SGJA <small>Sistema de Gestión de Justificaciones y Asistencia</small></h1>
+<p class="subtitle">Avance de Módulos · 23 mayo 2026 · <code>sgja-app-blue.vercel.app</code></p>
+
+<!-- ── Barra de progreso global ── -->
+<div class="stats">
+  <div class="stat-card"><div class="num" style="color:#10b981">13</div><div class="label">Completados</div></div>
+  <div class="stat-card"><div class="num" style="color:#f59e0b">1</div><div class="label">En progreso</div></div>
+  <div class="stat-card"><div class="num" style="color:#6b7280">2</div><div class="label">Pendientes</div></div>
+  <div class="stat-card"><div class="num" style="color:#3b82f6">8</div><div class="label">Futuros</div></div>
+  <div class="stat-card"><div class="num" style="color:#991b1b">24</div><div class="label">Total módulos</div></div>
+</div>
+
+<div class="bar" style="max-width:400px">
+  <div class="bar-fill bar-ok" style="width:54%"></div>
+  <div class="bar-fill bar-wip" style="width:4%"></div>
+  <div class="bar-fill bar-todo" style="width:8%"></div>
+  <div class="bar-fill bar-future" style="width:33%"></div>
+</div>
+
+<!-- ================================================================== -->
+<h2>✅ Completados (13)</h2>
+
+<table>
+<thead><tr><th>Módulo</th><th>Ruta</th><th>Componentes clave</th></tr></thead>
+<tbody>
+<tr><td><strong>Login / Auth</strong> <span class="tag tag-ok">OK</span></td><td><code>—</code></td><td>Login con Supabase, recuperación de contraseña, formulario registro inicial, datos personales</td></tr>
+<tr><td><strong>Seguridad / 2FA</strong> <span class="tag tag-ok">OK</span></td><td><code>/seguridad</code> <code>/configurar-2fa</code></td><td>MFA nativo Supabase TOTP, QR enrollment, role-based 2FA assignment, re-verify timer, contenido bloqueado (palabras), inactividad configurable</td></tr>
+<tr><td><strong>Dashboard Admin</strong> <span class="tag tag-ok">OK</span></td><td><code>/dashboard</code></td><td>Panel principal con métricas y acceso rápido a todos los módulos</td></tr>
+<tr><td><strong>Secretaría — Funcionarios</strong> <span class="tag tag-ok">OK</span></td><td><code>/mantenedor-funcionarios</code></td><td>CRUD completo, RUT validation, importación, filtros, paginación, vista previa, impresión, caché offline</td></tr>
+<tr><td><strong>Secretaría — Ausentes</strong> <span class="tag tag-ok">OK</span></td><td><code>/secretaria/ausentes</code></td><td>Licencias médicas, permisos admin, días compensados, control de vigencia</td></tr>
+<tr><td><strong>Secretaría — Enviar Correo</strong> <span class="tag tag-ok">OK</span></td><td><code>/secretaria/enviar-correo</code></td><td>SMTP desde DB, autocompletar destinatarios, variable <code>{{rut}}</code>, filtro contenido bloqueado, guardar como plantilla, hist. cuerpos libres</td></tr>
+<tr><td><strong>Justificaciones</strong> <span class="tag tag-ok">OK</span></td><td><code>/justificaciones</code> <code>/registrar</code> <code>/ver-justificaciones</code></td><td>Registro, listado, atrasos, pases, motivos</td></tr>
+<tr><td><strong>Biblioteca</strong> <span class="tag tag-ok">OK</span></td><td><code>/biblioteca</code> <code>/libros</code> <code>/catalogo</code> <code>/prestamos</code> <code>/inventario</code> <code>/historial-biblioteca</code> <code>/config-biblioteca</code></td><td>CRUD libros, catálogo con búsqueda, circulación, inventario físico, historial, configuración</td></tr>
+<tr><td><strong>Monitoreo</strong> <span class="tag tag-ok">OK</span></td><td><code>/monitoreo-correos</code> <code>/monitoreo-fallos</code></td><td>Monitoreo de envíos de correo, registro de fallos del sistema</td></tr>
+<tr><td><strong>En Línea</strong> <span class="tag tag-ok">OK</span></td><td><code>/en-linea</code></td><td>WebSocket + Cloudflare Durable Objects, kick de sesión duplicada, detección multi-dispositivo</td></tr>
+<tr><td><strong>Configuración</strong> <span class="tag tag-ok">OK</span></td><td><code>/configuracion</code> <code>/gestion-usuarios</code> <code>/mantenedor-roles</code> <code>/mantenedor-motivos</code> <code>/mantenedor-cursos</code> <code>/parametros</code> <code>/asignar-permisos</code> <code>/bloque-horario</code> <code>/sistema</code> <code>/solicitudes-registro</code> <code>/correos</code> <code>/reportes</code></td><td>Usuarios, roles, permisos jerárquicos, cursos, motivos, parámetros, mantenimiento, horarios, correos SMTP</td></tr>
+<tr><td><strong>Contactos de Correo</strong> <span class="tag tag-ok">OK</span></td><td><code>—</code></td><td>CRUD contactos con A-Z filter + búsqueda, modal en EnviarCorreo</td></tr>
+<tr><td><strong>Mantenedor Estudiantes</strong> <span class="tag tag-ok">OK</span></td><td><code>/mantenedor-estudiantes</code></td><td>CRUD con lazy loading (lazy + Suspense), chunk error boundary</td></tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>⏳ En Progreso (1)</h2>
+
+<table>
+<thead><tr><th>Módulo</th><th>Ruta</th><th>Estado</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>Técnico</strong></td>
+  <td><code>/tecnico</code></td>
+  <td><span class="tag tag-wip">Placeholder</span> Página vacía, solo título. Consulta tabla <code>equipos</code> que no existe en Supabase. Pendiente de definir alcance (inventario, tickets, reserva laboratorios).</td>
+</tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>❌ Eliminados (2)</h2>
+
+<table>
+<thead><tr><th>Módulo</th><th>Ruta</th><th>Motivo</th></tr></thead>
+<tbody>
+<tr><td><strong>Plantillas de Correo</strong></td><td><code>/secretaria/plantillas-correo</code></td><td><span class="tag tag-cancel">Eliminado</span> El usuario decidió no usarlo</td></tr>
+<tr><td><strong>Grupos de Correo</strong></td><td><code>/secretaria/grupos-correo</code></td><td><span class="tag tag-cancel">Eliminado</span> El usuario decidió no usarlo</td></tr>
+<tr><td><strong>QR</strong></td><td><code>/qr</code></td><td><span class="tag tag-cancel">Eliminado</span> Eliminado en limpieza de rutas</td></tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>🚀 Futuros (8)</h2>
+
+<table>
+<thead><tr><th>Módulo</th><th>Descripción</th><th>Prioridad</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>Reserva Laboratorios</strong></td>
+  <td>Calendario de reserva de salas de computación. Docentes reservan bloques. Aprobación opcional.</td>
+  <td><span class="tag tag-future">Alta</span></td>
+</tr>
+<tr>
+  <td><strong>UTP</strong></td>
+  <td>Unidad Técnico Pedagógica. Planificaciones, evaluaciones, seguimiento curricular, carga docente.</td>
+  <td><span class="tag tag-future">Media</span></td>
+</tr>
+<tr>
+  <td><strong>PIE</strong></td>
+  <td>Programa de Integración Escolar. Estudiantes con NEE, planes adecuados, equipo multidisciplinario.</td>
+  <td><span class="tag tag-future">Media</span></td>
+</tr>
+<tr>
+  <td><strong>Orientación</strong></td>
+  <td>Convivencia escolar, horarios por curso, reglamentos, citaciones apoderados, derivaciones.</td>
+  <td><span class="tag tag-future">Media</span></td>
+</tr>
+<tr>
+  <td><strong>Equipo Multidisciplinario</strong></td>
+  <td>Psicólogas, orientadora, educadoras diferenciales, fonoaudióloga. Gestión de casos, informes, reuniones.</td>
+  <td><span class="tag tag-future">Media</span></td>
+</tr>
+<tr>
+  <td><strong>Docentes</strong></td>
+  <td>Perfil docente, horarios, asignaturas, cursos a cargo, comunicación con apoderados.</td>
+  <td><span class="tag tag-future">Media</span></td>
+</tr>
+<tr>
+  <td><strong>Dirección</strong></td>
+  <td>Directiva, historia, valores, misión/visión, sellos, proyecto educativo — gestión institucional.</td>
+  <td><span class="tag tag-future">Baja</span></td>
+</tr>
+<tr>
+  <td><strong>Admisión / Matrículas</strong></td>
+  <td>Postulaciones en línea, gestión de matrículas, documentos, estado de solicitudes.</td>
+  <td><span class="tag tag-future">Media</span></td>
+</tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>🗺️ Hoja de Ruta</h2>
+
+<div class="card">
+  <h4>Fase 1 — Base (Completada)</h4>
+  <ul>
+    <li>✅ Login, Auth, Roles, 2FA</li>
+    <li>✅ Módulo Secretaría (funcionarios, ausentes, correo)</li>
+    <li>✅ Módulo Justificaciones</li>
+    <li>✅ Módulo Biblioteca</li>
+    <li>✅ Configuración, Seguridad, Monitoreo</li>
+    <li>✅ En Línea con Cloudflare Workers + DO</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Fase 2 — Técnico (Ahora)</h4>
+  <ul>
+    <li>⏳ Definir alcance: ¿inventario equipos / tickets soporte / reserva laboratorios?</li>
+    <li>⏳ Crear tabla <code>equipos</code> y/o <code>reservas</code> en Supabase</li>
+    <li>⏳ Implementar CRUD / calendario según definición</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Fase 3 — Módulos Educativos</h4>
+  <ul>
+    <li>📋 UTP — planificaciones y curriculumn</li>
+    <li>📋 PIE — integración escolar</li>
+    <li>📋 Orientación — convivencia, reglamentos, citaciones</li>
+    <li>📋 Equipo Multidisciplinario — casos e informes</li>
+    <li>📋 Docentes — perfil y asignación</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Fase 4 — Sitio Público (Astro + React)</h4>
+  <ul>
+    <li>🌐 Sitio institucional con Astro (HTML estático, SEO)</li>
+    <li>🌐 Publicaciones compartidas con IA generativa</li>
+    <li>🌐 Admisión / matrículas en línea</li>
+    <li>🌐 Testimonios ex-alumnas con moderación IA</li>
+    <li>🌐 Extraer datos de la misma DB (Supabase)</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Infraestructura</h4>
+  <ul>
+    <li>✅ Frontend: Vercel (React SPA + PWA)</li>
+    <li>✅ Backend de sesiones: Cloudflare Workers + Durable Objects</li>
+    <li>✅ Base de datos: Supabase (PostgreSQL)</li>
+    <li>📋 Evaluar migración a Cloudflare Pages + D1 + R2 (costo cero)</li>
+    <li>📋 IA: Cloudflare Workers AI para generación de texto e imágenes</li>
+  </ul>
+</div>
+
+<!-- ================================================================== -->
+<h2>📊 Historial de Avances</h2>
+
+<table>
+<thead><tr><th>Fecha</th><th>Hito</th></tr></thead>
+<tbody>
+<tr><td>19 may</td><td>Primera versión producción. Módulos base completados: Auth, Secretaría, Justificaciones, Biblioteca, Configuración</td></tr>
+<tr><td>20 may</td><td>Cabecera dinámica con nombre establecimiento. Permission assigner limpio. Plantillas/Contactos correo. Inactividad + 2FA</td></tr>
+<tr><td>21 may</td><td>Cloudflare Workers + DO desplegados. Kick de sesión duplicada. EnLinea con polling cada 5s</td></tr>
+<tr><td>22 may</td><td>Paginación MantenedorCursos/Motivos. RUT PROFESOR en /registrar. Content filter. Re-verify 2FA timer. Duplicate tab BroadcastChannel</td></tr>
+<tr><td>23 may</td><td>Fix CORS Worker. Fix columna <code>nombre</code> en EnLinea. Fix Service Worker cache (NetworkFirst). Cerrar sesión remota. Eliminación Plantillas/Grupos Correo</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<p style="text-align:center; color:#9ca3af; font-size:12px; margin-top:32px;">
+  SGJA — Sistema de Gestión de Justificaciones y Asistencia · 23 mayo 2026
+</p>
+
+</body>
+</html>

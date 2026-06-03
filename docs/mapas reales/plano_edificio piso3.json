@@ -1,0 +1,138 @@
+[
+  {
+    "left": 57.0,
+    "top": 42.0,
+    "width": 40,
+    "height": 302,
+    "text": "Pasillo Lincoyán piso 3",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 245.0,
+    "top": 1.0,
+    "width": 55,
+    "height": 81,
+    "text": "Internado Bodegas",
+    "zone": "z-internado"
+  },
+  {
+    "left": 359.0,
+    "top": 252.0,
+    "width": 44,
+    "height": 45,
+    "text": "301",
+    "zone": "z-sala"
+  },
+  {
+    "left": 235.0,
+    "top": 252.0,
+    "width": 33,
+    "height": 46,
+    "text": "Acceso Hall Cochrane Piso 3",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 98.0,
+    "top": 298.0,
+    "width": 304,
+    "height": 41,
+    "text": "Pasillo Cochrane piso 3",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 402.0,
+    "top": 298.0,
+    "width": 47,
+    "height": 41,
+    "text": "Escaleras a piso 3",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 0.0,
+    "top": 298.0,
+    "width": 55,
+    "height": 41,
+    "text": "Escaleras Esq. Lin+Coc",
+    "zone": "z-other"
+  },
+  {
+    "left": 314.0,
+    "top": 252.0,
+    "width": 44,
+    "height": 45,
+    "text": "302",
+    "zone": "z-sala"
+  },
+  {
+    "left": 268.0,
+    "top": 252.0,
+    "width": 44,
+    "height": 45,
+    "text": "303",
+    "zone": "z-sala"
+  },
+  {
+    "left": 189.0,
+    "top": 252.0,
+    "width": 44,
+    "height": 45,
+    "text": "304",
+    "zone": "z-sala"
+  },
+  {
+    "left": 143.0,
+    "top": 252.0,
+    "width": 44,
+    "height": 45,
+    "text": "305",
+    "zone": "z-sala"
+  },
+  {
+    "left": 97.0,
+    "top": 252.0,
+    "width": 44,
+    "height": 45,
+    "text": "306",
+    "zone": "z-sala"
+  },
+  {
+    "left": 1.0,
+    "top": 245.0,
+    "width": 55,
+    "height": 50,
+    "text": "307",
+    "zone": "z-other"
+  },
+  {
+    "left": 1.0,
+    "top": 0.0,
+    "width": 55,
+    "height": 89,
+    "text": "311",
+    "zone": "z-other"
+  },
+  {
+    "left": 1.0,
+    "top": 90.0,
+    "width": 55,
+    "height": 50,
+    "text": "310",
+    "zone": "z-other"
+  },
+  {
+    "left": 1.0,
+    "top": 143.0,
+    "width": 55,
+    "height": 50,
+    "text": "309",
+    "zone": "z-other"
+  },
+  {
+    "left": 1.0,
+    "top": 194.0,
+    "width": 55,
+    "height": 50,
+    "text": "308",
+    "zone": "z-other"
+  }
+]

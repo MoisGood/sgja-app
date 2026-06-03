@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pauta — Módulo Reserva de Laboratorios</title>
+<style>
+  @page { margin: 1.5cm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px; line-height: 1.6; color: #1f2937;
+    max-width: 900px; margin: 0 auto; padding: 24px 16px;
+    background: #f8fafc;
+  }
+  h1 { font-size: 26px; color: #1a3c6b; margin: 0 0 4px; }
+  .subtitle { color: #6b7280; margin: 0 0 24px; font-size: 14px; }
+  h2 {
+    font-size: 18px; color: #1a3c6b; margin: 28px 0 10px;
+    padding-bottom: 5px; border-bottom: 2px solid #dbeafe;
+  }
+  h3 { font-size: 15px; color: #374151; margin: 18px 0 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 13px; }
+  th, td { border: 1px solid #e5e7eb; padding: 7px 9px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; font-weight: 600; color: #1e40af; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+  tr:nth-child(even) { background: #fafbfc; }
+  .card {
+    background: #fff; border-radius: 10px; padding: 18px 20px;
+    margin: 12px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid #e5e7eb;
+  }
+  .card h4 { margin: 0 0 8px; color: #1a3c6b; }
+  ul, ol { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 12px; color: #dc2626; }
+  strong { color: #111827; }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+  .tag-db { background: #fef3c7; color: #92400e; }
+  .tag-fe { background: #dbeafe; color: #1e40af; }
+  .tag-be { background: #e0e7ff; color: #3730a3; }
+  .tag-flow { background: #d1fae5; color: #065f46; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media print { body { background: #fff; padding: 0; } .card { box-shadow: none; break-inside: avoid; } }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>📋 Módulo: Reserva de Laboratorios</h1>
+<p class="subtitle">Pauta de especificaciones para implementación futura · 23 mayo 2026</p>
+
+<!-- ================================================================== -->
+<h2>1. Funcionalidad General</h2>
+<div class="card">
+  <ul>
+    <li>Docente selecciona laboratorio → bloques disponibles → confirma reserva</li>
+    <li>Otros docentes visualizan reservas ocupadas en el sistema y en un <strong>calendario compartido de Google</strong> (solo lectura)</li>
+    <li>Docente puede <strong>anular su reserva</strong> hasta 1 hora antes</li>
+    <li>Docente recibe correo de confirmación con enlace para <strong>confirmar asistencia</strong></li>
+    <li>Sistema muestra mensaje explícito: el docente confirma <strong>sí o sí</strong> el uso del laboratorio</li>
+    <li>Solo el <strong>docente titular y admin</strong> pueden anular una reserva</li>
+    <li>Correo de confirmación llega al docente con <strong>copia a otros usuarios</strong> (encargado lab, UTP, etc.)</li>
+  </ul>
+</div>
+
+<!-- ================================================================== -->
+<h2>2. Validaciones del Sistema</h2>
+<table>
+<thead><tr><th>Validación</th><th>Descripción</th></tr></thead>
+<tbody>
+<tr><td>Disponibilidad</td><td>Mismo lab + mismo bloque + misma fecha → rechazar</td></tr>
+<tr><td>Antelación mínima</td><td>No permitir reservas con menos de 2h de anticipación</td></tr>
+<tr><td>Capacidad vs curso</td><td>Si lab tiene 20 PCs y el curso tiene 40 alumnas, rechazar</td></tr>
+<tr><td>Curso ya tiene clase</td><td>El curso no puede estar en dos salas simultáneas</td></tr>
+<tr><td>Docente ocupado</td><td>El profe no puede reservar si tiene horas lectivas con otro curso</td></tr>
+<tr><td>Licencia/permiso/ausente</td><td>Si el docente tiene licencia, permiso o está ausente ese día → rechazar</td></tr>
+<tr><td>Feriados / no laborales</td><td>Bloquear días sin clases (feriados, adm., vacaciones)</td></tr>
+<tr><td>Limpieza entre bloques</td><td>15-30 min de bloqueo entre reservas si aplica</td></tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>3. Nuevas Tablas en Supabase</h2>
+
+<div class="grid2">
+<div class="card">
+<h4><span class="tag tag-db">DB</span> <code>laboratorios</code></h4>
+<ul>
+  <li><code>id</code> — UUID</li>
+  <li><code>nombre</code> — text (ej: "Lab 1", "Lab Informática")</li>
+  <li><code>capacidad</code> — integer (puestos)</li>
+  <li><code>ubicacion</code> — text</li>
+  <li><code>activo</code> — boolean</li>
+  <li><code>id_establecimiento</code> — UUID</li>
+  <li><code>requiere_limpieza_min</code> — integer (min entre bloques, default 0)</li>
+</ul>
+</div>
+<div class="card">
+<h4><span class="tag tag-db">DB</span> <code>reservas_laboratorio</code></h4>
+<ul>
+  <li><code>id</code> — UUID</li>
+  <li><code>id_laboratorio</code> — FK → laboratorios</li>
+  <li><code>id_funcionario</code> — FK → funcionarios (docente)</li>
+  <li><code>id_curso</code> — FK → cursos</li>
+  <li><code>fecha</code> — date</li>
+  <li><code>bloque_inicio</code> — integer</li>
+  <li><code>bloque_fin</code> — integer</li>
+  <li><code>estado</code> — enum: <code>pendiente | confirmada | cancelada | no_show</code></li>
+  <li><code>confirmada_via_correo</code> — boolean</li>
+  <li><code>confirmada_en</code> — timestamp (nullable)</li>
+  <li><code>recurrente_id</code> — UUID (nullable, para reservas recurrentes)</li>
+  <li><code>nota</code> — text (nullable)</li>
+  <li><code>created_at</code> — timestamptz</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<h4><span class="tag tag-db">DB</span> <code>reservas_recurrentes</code> <span style="font-weight:400;color:#6b7280;font-size:12px;">(opcional)</span></h4>
+<ul>
+  <li><code>id</code> — UUID</li>
+  <li><code>patron</code> — text JSON (<code>{"dias_semana":[1,3], "num_semanas":4}</code>)</li>
+  <li><code>fecha_inicio</code> — date</li>
+  <li><code>fecha_termino</code> — date</li>
+  <li>Al crear, genera N reservas individuales vinculadas a este <code>recurrente_id</code></li>
+</ul>
+</div>
+
+<!-- ================================================================== -->
+<h2>4. Nuevas Rutas</h2>
+<table>
+<thead><tr><th>Ruta</th><th>Página</th><th>Descripción</th></tr></thead>
+<tbody>
+<tr><td><code>/reserva-laboratorio</code></td><td><span class="tag tag-fe">UI</span></td><td>Formulario: seleccionar lab → calendario con bloques → datos curso → confirmar</td></tr>
+<tr><td><code>/reserva-laboratorio/mis-reservas</code></td><td><span class="tag tag-fe">UI</span></td><td>Listado de reservas del docente (pendientes/confirmadas/historial). Botón anular</td></tr>
+<tr><td><code>/reserva-laboratorio/admin</code></td><td><span class="tag tag-fe">UI</span></td><td>Panel admin: todas las reservas, eliminar cualquier reserva, ver no-shows</td></tr>
+<tr><td><code>/reserva-laboratorio/calendario</code></td><td><span class="tag tag-fe">UI</span></td><td>Vista calendario de todas las reservas (solo lectura)</td></tr>
+<tr><td><code>/api/reservas</code></td><td><span class="tag tag-be">API</span></td><td>CRUD de reservas (crear, listar, cancelar, confirmar)</td></tr>
+<tr><td><code>/api/reservas/confirmar/:token</code></td><td><span class="tag tag-be">API</span></td><td>Endpoint público para confirmar vía correo (sin auth)</td></tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>5. Flujo Completo</h2>
+
+<table>
+<thead><tr><th>#</th><th>Paso</th><th>Responsable</th><th>Detalle</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Ingresa al módulo</td><td>Docente</td><td>Selecciona fecha, laboratorio y bloques disponibles</td></tr>
+<tr><td>2</td><td>Selecciona curso</td><td>Docente</td><td>Elige curso que asistirá al lab. Sistema valida curso no ocupado ese bloque</td></tr>
+<tr><td>3</td><td>Valida licencias/ausencias</td><td>Sistema</td><td>Revisa ausentes activos del docente para esa fecha. Si tiene licencia → rechaza</td></tr>
+<tr><td>4</td><td>Confirma reserva</td><td>Docente</td><td>Reserva guardada como <code>pendiente</code>. Muestra mensaje: "Debe confirmar asistencia vía correo"</td></tr>
+<tr><td>5</td><td>Correo de confirmación</td><td>Sistema</td><td>Envía correo al docente + copia a encargado lab/UTP. Incluye enlace de confirmación + adjunto .ics</td></tr>
+<tr><td>6</td><td>Confirma asistencia</td><td>Docente</td><td>Hace clic en enlace del correo → estado pasa a <code>confirmada</code>. Sistema registra timestamp</td></tr>
+<tr><td>7</td><td>Evento en calendario Google</td><td>Sistema</td><td>Crea evento en calendario compartido del sistema (service account)</td></tr>
+<tr><td>8</td><td>Anulación</td><td>Docente/Admin</td><td>Hasta 1h antes. Si es <code>confirmada</code>, sistema envía correo de cancelación a copias</td></tr>
+<tr><td>9</td><td>No-show</td><td>Sistema</td><td>Si no confirmó ni canceló y pasó la fecha → <code>no_show</code>. Historial de no-shows acumulable</td></tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>6. Reglas de Negocio</h2>
+<div class="card">
+  <ul>
+    <li><strong>Reserva recurrente:</strong> "Todas las semanas, mismo bloque, por N semanas" — opción en formulario</li>
+    <li><strong>Notificación a encargado:</strong> Al crear/cancelar reserva, notificar al encargado del laboratorio (rol Técnico)</li>
+    <li><strong>Bloqueo por no-shows:</strong> Si acumula X no-shows (ej: 3), pierde privilegio de reservar por N días</li>
+    <li><strong>Período máximo:</strong> No se puede reservar con más de 1 semana de anticipación (ajustable)</li>
+    <li><strong>Antelación mínima:</strong> 2 horas antes del bloque (ajustable)</li>
+    <li><strong>Solo lectura en calendario:</strong> Los docentes visualizan el calendario compartido de Google, no lo editan</li>
+    <li><strong>Encargado lab:</strong> Rol existente o nuevo que recibe notificaciones de todas las reservas</li>
+  </ul>
+</div>
+
+<!-- ================================================================== -->
+<h2>7. Integración con Google Calendar</h2>
+<table>
+<thead><tr><th>Componente</th><th>Acción</th></tr></thead>
+<tbody>
+<tr><td>Calendario compartido del sistema</td><td>Un solo calendario ("Reservas Laboratorio LNC"). Service account de Google Cloud escribe eventos aquí</td></tr>
+<tr><td>Creación de evento</td><td>Cuando el docente confirma vía correo → Worker/API crea evento en el calendario compartido con título: <code>[Lab 1] Matemáticas - 4°A - María Pérez</code></td></tr>
+<tr><td>Cancelación</td><td>Elimina o actualiza el evento en el calendario compartido</td></tr>
+<tr><td>Adjunto .ics</td><td>El correo de confirmación incluye un archivo .ics para que el docente lo importe a su propio calendario</td></tr>
+<tr><td>Visualización externa</td><td>Cualquier persona con el enlace del calendario compartido puede ver las reservas (solo lectura)</td></tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>8. Reutilización de Componentes Existentes</h2>
+<table>
+<thead><tr><th>Recurso</th><th>Uso</th></tr></thead>
+<tbody>
+<tr><td><code>bloques_horarios</code></td><td>Ya existe en DB — reutilizar para mostrar bloques disponibles</td></tr>
+<tr><td><code>funcionarios</code> (ausentes)</td><td>Validar licencias/permisos del docente antes de aceptar reserva</td></tr>
+<tr><td><code>mantenedor-cursos</code></td><td>Select de curso que asistirá al laboratorio</td></tr>
+<tr><td><code>email_config</code></td><td>SMTP ya configurado para envío de correos</td></tr>
+<tr><td><code>EnviarCorreo</code> service</td><td>Lógica de envío reutilizable</td></tr>
+<tr><td>Cloudflare Worker</td><td>Endpoint para crear eventos en Google Calendar API</td></tr>
+<tr><td><code>/api/send-email</code></td><td>Endpoint para envío de correos de confirmación/cancelación</td></tr>
+</tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2>9. Tareas de Implementación</h2>
+<ol>
+  <li><span class="tag tag-db">DB</span> Crear tablas <code>laboratorios</code>, <code>reservas_laboratorio</code>, <code>reservas_recurrentes</code></li>
+  <li><span class="tag tag-db">DB</span> Escribir RLS policies para cada tabla</li>
+  <li><span class="tag tag-be">API</span> Crear endpoint <code>/api/reservas</code> (CRUD + validaciones)</li>
+  <li><span class="tag tag-be">API</span> Crear endpoint <code>/api/reservas/confirmar/:token</code></li>
+  <li><span class="tag tag-be">API</span> Crear endpoint público <code>/api/reservas/calendario</code> (solo lectura)</li>
+  <li><span class="tag tag-be">API</span> Integrar Google Calendar API (service account + creación de eventos)</li>
+  <li><span class="tag tag-fe">UI</span> Página <code>/reserva-laboratorio</code> — selector de lab + calendario + formulario</li>
+  <li><span class="tag tag-fe">UI</span> Página <code>/reserva-laboratorio/mis-reservas</code> — listado + anular</li>
+  <li><span class="tag tag-fe">UI</span> Página <code>/reserva-laboratorio/admin</code> — panel de administración</li>
+  <li><span class="tag tag-fe">UI</span> Página <code>/reserva-laboratorio/calendario</code> — vista calendario</li>
+  <li><span class="tag tag-flow">Flow</span> Lógica de validaciones (licencia, curso ocupado, capacidad, antelación)</li>
+  <li><span class="tag tag-flow">Flow</span> Lógica de no-show (cron/timer o verificación al listar)</li>
+  <li><span class="tag tag-flow">Flow</span> Agregar ruta al permission assigner</li>
+  <li><span class="tag tag-flow">Flow</span> Agregar al sidebar (menú)</li>
+</ol>
+
+<!-- ================================================================== -->
+<h2>10. Preguntas Pendientes</h2>
+<div class="card">
+  <ul>
+    <li>¿El encargado de laboratorio es un rol separado o se asigna a un funcionario específico?</li>
+    <li>¿La verificación de "docente ocupado ese bloque" cruza contra horario docente (si existe) o solo contra reservas existentes?</li>
+    <li>¿Se necesita historial de modificaciones (auditoría) de cada reserva?</li>
+    <li>¿El calendario compartido de Google se embedeará dentro del sistema (iframe) o será un enlace externo?</li>
+    <li>¿Cuántos no-shows antes de bloquear al docente? ¿Configurable?</li>
+    <li>¿Docente con licencia médica puede igualmente hacer reservas para cuando regrese? (o bloqueo total)</li>
+  </ul>
+</div>
+
+<!-- ================================================================== -->
+<h2>Anexo A: App Nativa Satélite para Laboratorios</h2>
+<p style="color:#6b7280; font-size:13px;">Aplicación de escritorio instalada en cada PC del laboratorio. Bloquea el equipo, autentica al usuario y registra la actividad. Se comunica con la plataforma web existente.</p>
+
+<div class="card">
+<h4>🎯 Propósito</h4>
+<ul>
+  <li>Saber <strong>quién usó cada computador</strong>: usuario, RUT, fecha, hora inicio/fin, curso, docente a cargo</li>
+  <li>El PC <strong>no se puede usar sin autenticarse</strong> en la app</li>
+  <li>Los registros se sincronizan con la web (SQLite local como buffer offline)</li>
+  <li>Admin puede desbloquear cualquier PC remotamente</li>
+  <li>Encargado de laboratorio puede registrar usuarios in-situ si no están en el sistema</li>
+</ul>
+</div>
+
+<h3>1. Stack Tecnológico</h3>
+<table>
+<thead><tr><th>Capa</th><th>Tecnología</th><th>Rol</th></tr></thead>
+<tbody>
+<tr><td>App nativa</td><td><strong>Electron</strong> o <strong>.NET MAUI</strong></td><td>Pantalla completa, bloqueo de sesión Windows, tray icon, SQLite embebido</td></tr>
+<tr><td>Base local</td><td><strong>SQLite</strong> (better-sqlite3 o sqlite-net)</td><td>Cache de usuarios, cola de sesiones offline, comandos pendientes</td></tr>
+<tr><td>WebSocket</td><td>Cloudflare Worker (mismo que ya tienes)</td><td>Comandos remotos (unlock, lock, reiniciar), detección de sesión activa</td></tr>
+<tr><td>Auth</td><td>Google OAuth webview + API Supabase</td><td>Login con misma cuenta Google de la intranet</td></tr>
+<tr><td>Sincronización</td><td>HTTP REST <code>POST /api/lab/sync</code></td><td>Envío de lotes de sesiones desde SQLite → Supabase</td></tr>
+<tr><td>Panel web</td><td>React (existente)</td><td>Nuevas páginas de administración de laboratorios</td></tr>
+</tbody>
+</table>
+
+<h3>2. Flujo de Autenticación</h3>
+
+<table>
+<thead><tr><th>#</th><th>Paso</th><th>Detalle</th></tr></thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td>Pantalla bloqueada</td>
+  <td>App inicia en pantalla completa. Muestra: "Laboratorio X — Identifíquese". Impide cualquier uso del PC</td>
+</tr>
+<tr>
+  <td>2a</td>
+  <td>Iniciar con Google</td>
+  <td>Abre webview con OAuth de Google (mismo que la intranet). Busca RUT en <code>funcionarios</code> / <code>estudiantes</code>. Si existe → acceso</td>
+</tr>
+<tr>
+  <td>2b</td>
+  <td>Buscar por RUT</td>
+  <td>Usuario escribe RUT (con/sin puntos). App consulta API o cache SQLite local. Si existe → acceso</td>
+</tr>
+<tr>
+  <td>2c</td>
+  <td>Buscar por nombre</td>
+  <td>Escribe nombre. API devuelve coincidencias. Selecciona → acceso</td>
+</tr>
+<tr>
+  <td>2d</td>
+  <td>Usuario no encontrado</td>
+  <td>Encargado lab presiona "Registrar usuario". Formulario: RUT, nombre, curso. Se guarda en <code>usuarios_lab_temp</code> y se da acceso inmediato</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>Acceso concedido</td>
+  <td>App desbloquea pantalla. Inicia registro de sesión en SQLite. Muestra panel informativo (tiempo restante, botón cerrar sesión)</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>Cerrar sesión</td>
+  <td>Usuario hace clic en "Finalizar" o el tiempo expira. App registra fecha_fin y bloquea pantalla nuevamente</td>
+</tr>
+</tbody>
+</table>
+
+<h3>3. Base de Datos SQLite (por PC)</h3>
+
+<div class="grid2">
+<div class="card">
+<h4><code>sesiones</code></h4>
+<ul>
+  <li><code>id</code> TEXT PRIMARY KEY (UUID)</li>
+  <li><code>rut_usuario</code> TEXT</li>
+  <li><code>nombre_usuario</code> TEXT</li>
+  <li><code>tipo_usuario</code> TEXT (docente/estudiante)</li>
+  <li><code>curso</code> TEXT (nullable)</li>
+  <li><code>computador</code> TEXT (hostname del PC)</li>
+  <li><code>fecha_inicio</code> DATETIME</li>
+  <li><code>fecha_fin</code> DATETIME (nullable)</li>
+  <li><code>sincronizado</code> INTEGER DEFAULT 0</li>
+</ul>
+</div>
+<div class="card">
+<h4><code>usuarios_cache</code></h4>
+<ul>
+  <li><code>rut</code> TEXT PRIMARY KEY</li>
+  <li><code>nombre</code> TEXT</li>
+  <li><code>tipo</code> TEXT</li>
+  <li><code>curso</code> TEXT</li>
+  <li><code>ultima_sincro</code> DATETIME</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<h4><code>comandos</code></h4>
+<ul>
+  <li><code>id</code> INTEGER PRIMARY KEY AUTOINCREMENT</li>
+  <li><code>tipo</code> TEXT (unlock / lock / bloquear_pantalla / reiniciar / apagar)</li>
+  <li><code>params</code> TEXT JSON (nullable)</li>
+  <li><code>leido</code> INTEGER DEFAULT 0</li>
+  <li><code>created_at</code> DATETIME</li>
+</ul>
+</div>
+
+<h3>4. Nuevas Tablas en Supabase (Web)</h3>
+
+<table>
+<thead><tr><th>Tabla</th><th>Columnas</th><th>Propósito</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>registros_laboratorio</code></td>
+  <td><code>id</code>, <code>id_establecimiento</code>, <code>computador</code>, <code>rut_usuario</code>, <code>nombre_usuario</code>, <code>tipo_usuario</code>, <code>curso</code>, <code>fecha_inicio</code>, <code>fecha_fin</code>, <code>docente_a_cargo</code>, <code>sync_at</code></td>
+  <td>Registro centralizado de todas las sesiones sincronizadas desde los PCs</td>
+</tr>
+<tr>
+  <td><code>usuarios_lab_temp</code></td>
+  <td><code>id</code>, <code>rut</code>, <code>nombre</code>, <code>curso</code>, <code>id_establecimiento</code>, <code>registrado_por</code>, <code>created_at</code></td>
+  <td>Usuarios registrados rápidamente por el encargado del lab (no existen en funcionarios/estudiantes)</td>
+</tr>
+<tr>
+  <td><code>computadores_lab</code></td>
+  <td><code>id</code>, <code>nombre</code> (hostname), <code>id_laboratorio</code>, <code>ip</code>, <code>activo</code>, <code>ultimo_ws</code></td>
+  <td>Inventario de equipos registrados en cada laboratorio</td>
+</tr>
+</tbody>
+</table>
+
+<h3>5. Nuevos Endpoints API</h3>
+
+<table>
+<thead><tr><th>Endpoint</th><th>Método</th><th>Descripción</th></tr></thead>
+<tbody>
+<tr><td><code>/api/lab/sync</code></td><td>POST</td><td>Recibe lote de sesiones desde SQLite del PC. Inserta en <code>registros_laboratorio</code>. Responde OK</td></tr>
+<tr><td><code>/api/lab/usuarios</code></td><td>GET</td><td>Busca usuarios por RUT o nombre. Consulta <code>funcionarios</code> + <code>estudiantes</code> + <code>usuarios_lab_temp</code></td></tr>
+<tr><td><code>/api/lab/registrar</code></td><td>POST</td><td>Crea usuario temporal (<code>usuarios_lab_temp</code>) desde la app del encargado</td></tr>
+<tr><td><code>/api/lab/computadores</code></td><td>GET</td><td>Lista computadores registrados (para el panel de monitoreo)</td></tr>
+<tr><td><code>/api/lab/computador/registrar</code></td><td>POST</td><td>Registra un PC en <code>computadores_lab</code> (hostname, lab, ip)</td></tr>
+</tbody>
+</table>
+
+<h3>6. Comunicación en Tiempo Real (WebSocket)</h3>
+<p>La app nativa mantiene una conexión WebSocket con el Cloudflare Worker (mismo que usas para EnLínea).</p>
+<table>
+<thead><tr><th>Mensaje</th><th>Origen</th><th>Acción en la App</th></tr></thead>
+<tbody>
+<tr><td><code>{"tipoMsg":"unlock","computador":"LAB-1"}</code></td><td>Admin vía web</td><td>Desbloquea la pantalla inmediatamente</td></tr>
+<tr><td><code>{"tipoMsg":"lock","computador":"LAB-1"}</code></td><td>Admin vía web</td><td>Bloquea la sesión activa, fuerza logout</td></tr>
+<tr><td><code>{"tipoMsg":"reiniciar","computador":"LAB-1"}</code></td><td>Admin vía web</td><td>Ejecuta <code>reboot</code> en el PC remoto</td></tr>
+<tr><td><code>{"tipoMsg":"ping"}</code></td><td>Worker (server)</td><td>Keepalive — app responde <code>pong</code> con estado</td></tr>
+<tr><td><code>{"tipoMsg":"sesion_iniciada","rut":"...","computador":"..."}</code></td><td>App nativa</td><td>Worker actualiza estado: PC ocupado</td></tr>
+<tr><td><code>{"tipoMsg":"sesion_terminada","rut":"...","computador":"..."}</code></td><td>App nativa</td><td>Worker actualiza estado: PC libre</td></tr>
+</tbody>
+</table>
+
+<h3>7. Panel Web de Administración</h3>
+
+<table>
+<thead><tr><th>Ruta</th><th>Contenido</th><th>Roles</th></tr></thead>
+<tbody>
+<tr><td><code>/laboratorio/panel</code></td><td>Mapa del laboratorio con estado de cada PC (🟢 libre / 🔴 ocupado / ⚪ offline). Hover muestra quién lo ocupa. Botón desbloquear/lock por PC</td><td>Admin, Técnico</td></tr>
+<tr><td><code>/laboratorio/historial</code></td><td>Tabla con filtros: fecha, computador, usuario, curso. Exportable a CSV/PDF</td><td>Admin, Técnico, UTP</td></tr>
+<tr><td><code>/laboratorio/reportes</code></td><td>Gráficos: horas de uso por PC, días más usados, ranking de usuarios, promedio por curso</td><td>Admin, Técnico, UTP</td></tr>
+</tbody>
+</table>
+
+<h3>8. Sincronización Offline</h3>
+<div class="card">
+<ol>
+  <li>Cada sesión se guarda en SQLite local con <code>sincronizado = 0</code></li>
+  <li>Cada 60 segundos (o al cerrar sesión), la app intenta <code>POST /api/lab/sync</code> con un lote</li>
+  <li>Si no hay conexión, los registros quedan en cola local</li>
+  <li>Cuando la conexión regresa, envía todos los pendientes (ordenados por fecha)</li>
+  <li>El servidor responde con los IDs aceptados; la app marca esos registros como <code>sincronizado = 1</code></li>
+  <li>Registros con más de 30 días sin sincronizar se marcan como "perdidos"</li>
+</ol>
+</div>
+
+<h3>9. Tareas de Implementación</h3>
+<ol>
+  <li><span class="tag tag-db">DB</span> Crear tablas <code>registros_laboratorio</code>, <code>usuarios_lab_temp</code>, <code>computadores_lab</code> en Supabase</li>
+  <li><span class="tag tag-db">DB</span> Escribir RLS policies para cada tabla</li>
+  <li><span class="tag tag-be">API</span> Crear endpoints <code>/api/lab/*</code> (sync, usuarios, registrar, computadores)</li>
+  <li><span class="tag tag-be">API</span> Agregar manejo de mensajes WS <code>lock/unlock/sesion_iniciada/sesion_terminada</code> en el Worker existente</li>
+  <li><span class="tag tag-fe">UI</span> Páginas <code>/laboratorio/panel</code>, <code>/laboratorio/historial</code>, <code>/laboratorio/reportes</code></li>
+  <li><span class="tag tag-fe">UI</span> Agregar rutas al permission assigner y al sidebar</li>
+  <li><span class="tag tag-flow">Flow</span> Desarrollar app nativa (Electron): pantalla de bloqueo, auth, SQLite, WS, sincronización</li>
+  <li><span class="tag tag-flow">Flow</span> Instalar app en cada PC del laboratorio</li>
+  <li><span class="tag tag-flow">Flow</span> Registrar cada PC en <code>computadores_lab</code></li>
+  <li><span class="tag tag-flow">Flow</span> Pruebas de sincronización offline/online</li>
+</ol>
+
+<h3>10. Preguntas Pendientes</h3>
+<div class="card">
+  <ul>
+    <li>¿La app nativa se distribuye mediante MSI/instalador o portable?</li>
+    <li>¿Se necesita historial de navegación? (capturar URLs requiere proxy HTTP local)</li>
+    <li>¿La autenticación con Google requiere que los estudiantes tengan cuenta Google institucional?</li>
+    <li>¿Qué pasa si el estudiante fuerza el cierre de la app (Task Manager)? ¿Se registra igual?</li>
+    <li>¿Se necesita integración con Active Directory del colegio?</li>
+    <li>¿Los reportes de uso se envían automáticamente a UTP/Dirección por correo?</li>
+  </ul>
+</div>
+
+<hr>
+<p style="text-align:center; color:#9ca3af; font-size:12px; margin-top:32px;">
+  SGJA — Pauta Módulo Reserva de Laboratorios + App Nativa Satélite · 23 mayo 2026
+</p>
+
+</body>
+</html>

@@ -1,0 +1,98 @@
+[
+  {
+    "left": 157.0,
+    "top": 0.0,
+    "width": 38,
+    "height": 29,
+    "text": "Bodega Internado",
+    "zone": "z-internado"
+  },
+  {
+    "left": 289.0,
+    "top": 0.0,
+    "width": 25,
+    "height": 58,
+    "text": "Bodega 1",
+    "zone": "z-bib"
+  },
+  {
+    "left": 313.0,
+    "top": 0.0,
+    "width": 42,
+    "height": 59,
+    "text": "Sala de reuniones",
+    "zone": "z-sala"
+  },
+  {
+    "left": 289.0,
+    "top": 59.0,
+    "width": 25,
+    "height": 148,
+    "text": "Pasillo Rengo",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 315.0,
+    "top": 60.0,
+    "width": 40,
+    "height": 29,
+    "text": "Bodega 2",
+    "zone": "z-other"
+  },
+  {
+    "left": 315.0,
+    "top": 90.0,
+    "width": 40,
+    "height": 29,
+    "text": "Bodega 3",
+    "zone": "z-admin"
+  },
+  {
+    "left": 315.0,
+    "top": 120.0,
+    "width": 40,
+    "height": 29,
+    "text": "Bodega 4",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 315.0,
+    "top": 150.0,
+    "width": 40,
+    "height": 29,
+    "text": "Bodega 5",
+    "zone": "z-admin"
+  },
+  {
+    "left": 315.0,
+    "top": 180.0,
+    "width": 40,
+    "height": 29,
+    "text": "Bodega 6",
+    "zone": "z-admin"
+  },
+  {
+    "left": 281.0,
+    "top": 209.0,
+    "width": 32,
+    "height": 29,
+    "text": "Acceso Int. Pas. Cochrane",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 315.0,
+    "top": 210.0,
+    "width": 40,
+    "height": 29,
+    "text": "Bodega 7",
+    "zone": "z-empty"
+  },
+  {
+    "left": 255.0,
+    "top": 31.0,
+    "width": 32,
+    "height": 45,
+    "text": "Escalera Pasillo Rengo",
+    "zone": "z-acceso"
+  }
+]

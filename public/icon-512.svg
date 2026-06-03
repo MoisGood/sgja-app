@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo -->
+  <rect width="512" height="512" fill="#1A3C6B"/>
+  
+  <!-- Iniciales SG -->
+  <text x="256" y="256" 
+        font-size="256" 
+        font-weight="bold" 
+        font-family="Arial, sans-serif"
+        fill="#FFFFFF" 
+        text-anchor="middle" 
+        dominant-baseline="middle">
+    SG
+  </text>
+</svg>

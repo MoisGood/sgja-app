@@ -1,0 +1,47 @@
+{
+  "name": "SGJA - Sistema de Gestión de Justificaciones de Atrasos e Inasistencias",
+  "short_name": "SGJA",
+  "description": "Sistema para registrar y gestionar justificaciones de atrasos e inasistencias de estudiantes",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1A3C6B",
+  "background_color": "#FFFFFF",
+  "icons": [
+    {
+      "src": "/icon-96.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["education"],
+  "shortcuts": [
+    {
+      "name": "Registrar Justificación",
+      "short_name": "Registrar",
+      "description": "Acceso rápido a registrar una justificación",
+      "url": "/?shortcut=registrar",
+      "icons": [
+        {
+          "src": "/icon-96.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

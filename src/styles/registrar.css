@@ -1,0 +1,628 @@
+/* ============================================================
+   SGJA – Estilos Registrar Justificación
+   src/styles/registrar.css
+   ============================================================ */
+
+.registrar-container {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-container {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+.registrar-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.registrar-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.registrar-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1a3c6b;
+  margin: 0 0 0.5rem 0;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-title {
+  color: #93c5fd;
+}
+
+.registrar-subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-subtitle {
+  color: #9ca3af;
+}
+
+/* Grid Layout */
+.registrar-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .registrar-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Formulario */
+.registrar-form-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-form-section {
+  background: #1f2937;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-color: #374151;
+}
+
+.registrar-form-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-form-title {
+  color: #f3f4f6;
+}
+
+.registrar-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.registrar-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.registrar-label {
+  display: block;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-label {
+  color: #f3f4f6;
+}
+
+.registrar-label.required::after {
+  content: ' *';
+  color: #dc2626;
+}
+
+.registrar-input,
+.registrar-select,
+.registrar-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  background: white;
+  color: #111827;
+}
+
+html[data-theme="dark"] .registrar-input,
+html[data-theme="dark"] .registrar-select,
+html[data-theme="dark"] .registrar-textarea {
+  background: #111827;
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+
+.registrar-input:focus,
+.registrar-select:focus,
+.registrar-textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+html[data-theme="dark"] .registrar-input:focus,
+html[data-theme="dark"] .registrar-select:focus,
+html[data-theme="dark"] .registrar-textarea:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.registrar-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Tipo Radio Buttons */
+.registrar-tipo-group {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.registrar-tipo-option {
+  flex: 1;
+  position: relative;
+}
+
+.registrar-tipo-input {
+  display: none;
+}
+
+.registrar-tipo-label {
+  display: block;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f9fafb;
+}
+
+html[data-theme="dark"] .registrar-tipo-label {
+  border-color: #4b5563;
+  background: #2d3748;
+  color: #d1d5db;
+}
+
+.registrar-tipo-input:checked + .registrar-tipo-label {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+html[data-theme="dark"] .registrar-tipo-input:checked + .registrar-tipo-label {
+  border-color: #3b82f6;
+  background: #1e40af;
+  color: #93c5fd;
+}
+
+.registrar-tipo-label:hover {
+  border-color: #bfdbfe;
+  background: #f0f9ff;
+}
+
+html[data-theme="dark"] .registrar-tipo-label:hover {
+  border-color: #60a5fa;
+  background: #1e3a8a;
+}
+
+/* Estudiante Seleccionado */
+.registrar-estudiante-seleccionado {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-seleccionado {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0c4a6e 100%);
+  border-color: #0ea5e9;
+}
+
+.registrar-estudiante-badge {
+  display: inline-block;
+  background: #0369a1;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-badge {
+  background: #0284c7;
+}
+
+.registrar-estudiante-nombre {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0c4a6e;
+  margin: 0 0 0.5rem 0;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-nombre {
+  color: #bae6fd;
+}
+
+.registrar-estudiante-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.registrar-estudiante-info-item {
+  color: #374151;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-info-item {
+  color: #d1d5db;
+}
+
+.registrar-estudiante-info-label {
+  font-weight: 600;
+  color: #1f2937;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-info-label {
+  color: #f3f4f6;
+}
+
+/* Botones */
+.registrar-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-actions {
+  border-top-color: #374151;
+}
+
+.registrar-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-size: 0.95rem;
+}
+
+.registrar-btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  flex: 1;
+}
+
+html[data-theme="dark"] .registrar-btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.registrar-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+html[data-theme="dark"] .registrar-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.registrar-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  flex: 1;
+  transition: all 0.2s ease;
+}
+
+html[data-theme="dark"] .registrar-btn-secondary {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+.registrar-btn-secondary:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+html[data-theme="dark"] .registrar-btn-secondary:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+.registrar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Lista Estudiantes */
+.registrar-estudiantes-list {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiantes-list {
+  background: #1f2937;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-color: #374151;
+}
+
+.registrar-estudiantes-header {
+  background: #f3f4f6;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiantes-header {
+  background: #2d3748;
+  border-bottom-color: #374151;
+}
+
+.registrar-estudiantes-search {
+  position: relative;
+}
+
+.registrar-estudiantes-search input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: white;
+  color: #1f2937;
+  transition: all 0.2s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiantes-search input {
+  background: #111827;
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+
+.registrar-estudiantes-search input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+html[data-theme="dark"] .registrar-estudiantes-search input:focus {
+  border-color: #60a5fa;
+}
+
+.registrar-estudiantes-search::before {
+  content: '🔍';
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+}
+
+.registrar-estudiantes-items {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.registrar-estudiante-item {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-item {
+  border-bottom-color: #374151;
+}
+
+.registrar-estudiante-item:hover {
+  background: #f9fafb;
+}
+
+html[data-theme="dark"] .registrar-estudiante-item:hover {
+  background: #374151;
+}
+
+.registrar-estudiante-item:last-child {
+  border-bottom: none;
+}
+
+.registrar-estudiante-item-nombre {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-item-nombre {
+  color: #f3f4f6;
+}
+
+.registrar-estudiante-item-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+  display: flex;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-item-info {
+  color: #9ca3af;
+}
+
+.registrar-estudiante-item-curso {
+  background: #e0e7ff;
+  color: #4f46e5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-estudiante-item-curso {
+  background: #1e40af;
+  color: #93c5fd;
+}
+
+.registrar-sin-estudiantes {
+  padding: 2rem;
+  text-align: center;
+  color: #9ca3af;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .registrar-sin-estudiantes {
+  color: #6b7280;
+}
+
+/* Filtros */
+.registrar-filtros {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.registrar-filtro-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #4b5563;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+html[data-theme="dark"] .registrar-filtro-btn {
+  border-color: #4b5563;
+  background: #1f2937;
+  color: #d1d5db;
+}
+
+.registrar-filtro-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+html[data-theme="dark"] .registrar-filtro-btn:hover {
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+
+.registrar-filtro-btn.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+html[data-theme="dark"] .registrar-filtro-btn.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+/* Mensajes */
+.registrar-alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.registrar-alert-success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #22c55e;
+}
+
+html[data-theme="dark"] .registrar-alert-success {
+  background: #1f3a1f;
+  color: #86efac;
+  border-color: #16a34a;
+}
+
+.registrar-alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+html[data-theme="dark"] .registrar-alert-error {
+  background: #7f1d1d;
+  color: #fecaca;
+  border-color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .registrar-container {
+    padding: 1rem;
+  }
+
+  .registrar-title {
+    font-size: 1.75rem;
+  }
+
+  .registrar-form-section {
+    padding: 1.5rem;
+  }
+
+  .registrar-actions {
+    flex-direction: column-reverse;
+  }
+
+  .registrar-tipo-group {
+    flex-direction: column;
+  }
+
+  .registrar-estudiante-info {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .registrar-container {
+    padding: 0.75rem;
+  }
+
+  .registrar-title {
+    font-size: 1.5rem;
+  }
+
+  .registrar-form-section {
+    padding: 1rem;
+  }
+
+  .registrar-form-group {
+    margin-bottom: 1rem;
+  }
+}

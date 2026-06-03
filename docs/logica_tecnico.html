@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Módulo Técnico — Lógica del Sistema</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; padding: 2rem; line-height: 1.6; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; color: #0f172a; margin-bottom: .25rem; }
+  .subtitle { color: #64748b; margin-bottom: 2rem; font-size: .95rem; }
+  h2 { font-size: 1.25rem; color: #1e3a5f; margin: 2rem 0 .75rem; padding-bottom: .4rem; border-bottom: 2px solid #e2e8f0; }
+  h3 { font-size: 1.05rem; color: #334155; margin: 1.25rem 0 .5rem; }
+  .card { background: #fff; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #e2e8f0; }
+  .card-warn { border-left: 4px solid #f59e0b; }
+  .card-info { border-left: 4px solid #3b82f6; }
+  .card-success { border-left: 4px solid #22c55e; }
+  .badge { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-yellow { background: #fef9c3; color: #854d0e; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  ul, ol { padding-left: 1.25rem; }
+  li { margin-bottom: .35rem; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+  .flow { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; padding: .75rem; background: #f1f5f9; border-radius: 8px; font-size: .85rem; }
+  .flow-step { background: #fff; padding: .4rem .8rem; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 500; }
+  .flow-arrow { color: #94a3b8; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: .6rem .75rem; border-bottom: 1px solid #e2e8f0; }
+  th { font-weight: 600; color: #475569; background: #f8fafc; }
+  .tag { display: inline-block; padding: .1rem .5rem; border-radius: 4px; font-size: .75rem; font-weight: 500; }
+  .tag-entidad { background: #ede9fe; color: #5b21b6; }
+  .tag-accion { background: #e0f2fe; color: #075985; }
+  .tag-estado { background: #fef9c3; color: #854d0e; }
+  @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } body { padding: 1rem; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🛠️ Módulo Técnico</h1>
+<p class="subtitle">Arquitectura, flujo QR, tickets rápidos, configuración y reglas de negocio acordadas el 25/05/2026.</p>
+
+<!-- ============ 1. RUTAS ============ -->
+<h2>1. Rutas del Módulo</h2>
+<div style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Ruta</th><th>Vista</th><th>Acceso</th><th>Descripción</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>/tecnico</code> o <code>/tecnico/mapa</code></td><td>Mapa interactivo</td><td>ADMIN / TECNICO</td><td>Vista principal con plano del edificio, drag de dispositivos</td></tr>
+    <tr><td><code>/tecnico/equipos</code></td><td>Equipos</td><td>ADMIN / TECNICO</td><td>CRUD de equipos individuales con marca, modelo, serie</td></tr>
+    <tr><td><code>/tecnico/ubicaciones</code></td><td>Ubicaciones</td><td>ADMIN / TECNICO</td><td>Resumen de dispositivos por lugar (tabla <code>ubicaciones</code>)</td></tr>
+    <tr><td><code>/tecnico/requerimientos</code></td><td>Requerimientos</td><td>ADMIN / TECNICO</td><td>Lista global de tickets</td></tr>
+    <tr><td><code>/tecnico/configuracion</code></td><td>Configuración</td><td>ADMIN</td><td>Tabs: Dispositivos, Posibles Fallas, Correo</td></tr>
+    <tr><td><code>/ticket</code></td><td>Ticket rápido</td><td>ADMIN / TECNICO (autenticado)</td><td>Escanea QR → crea/actualiza ticket. Pública solo para técnicos autenticados</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 1.1 CONFIGURACIÓN ============ -->
+<h2>2. Configuración <code>/tecnico/configuracion</code></h2>
+<p style="font-size:.9rem;color:#64748b;margin-bottom:.75rem">
+  Página con tabs. Por ahora dos tabs: <strong>Dispositivos</strong> y <strong>Correo</strong> (placeholder).
+</p>
+
+<div class="grid-2">
+<div class="card card-info">
+  <h3>📦 Tab: Dispositivos</h3>
+  <p style="font-size:.85rem;color:#475569;margin-bottom:.5rem;">
+    CRUD de la lista de dispositivos que aparecen en el mapa (sección "Dispositivos" del panel).
+  </p>
+  <ul style="font-size:.85rem">
+    <li><strong>Lista actual:</strong> Proyector, Impresora, Computador, Notebook, Wifi, Escáner, Cable HDMI, Con Audio, Sin Audio, Internet Cable, Impresora Multifuncional, Impresora Color, Teléfono, SmartTV</li>
+    <li><strong>Validaciones:</strong> nombre único, sin vacíos, máximo 100 caracteres</li>
+    <li><strong>Al guardar:</strong> se actualiza la lista en el mapa y en los selects de Ubicaciones</li>
+    <li><strong>Eliminar:</strong> confirmación, solo si no está siendo usado en ubicaciones activas</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>📧 Tab: Correo</h3>
+  <p style="font-size:.85rem;color:#475569;margin-bottom:.5rem;">
+    Placeholder. En el futuro contendrá:
+  </p>
+  <ul style="font-size:.85rem">
+    <li>Lista de correos predefinidos (usuario, contacto mantenimiento, etc.)</li>
+    <li>Checkbox al cerrar ticket: "Enviar correo" → envía al usuario + relacionados</li>
+    <li>Por definir: selección manual de destinatarios al enviar</li>
+  </ul>
+  <p style="font-size:.8rem;color:#94a3b8;margin-top:.5rem;font-style:italic">Pendiente de implementación.</p>
+</div>
+</div>
+
+<div class="card card-warn">
+  <h3>⚠️ Tab: Posibles Fallas (futuro)</h3>
+  <p style="font-size:.85rem;color:#475569;">
+    CRUD de fallas predefinidas para el select al crear ticket rápido. Ej: "Sin internet", "Teclado malo", "Pantalla no enciende", "Impresora no funciona", etc. Se implementará después de Dispositivos.
+  </p>
+</div>
+
+<!-- ============ 2. QR ============ -->
+<h2>3. Códigos QR</h2>
+
+<div class="grid-2">
+<div class="card card-info">
+  <h3>📱 QR de Lugar</h3>
+  <ul style="font-size:.85rem">
+    <li>El técnico lo imprime y lo pega físicamente en la puerta/ pared de la sala u oficina</li>
+    <li>URL: <code>https://app.com/ticket?lugar=ID</code></li>
+    <li>Al escanear: abre la página de ticket rápido con el lugar precargado</li>
+    <li>Muestra los equipos asociados a ese lugar</li>
+    <li>Permite crear o actualizar tickets de ese lugar</li>
+  </ul>
+</div>
+
+<div class="card card-success">
+  <h3>📱 QR de Dispositivo</h3>
+  <ul style="font-size:.85rem">
+    <li>El técnico lo imprime y lo pega físicamente en cada equipo</li>
+    <li>URL: <code>https://app.com/ticket?equipo=ID</code></li>
+    <li>Al escanear: abre la página de ticket rápido con el equipo precargado</li>
+    <li>Muestra el historial del equipo y permite crear ticket directamente asociado al equipo</li>
+  </ul>
+</div>
+</div>
+
+<!-- ============ 3. FLUJO TICKET RÁPIDO ============ -->
+<h2>4. Flujo Ticket Rápido <code>/ticket</code></h2>
+<p style="font-size:.9rem;color:#64748b;margin-bottom:.75rem">
+  Ruta pública pero protegida: solo accede si el técnico está autenticado (redirige a login si no).
+</p>
+
+<div class="card card-warn">
+  <h3>📌 Escenario 1: Crear ticket desde QR de sala o dispositivo</h3>
+  <div class="flow" style="margin:.75rem 0">
+    <span class="flow-step">📷 Escanea QR</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Carga lugar o equipo</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Select "Posible falla"</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Input "Diagnóstico" (autocompletado + libre)</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="background:#fef9c3">Estado "En Proceso" automático</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">💾 Guardar ticket</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Campo</th><th>Tipo</th><th>Detalle</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Lugar</td><td>Auto desde QR</td><td>Readonly si viene de QR de lugar. Si es QR de equipo, se obtiene del equipo</td></tr>
+      <tr><td>Dispositivo</td><td>Select</td><td>Lista de equipos del lugar (si QR de sala) o auto (si QR de equipo)</td></tr>
+      <tr><td>Posible falla</td><td>Select</td><td>Lista predefinida desde Configuración > Posibles Fallas</td></tr>
+      <tr><td>Diagnóstico</td><td>Input + datalist</td><td>Autocompletado con opciones + permite texto libre</td></tr>
+      <tr><td>Estado</td><td>Automático</td><td>"En Proceso" al crear</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card card-success">
+  <h3>✅ Escenario 2: Cerrar ticket (actualizar)</h3>
+  <div class="flow" style="margin:.75rem 0">
+    <span class="flow-step">📷 Escanea mismo QR</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Busca ticket activo del lugar/equipo</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Input "Solución" (autocompletado + libre)</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Select estado: "Completada" / "Cancelada"</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Textarea "Observaciones"</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">☑ Enviar correo (opcional)</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="background:#dcfce7">✅ Cerrar ticket</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Campo</th><th>Tipo</th><th>Detalle</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Solución</td><td>Input + datalist</td><td>Autocompletado + texto libre</td></tr>
+      <tr><td>Estado</td><td>Select</td><td>"Completada" / "Cancelada"</td></tr>
+      <tr><td>Observaciones</td><td>Textarea</td><td>Texto libre</td></tr>
+      <tr><td>Enviar correo</td><td>Checkbox</td><td>Al marcarlo, envía al usuario del lugar + contactos relacionados</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>💡 Ejemplos concretos</h3>
+
+  <p style="font-size:.85rem;font-weight:600;margin-top:.5rem">Ejemplo A: Impresora</p>
+  <ol style="font-size:.85rem">
+    <li>Técnico escanea QR de la impresora → carga el equipo</li>
+    <li>Posible falla: "Impresora no funciona"</li>
+    <li>Diagnóstico: "Equipo sin controlador de impresora"</li>
+    <li>Guarda ticket → estado "En Proceso"</li>
+    <li>Vuelve a escanear QR o busca el ticket manualmente</li>
+    <li>Solución: "Se instala controlador e impresora queda funcionando"</li>
+    <li>Estado: "Completada"</li>
+    <li>Observaciones: "Usuario debe avisar cambio de impresora"</li>
+    <li>Cierra ticket, opcional enviar correo</li>
+  </ol>
+
+  <p style="font-size:.85rem;font-weight:600;margin-top:.75rem">Ejemplo B: Sin internet (falla general)</p>
+  <ol style="font-size:.85rem">
+    <li>Técnico escanea QR del rack de piso 1</li>
+    <li>Posible falla: "Sin internet" <em>(select predefinido)</em></li>
+    <li>Diagnóstico: "Rack piso 1 sin energía"</li>
+    <li>Guarda → estado "En Proceso" automático</li>
+    <li>Busca el ticket o vuelve a escanear el QR</li>
+    <li>Solución: "Habilito automático tablero eléctrico"</li>
+    <li>Estado: "Completada"</li>
+    <li>Observaciones: "Sobre consumo de energía"</li>
+    <li>☑ Enviar correo a contacto de mantenimiento para que revisen el problema</li>
+    <li>Cierra ticket</li>
+  </ol>
+</div>
+
+<!-- ============ 4. TABLAS ============ -->
+<h2>5. Tablas Involucradas</h2>
+<div style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Tabla</th><th>Descripción</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>lugares</code></td><td>Salas, oficinas, pasillos, patios, accesos</td><td><span class="badge badge-green">Existe</span></td></tr>
+    <tr><td><code>equipos</code></td><td>Equipos tecnológicos individuales</td><td><span class="badge badge-green">Existe</span></td></tr>
+    <tr><td><code>ubicaciones</code></td><td>Resumen dispositivo × cantidad × lugar</td><td><span class="badge badge-green">Existe</span></td></tr>
+    <tr><td><code>requerimientos</code></td><td>Tickets de soporte técnico</td><td><span class="badge badge-green">Existe</span></td></tr>
+    <tr><td><code>configuracion_dispositivos</code></td><td>Lista maestra de nombres de dispositivos</td><td><span class="badge badge-yellow">Por crear</span></td></tr>
+    <tr><td><code>configuracion_fallas</code></td><td>Lista maestra de fallas predefinidas</td><td><span class="badge badge-yellow">Por crear</span></td></tr>
+    <tr><td><code>qr_links</code></td><td>Mapeo de códigos QR a lugar o equipo</td><td><span class="badge badge-yellow">Por crear</span></td></tr>
+    <tr><td><code>configuracion_correo</code></td><td>Lista de correos predefinidos</td><td><span class="badge badge-gray">Futuro</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 5. QR EN TABLA ============ -->
+<h3>5.1 Campos adicionales en <code>requerimientos</code></h3>
+<p style="font-size:.85rem;color:#475569;">
+  Se agregan al schema actual de <code>requerimientos</code>:
+</p>
+<div style="overflow-x:auto;margin-top:.5rem">
+<table>
+  <thead>
+    <tr><th>Columna</th><th>Tipo</th><th>Descripción</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>posible_falla</code></td><td><code>text</code></td><td>Select con lista predefinida + opción "Otro"</td></tr>
+    <tr><td><code>diagnostico</code></td><td><code>text</code></td><td>Autocompletado + texto libre</td></tr>
+    <tr><td><code>solucion</code></td><td><code>text</code></td><td>Autocompletado + texto libre</td></tr>
+    <tr><td><code>fecha_cierre</code></td><td><code>timestamptz</code></td><td>Se setea al cambiar estado a "Completada"</td></tr>
+    <tr><td><code>id_tecnico_cierre</code></td><td><code>uuid</code></td><td>Técnico que cerró el ticket</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 6. REGLAS DE NEGOCIO ============ -->
+<h2>6. Reglas de Negocio</h2>
+<div class="card">
+  <ol style="font-size:.85rem">
+    <li><strong>Un lugar puede tener 0..* equipos</strong> — una sala vacía es válida</li>
+    <li><strong>Un equipo pertenece a 1 lugar</strong> — si se mueve, se reasigna desde Ubicaciones o Equipos</li>
+    <li><strong>Un ticket se asocia a 1 lugar siempre</strong> — el equipo es opcional</li>
+    <li><strong>El QR de lugar muestra el lugar + sus equipos</strong> — se puede crear ticket para el lugar o para un equipo específico</li>
+    <li><strong>El QR de equipo abre el equipo directamente</strong> — el ticket queda asociado al equipo y a su lugar</li>
+    <li><strong>Al crear ticket:</strong> estado inicial = "En Proceso"</li>
+    <li><strong>Al cerrar ticket:</strong> estado final = "Completada" o "Cancelada", se registra fecha y técnico de cierre</li>
+    <li><strong>Correo opcional:</strong> al cerrar ticket, checkbox "Enviar correo". Destinatarios: usuario del lugar + contactos predefinidos (por definir)</li>
+    <li><strong>Configuración solo para ADMIN</strong> — técnicos no pueden modificar listas de dispositivos/fallas</li>
+    <li><strong>La ruta /ticket requiere autenticación</strong> — si no hay sesión, redirige a login. No es pública.</li>
+  </ol>
+</div>
+
+<!-- ============ 7. PENDIENTE ============ -->
+<h2>7. Pendiente para Próxima Iteración</h2>
+<div class="grid-2">
+<div class="card card-warn">
+  <h3>🔜 Configuración > Posibles Fallas</h3>
+  <ul style="font-size:.85rem">
+    <li>CRUD de fallas predefinidas</li>
+    <li>Mismo estilo que Dispositivos</li>
+  </ul>
+</div>
+<div class="card card-warn">
+  <h3>🔜 Configuración > Correo</h3>
+  <ul style="font-size:.85rem">
+    <li>Lista de destinatarios predefinidos</li>
+    <li>Selección manual al enviar</li>
+  </ul>
+</div>
+</div>
+
+<hr>
+<p style="text-align:center;color:#94a3b8;font-size:.85rem">
+  Documento generado el 25 de mayo de 2026 — SGJA Módulo Técnico
+</p>
+
+</div>
+</body>
+</html>

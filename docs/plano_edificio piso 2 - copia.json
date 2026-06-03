@@ -1,0 +1,218 @@
+[
+  {
+    "left": 146,
+    "top": 109,
+    "width": 102,
+    "height": 775,
+    "text": "Pasillo Lincoyán piso 2",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 629,
+    "top": 3,
+    "width": 140,
+    "height": 105,
+    "text": "Sala de música",
+    "zone": "z-internado"
+  },
+  {
+    "left": 1033,
+    "top": 0,
+    "width": 115,
+    "height": 127,
+    "text": "Biblioteca",
+    "zone": "z-bib"
+  },
+  {
+    "left": 1149,
+    "top": 0,
+    "width": 151,
+    "height": 162,
+    "text": "Laboratorio 2",
+    "zone": "z-sala"
+  },
+  {
+    "left": 249,
+    "top": 108,
+    "width": 381,
+    "height": 146,
+    "text": "Gimnasio",
+    "zone": "z-com"
+  },
+  {
+    "left": 630,
+    "top": 109,
+    "width": 78,
+    "height": 133,
+    "text": "Paradocentes",
+    "zone": "z-admin"
+  },
+  {
+    "left": 708,
+    "top": 106,
+    "width": 324,
+    "height": 144,
+    "text": "Salon Medina",
+    "zone": "z-com"
+  },
+  {
+    "left": 1150,
+    "top": 168,
+    "width": 151,
+    "height": 159,
+    "text": "Laboratorio 1",
+    "zone": "z-sala"
+  },
+  {
+    "left": 1037,
+    "top": 129,
+    "width": 115,
+    "height": 632,
+    "text": "Pasillo Rengo piso 2",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 1151,
+    "top": 329,
+    "width": 149,
+    "height": 215,
+    "text": "Sala de Profesores",
+    "zone": "z-admin"
+  },
+  {
+    "left": 922,
+    "top": 645,
+    "width": 113,
+    "height": 115,
+    "text": "201",
+    "zone": "z-sala"
+  },
+  {
+    "left": 1155,
+    "top": 548,
+    "width": 145,
+    "height": 217,
+    "text": "Comedor Docentes",
+    "zone": "z-admin"
+  },
+  {
+    "left": 603,
+    "top": 645,
+    "width": 85,
+    "height": 117,
+    "text": "Acceso Hall Cochrane Piso 2",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 251,
+    "top": 764,
+    "width": 778,
+    "height": 105,
+    "text": "Pasillo Cochrane piso 2",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 1032,
+    "top": 764,
+    "width": 120,
+    "height": 105,
+    "text": "Escaleras a piso 2",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 0,
+    "top": 765,
+    "width": 140,
+    "height": 105,
+    "text": "Escaleras Esq. Lin+Coc",
+    "zone": "z-other"
+  },
+  {
+    "left": 805,
+    "top": 646,
+    "width": 113,
+    "height": 115,
+    "text": "202",
+    "zone": "z-sala"
+  },
+  {
+    "left": 688,
+    "top": 645,
+    "width": 113,
+    "height": 115,
+    "text": "203",
+    "zone": "z-sala"
+  },
+  {
+    "left": 485,
+    "top": 646,
+    "width": 113,
+    "height": 115,
+    "text": "204",
+    "zone": "z-sala"
+  },
+  {
+    "left": 367,
+    "top": 647,
+    "width": 113,
+    "height": 115,
+    "text": "205",
+    "zone": "z-sala"
+  },
+  {
+    "left": 249,
+    "top": 647,
+    "width": 113,
+    "height": 115,
+    "text": "206",
+    "zone": "z-sala"
+  },
+  {
+    "left": 1,
+    "top": 629,
+    "width": 140,
+    "height": 129,
+    "text": "Sala 207",
+    "zone": "z-other"
+  },
+  {
+    "left": 3,
+    "top": 0,
+    "width": 140,
+    "height": 229,
+    "text": "211",
+    "zone": "z-other"
+  },
+  {
+    "left": 2,
+    "top": 232,
+    "width": 140,
+    "height": 129,
+    "text": "210",
+    "zone": "z-other"
+  },
+  {
+    "left": 2,
+    "top": 366,
+    "width": 140,
+    "height": 129,
+    "text": "209",
+    "zone": "z-other"
+  },
+  {
+    "left": 2,
+    "top": 497,
+    "width": 140,
+    "height": 129,
+    "text": "208",
+    "zone": "z-other"
+  },
+  {
+    "left": 1156,
+    "top": 768,
+    "width": 145,
+    "height": 105,
+    "text": "UTP",
+    "zone": "z-admin"
+  }
+]

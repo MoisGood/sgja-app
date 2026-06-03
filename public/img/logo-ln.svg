@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Fondo bordó exterior con esquinas redondeadas -->
+  <rect width="200" height="200" fill="#921a3a" rx="20"/>
+  
+  <!-- Fondo blanco interior -->
+  <rect x="30" y="30" width="140" height="140" fill="white" rx="10"/>
+  
+  <!-- Texto "LN" en bordó -->
+  <text x="100" y="135" font-size="80" font-weight="bold" fill="#921a3a" text-anchor="middle" font-family="Arial, sans-serif">LN</text>
+</svg>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe de Análisis SGJA</title>
+<style>
+  @page { margin: 2cm; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #1f2937; max-width: 800px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 20pt; color: #1a3c6b; border-bottom: 2px solid #1a3c6b; padding-bottom: 8px; }
+  h2 { font-size: 15pt; color: #1a3c6b; margin-top: 24px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+  h3 { font-size: 12pt; color: #374151; margin-top: 16px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10pt; }
+  th, td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
+  th { background: #f3f4f6; font-weight: 600; }
+  tr:nth-child(even) { background: #f9fafb; }
+  code { background: #f3f4f6; padding: 1px 4px; border-radius: 3px; font-size: 10pt; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+  blockquote { border-left: 4px solid #1a3c6b; margin: 12px 0; padding: 8px 16px; background: #f9fafb; }
+  ul, ol { margin: 8px 0; padding-left: 20px; }
+  li { margin: 4px 0; }
+  strong { color: #111827; }
+  em { color: #6b7280; }
+  @media print { body { padding: 0; } }
+</style>
+</head>
+<body>
+<h1>Informe de Análisis SGJA</h1>
+<h2>Sistema de Gestión de Justificaciones y Biblioteca</h2>
+<p><strong>Fecha:</strong> 19/05/2026
+<strong>Versión:</strong> Producción (sgja-app-blue.vercel.app)</p>
+<hr>
+<h2>1. Dashboards por Rol</h2>
+<h3>Resumen General</h3>
+<table>
+<thead>
+<tr>
+<th>Dashboard</th>
+<th>Líneas</th>
+<th>Queries Supabase</th>
+<th>Responsive Móvil</th>
+<th>Usa Componentes Compartidos</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Admin</td>
+<td>81</td>
+<td>0 (navegación estática)</td>
+<td>✅ Sí (CSS con clamp)</td>
+<td>❌ No</td>
+</tr>
+<tr>
+<td>Inspector</td>
+<td>312</td>
+<td>2 (listar/actualizar solicitudes)</td>
+<td>⚠️ Limitado (solo flexWrap)</td>
+<td>✅ Card, Button</td>
+</tr>
+<tr>
+<td>Profesor</td>
+<td>1597</td>
+<td>8 (bloques, cursos, estudiantes, solicitudes)</td>
+<td>✅ Sí (detección móvil explícita)</td>
+<td>❌ No (inline styles)</td>
+</tr>
+<tr>
+<td>Estudiante</td>
+<td>307</td>
+<td>1 (historial solicitudes)</td>
+<td>⚠️ Limitado</td>
+<td>✅ Card, Button</td>
+</tr>
+<tr>
+<td>Apoderado</td>
+<td>331</td>
+<td>1 (solicitudes del pupilo)</td>
+<td>❌ No (4 columnas fijas en móvil)</td>
+<td>✅ Card, Button</td>
+</tr>
+</tbody></table>
+<h3>Problemas Identificados</h3>
+<ul>
+<li><strong><code>EstadoBadge</code></strong> duplicado idénticamente en Inspector, Estudiante y Apoderado → extraer a <code>components/Common/</code></li>
+<li>Admin y Profesor no usan componentes compartidos (Button, Card) a diferencia del resto</li>
+<li>Ningún dashboard usa lazy loading o Suspense</li>
+<li>Dashboard Apoderado: 4 columnas de estadísticas fijas se ven mal en pantallas pequeñas</li>
+</ul>
+<h3>Recomendaciones</h3>
+<ol>
+<li>Estandarizar todos los dashboards para usar componentes Common</li>
+<li>Agregar detección de móvil (innerWidth &lt; 768) en Inspector, Estudiante y Apoderado</li>
+<li>Extraer EstadoBadge a componente compartido</li>
+<li>Dashboard Apoderado: cambiar grid a 2 columnas en móvil</li>
+</ol>
+<hr>
+<h2>2. Mantenedores (CRUD)</h2>
+<h3>Estado por Archivo</h3>
+<table>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Líneas</th>
+<th>Móvil?</th>
+<th>Paginación?</th>
+<th>Usa Common?</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GestionUsuarios</td>
+<td>1196</td>
+<td>✅ Sí</td>
+<td>✅ Sí</td>
+<td>✅ Sí</td>
+<td>✅ Completo</td>
+</tr>
+<tr>
+<td>MantenedorLibros</td>
+<td>254</td>
+<td>❌ No</td>
+<td>✅ Sí</td>
+<td>✅ Button/Modal</td>
+<td>✅ Completo</td>
+</tr>
+<tr>
+<td>MantenedorEstudiantes</td>
+<td>1282</td>
+<td>❌ No</td>
+<td>✅ Sí</td>
+<td>❌ No</td>
+<td>✅ Completo</td>
+</tr>
+<tr>
+<td>Inventario</td>
+<td>185</td>
+<td>❌ No</td>
+<td>✅ Sí</td>
+<td>❌ No</td>
+<td>✅ Completo</td>
+</tr>
+<tr>
+<td>HistorialBiblioteca</td>
+<td>110</td>
+<td>❌ No</td>
+<td>✅ Sí</td>
+<td>❌ No</td>
+<td>✅ Completo</td>
+</tr>
+<tr>
+<td>SolicitudesRegistro</td>
+<td>328</td>
+<td>❌ No</td>
+<td>✅ Server-side</td>
+<td>❌ No</td>
+<td>✅ Completo</td>
+</tr>
+<tr>
+<td>MantenedorCursos</td>
+<td>596</td>
+<td>❌ No</td>
+<td>❌ No paginación</td>
+<td>❌ No</td>
+<td>⚠️ Riesgo &gt;500 registros</td>
+</tr>
+<tr>
+<td>MantenedorFuncionarios</td>
+<td>778</td>
+<td>❌ No</td>
+<td>❌ No paginación</td>
+<td>❌ No</td>
+<td>❌ Incompleto (TODOs)</td>
+</tr>
+<tr>
+<td>MantenedorMotivos</td>
+<td>616</td>
+<td>❌ No</td>
+<td>❌ No paginación</td>
+<td>❌ No</td>
+<td>⚠️ Riesgo &gt;500 registros</td>
+</tr>
+<tr>
+<td>MantenedorRolesPage</td>
+<td>23</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>✅ Wrapper</td>
+</tr>
+</tbody></table>
+<h3>Riesgos</h3>
+<ul>
+<li><strong>MantenedorCursos, MantenedorFuncionarios, MantenedorMotivos</strong>: sin paginación, cargan todos los registros. Con más de 500 registros el rendimiento se degrada significativamente</li>
+<li><strong>MantenedorFuncionarios</strong>: tiene servicios comentados como TODO, funcionalidad incompleta</li>
+</ul>
+<h3>Recomendaciones</h3>
+<ol>
+<li><strong>Prioridad alta</strong>: Agregar paginación a Cursos, Funcionarios y Motivos</li>
+<li><strong>Prioridad alta</strong>: Completar la implementación de MantenedorFuncionarios</li>
+<li><strong>Prioridad media</strong>: Agregar vista móvil (tabla → tarjetas) en MantenedorEstudiantes y MantenedorLibros</li>
+</ol>
+<hr>
+<h2>3. Módulos Funcionales</h2>
+<h3>Biblioteca</h3>
+<table>
+<thead>
+<tr>
+<th>Ruta</th>
+<th>Componente</th>
+<th>Roles</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/libros</code></td>
+<td>MantenedorLibros</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td><code>/catalogo</code></td>
+<td>Catalogo</td>
+<td>ADMIN, ESTUDIANTE</td>
+</tr>
+<tr>
+<td><code>/prestamos</code></td>
+<td>Circulacion</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td><code>/inventario</code></td>
+<td>Inventario</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td><code>/historial-biblioteca</code></td>
+<td>HistorialBiblioteca</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td><code>/config-biblioteca</code></td>
+<td>ConfigBiblioteca</td>
+<td>ADMIN</td>
+</tr>
+</tbody></table>
+<p><strong>Estado:</strong> ✅ Completo. Soportar: préstamo, devolución, renovación, email, multas, suspensiones.</p>
+<h3>Secretaría</h3>
+<table>
+<thead>
+<tr>
+<th>Ruta</th>
+<th>Componente</th>
+<th>Roles</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/secretaria</code></td>
+<td>— (menú padre)</td>
+<td>ADMIN</td>
+</tr>
+<tr>
+<td><code>/mantenedor-funcionarios</code></td>
+<td>MantenedorFuncionarios</td>
+<td>ADMIN</td>
+</tr>
+</tbody></table>
+<p><strong>Estado:</strong> ❌ Incompleto. MantenedorFuncionarios tiene backend sin implementar (TODOs).</p>
+<h3>Justificaciones</h3>
+<table>
+<thead>
+<tr>
+<th>Ruta</th>
+<th>Componente</th>
+<th>Roles (Sidebar)</th>
+<th>Roles (AppContent)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/registrar</code></td>
+<td>RegistrarJustificacion</td>
+<td>ADMIN, INSPECTOR</td>
+<td>ADMIN, INSPECTOR, PROFESOR</td>
+</tr>
+<tr>
+<td><code>/ver-justificaciones</code></td>
+<td>VerJustificaciones</td>
+<td>ADMIN, INSPECTOR</td>
+<td>ADMIN, INSPECTOR</td>
+</tr>
+<tr>
+<td><code>/gestion-pases</code></td>
+<td>GestionPases</td>
+<td>ADMIN, INSPECTOR, PROFESOR</td>
+<td>ADMIN, INSPECTOR, PROFESOR</td>
+</tr>
+<tr>
+<td><code>/justificaciones</code></td>
+<td>JustificacionesAtrasos</td>
+<td>—</td>
+<td>ADMIN, INSPECTOR</td>
+</tr>
+</tbody></table>
+<p><strong>Inconsistencia:</strong> PROFESOR tiene acceso a <code>/registrar</code> en AppContent pero el sidebar no lo muestra.</p>
+<h3>Préstamos (Circulacion.tsx)</h3>
+<p>Operaciones soportadas:</p>
+<ul>
+<li>✅ <strong>Prestar</strong>: búsqueda de libro, selección de estudiante, slider de días, validación de reglas</li>
+<li>✅ <strong>Devolver</strong>: condición (bueno/dañado/perdido), multa, justificación, suspensión</li>
+<li>✅ <strong>Renovar</strong>: modal +2/+4/+7 días, límite de renovaciones</li>
+<li>✅ <strong>Email</strong>: selección múltiple, envío de avisos de vencimiento</li>
+<li>✅ <strong>Filtros</strong>: por estado, rango de fecha, paginación</li>
+</ul>
+<hr>
+<h2>4. Menú por Rol</h2>
+<h3>Sidebar (Layout.tsx)</h3>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Items Visibles</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ADMIN</strong></td>
+<td>Inicio, Secretaría &gt; Funcionarios, Justificaciones (3), Biblioteca (6), Monitoreo (2), Seguridad, Configuración (11)</td>
+</tr>
+<tr>
+<td><strong>INSPECTOR</strong></td>
+<td>Inicio, Justificaciones (3), Panel QR, Seguridad</td>
+</tr>
+<tr>
+<td><strong>PROFESOR</strong></td>
+<td>Inicio, Justificaciones &gt; G. Pases, Mis estudiantes, Seguridad, Configuración &gt; G. Usuarios</td>
+</tr>
+<tr>
+<td><strong>ESTUDIANTE</strong></td>
+<td>Inicio, Biblioteca &gt; Catálogo, Mi historial, Seguridad</td>
+</tr>
+<tr>
+<td><strong>APODERADO</strong></td>
+<td>Inicio, Mi pupilo, Seguridad</td>
+</tr>
+</tbody></table>
+<h3>Mobile Footer (MobileLayout.tsx)</h3>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Botones</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ADMIN</strong></td>
+<td>Inicio, Catálogo, Registrar, Config (4)</td>
+</tr>
+<tr>
+<td><strong>INSPECTOR</strong></td>
+<td>Inicio, Registrar, QR (3)</td>
+</tr>
+<tr>
+<td><strong>PROFESOR</strong></td>
+<td>Solo Inicio (1)</td>
+</tr>
+<tr>
+<td><strong>ESTUDIANTE</strong></td>
+<td>Inicio, Catálogo (2)</td>
+</tr>
+<tr>
+<td><strong>APODERADO</strong></td>
+<td>Solo Inicio (1)</td>
+</tr>
+</tbody></table>
+<h3>Problemas</h3>
+<ul>
+<li>PROFESOR y APODERADO tienen solo 1 botón en móvil → muy limitado</li>
+<li>PROFESOR debería tener acceso rápido a &quot;Mis estudiantes&quot; y &quot;G. Pases&quot; en mobile</li>
+<li>APODERADO debería tener acceso rápido a &quot;Mi pupilo&quot;</li>
+</ul>
+<hr>
+<h2>5. Acceso Estudiante y Apoderado</h2>
+<h3>ESTUDIANTE</h3>
+<table>
+<thead>
+<tr>
+<th>Funcionalidad</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dashboard con historial de justificaciones</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Catálogo de biblioteca (solo lectura)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Mi historial personal</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Seguridad (cambio de contraseña)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Editar datos personales</td>
+<td>❌ No disponible</td>
+</tr>
+<tr>
+<td>Notificaciones</td>
+<td>❌ No implementado</td>
+</tr>
+<tr>
+<td>Estado bibliotecario (multas/suspensiones)</td>
+<td>❌ No visible</td>
+</tr>
+<tr>
+<td>Solicitar préstamo</td>
+<td>❌ No (solo ADMIN presta)</td>
+</tr>
+</tbody></table>
+<h3>APODERADO</h3>
+<table>
+<thead>
+<tr>
+<th>Funcionalidad</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dashboard con justificaciones del pupilo</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Mi pupilo (información)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Seguridad</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Editar datos personales</td>
+<td>❌ No disponible</td>
+</tr>
+<tr>
+<td>Notificaciones del pupilo</td>
+<td>❌ No implementado</td>
+</tr>
+<tr>
+<td>Estado bibliotecario del pupilo</td>
+<td>❌ No visible</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. Seguridad — 2FA / Autenticación</h2>
+<h3>Estado Actual</h3>
+<ul>
+<li><strong>Proveedor único:</strong> Google OAuth</li>
+<li><strong>Sin 2FA/MFA:</strong> no hay TOTP, SMS, ni authenticator app</li>
+<li><strong>Sin RLS:</strong> no hay políticas de seguridad a nivel de base de datos</li>
+<li><strong>Clave anónima:</strong> el cliente usa <code>SUPABASE_ANON_KEY</code> — sin RLS, cualquier request autenticado puede leer todas las tablas</li>
+<li><strong>Seguridad en código:</strong> las validaciones de rol se hacen en useAuth (frontend), no en la BD</li>
+</ul>
+<h3>Riesgos</h3>
+<ul>
+<li>Si alguien obtiene el <code>access_token</code> de Supabase (ej: XSS, localStorage expuesto), puede leer cualquier tabla</li>
+<li>No hay rate limiting en login (solo el que provee Google)</li>
+<li>No hay log de intentos de acceso fallidos</li>
+</ul>
+<h3>Recomendaciones</h3>
+<ol>
+<li>Implementar RLS en tablas críticas (usuarios, datospersonalesusuarios)</li>
+<li>Agregar log de accesos (quién, cuándo, IP)</li>
+<li>Evaluar 2FA con Supabase Auth MFA (soporta TOTP)</li>
+<li>Rotar la <code>service_role key</code> si está expuesta en el código</li>
+</ol>
+<hr>
+<h2>7. Auto-logout por Inactividad</h2>
+<p><strong>Estado:</strong> ✅ Implementado</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tiempo de inactividad</td>
+<td>10 minutos (configurable vía Supabase)</td>
+</tr>
+<tr>
+<td>Advertencia previa</td>
+<td>60 segundos (countdown modal)</td>
+</tr>
+<tr>
+<td>Eventos que reinician</td>
+<td>mousedown, keydown, scroll, touchstart, click</td>
+</tr>
+<tr>
+<td>Extensión de sesión</td>
+<td>Botón &quot;Continuar sesión&quot;</td>
+</tr>
+<tr>
+<td>Cierre automático</td>
+<td>sí, al llegar a 0</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>8. Consumo de Aplicación</h2>
+<h3>Estado Actual</h3>
+<ul>
+<li><strong>Sin monitoreo:</strong> no hay Vercel Analytics, Sentry, PostHog, ni contador de queries</li>
+<li><strong>Sin logs de rendimiento:</strong> no se mide tiempo de respuesta ni cantidad de requests</li>
+<li><strong>Cache existente:</strong> <code>cacheService.ts</code> usa IndexedDB, pero no todas las consultas lo usan</li>
+<li><strong>PWA:</strong> Service Worker con StaleWhileRevalidate solo para Supabase REST API</li>
+</ul>
+<h3>Posibles Cuellos de Botella</h3>
+<ol>
+<li>Mantenedores sin paginación (Cursos, Funcionarios, Motivos) → queries sin límite</li>
+<li>Dashboard Profesor hace 8 queries simultáneas al cargar</li>
+<li>Tablas sin índices en <code>library_loans.student_id</code> y <code>book_copies.book_id</code></li>
+<li>El login sin RLS significa que cualquier consulta pasa por el anon key sin filtros de BD</li>
+</ol>
+<h3>Recomendaciones</h3>
+<ol>
+<li>Agregar Vercel Analytics (gratuito, 1 clic en dashboard)</li>
+<li>Agregar índices a las tablas más consultadas</li>
+<li>Implementar paginación server-side en lugar de client-side para conjuntos grandes</li>
+<li>Medir antes/después de cada cambio para evaluar impacto</li>
+</ol>
+<hr>
+<h2>9. Simulación 10+ Usuarios Concurrentes</h2>
+<h3>Estimación de Carga por Usuario Activo</h3>
+<table>
+<thead>
+<tr>
+<th>Acción</th>
+<th>Queries Aprox</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Login (Google OAuth + useAuth)</td>
+<td>3-4 (auth + usuarios + datospersonales)</td>
+</tr>
+<tr>
+<td>Dashboard (según rol)</td>
+<td>0-8 queries</td>
+</tr>
+<tr>
+<td>Navegación entre páginas</td>
+<td>1-3 queries por página</td>
+</tr>
+<tr>
+<td>Préstamo de libro</td>
+<td>4-6 queries (validaciones + insert + update)</td>
+</tr>
+<tr>
+<td>Devolución</td>
+<td>3-5 queries</td>
+</tr>
+<tr>
+<td>CRUD en mantenedor</td>
+<td>1-2 queries</td>
+</tr>
+</tbody></table>
+<h3>Escenario: 10 usuarios simultáneos</h3>
+<ul>
+<li>~30-80 requests/minuto en horario punta</li>
+<li>Supabase Free Plan: 50,000 rows/month, 2GB bandwidth — suficiente para este volumen</li>
+<li>Vercel Free Plan: 100,000 serverless invocations/month — suficiente</li>
+</ul>
+<h3>Riesgos</h3>
+<ul>
+<li>Los mantenedores sin paginación multiplican el row count en Supabase</li>
+<li>Si cada profesor consulta &quot;todos los estudiantes&quot; sin paginación, 20 profesores × 500 estudiantes = 10,000 rows en una sola consulta</li>
+<li>Supabase Free Plan limita a 50,000 rows totales — esto se puede alcanzar fácilmente</li>
+</ul>
+<h3>Recomendaciones</h3>
+<ol>
+<li>Agregar paginación server-side obligatoria en todas las consultas de listados</li>
+<li>Monitorear el contador de rows en Supabase Dashboard</li>
+<li>Considerar migrar a Supabase Pro ($25/mes) si se superan los límites</li>
+</ol>
+<hr>
+<h2>10. SQLite + Sincronización en la Nube</h2>
+<h3>Análisis de Viabilidad</h3>
+<p><strong>No recomendado para la arquitectura actual.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Evaluación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Auth</td>
+<td>❌ Depende de Supabase (no hay SQLite auth)</td>
+</tr>
+<tr>
+<td>RLS</td>
+<td>❌ Sin RLS en BD, SQLite no tendría seguridad</td>
+</tr>
+<tr>
+<td>Joins</td>
+<td>❌ Biblioteca usa joins entre 3-4 tablas constantemente</td>
+</tr>
+<tr>
+<td>Complejidad</td>
+<td>❌ Sync engine offline/online es complejo de implementar y mantener</td>
+</tr>
+<tr>
+<td>Beneficio real</td>
+<td>⚠️ Bajo — la app ya funciona online con buena latencia (us-west-1)</td>
+</tr>
+</tbody></table>
+<h3>Alternativa Recomendada</h3>
+<p>Seguir usando <code>cacheService.ts</code> (IndexedDB) que ya existe:</p>
+<ul>
+<li>Cachea respuestas de Supabase</li>
+<li>TTL configurable</li>
+<li>No requiere sync engine (solo invalidación por tiempo)</li>
+<li>Evita roundtrips innecesarios sin la complejidad de SQLite</li>
+</ul>
+<p><strong>Solo valdría la pena SQLite si se requiere modo offline total (sin internet).</strong></p>
+<hr>
+<h2>11. Módulo de Temas / Personalización</h2>
+<h3>Estado Actual</h3>
+<ul>
+<li>Dark/light mode básico vía <code>useTheme.ts</code></li>
+<li>Booleano en localStorage (<code>sgja_tema_oscuro</code>)</li>
+<li>Aplica <code>data-theme=&quot;dark&quot;</code> / <code>data-theme=&quot;light&quot;</code> en <code>&lt;html&gt;</code></li>
+<li>Toggle sol/luna en Header.tsx y Parametros.tsx</li>
+<li>Colores fijos en <code>COLORES_TEMA</code> (claro/oscuro)</li>
+</ul>
+<h3>Para Hacerlo Extensible</h3>
+<ol>
+<li>Cambiar de booleano a string: <code>&#39;claro&#39; | &#39;oscuro&#39; | &#39;personalizado&#39;</code></li>
+<li>Guardar paleta de colores en Supabase (<code>configuracion_temas</code>)</li>
+<li>Editor de temas: color primario, secundario, acento, fondo, texto</li>
+<li>Guardar preferencia por usuario (no global)</li>
+<li>Aplicar variables CSS en runtime mediante CSS custom properties</li>
+</ol>
+<hr>
+<h2>12. Funcionalidades Faltantes</h2>
+<h3>Pendientes de tu Lista Original</h3>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Dashboard por rol</strong> — revisar y estandarizar responsive</li>
+<li><input disabled="" type="checkbox"> <strong>Mantenedores</strong> — paginación y vista móvil</li>
+<li><input disabled="" type="checkbox"> <strong>Secretaría</strong> — completar MantenedorFuncionarios</li>
+<li><input disabled="" type="checkbox"> <strong>Justificaciones</strong> — corregir inconsistencia PROFESOR</li>
+<li><input disabled="" type="checkbox"> <strong>Préstamos</strong> — probar flujo completo</li>
+<li><input disabled="" type="checkbox"> <strong>Menú navbar</strong> — PROFESOR y APODERADO tienen solo 1 botón en móvil</li>
+<li><input disabled="" type="checkbox"> <strong>Acceso estudiante/apoderado</strong> — falta editar perfil, notificaciones, estado bibliotecario</li>
+<li><input disabled="" type="checkbox"> <strong>2FA</strong> — evaluar implementación</li>
+<li><input disabled="" type="checkbox"> <strong>Auto-logout</strong> — ya implementado</li>
+<li><input disabled="" type="checkbox"> <strong>Consumo</strong> — agregar monitoreo</li>
+<li><input disabled="" type="checkbox"> <strong>Simulación 10+ usuarios</strong> — paginación server-side</li>
+<li><input disabled="" type="checkbox"> <strong>SQLite</strong> — no recomendado por ahora</li>
+<li><input disabled="" type="checkbox"> <strong>Temas</strong> — hacer extensibles</li>
+</ul>
+<h3>Adicionales Detectados en el Análisis</h3>
+<h4>Mantenedor de Ubicaciones (Estantería/Fila)</h4>
+<ul>
+<li><code>book_copies.estanteria</code> y <code>book_copies.fila</code> son <strong>texto libre</strong></li>
+<li>No hay tabla maestra de ubicaciones</li>
+<li>Los usuarios escriben valores inconsistentes (&quot;1&quot;, &quot;01&quot;, &quot;Estante 1&quot;)</li>
+<li><strong>Solución:</strong> crear tabla <code>ubicaciones</code> (id, estanteria, fila, columna, id_establecimiento) con CRUD, y usar <code>&lt;select&gt;</code> en Inventario</li>
+</ul>
+<h4>Mantenedor de Categorías</h4>
+<ul>
+<li><code>books.categoria</code> es <strong>texto libre</strong></li>
+<li>Mismo problema: &quot;Novela&quot;, &quot;novela&quot;, &quot;NOVELA&quot; aparecen como distintas</li>
+<li><strong>Solución:</strong> tabla <code>categorias</code> con CRUD y select en formularios de libro</li>
+</ul>
+<h4>Reportes y Estadísticas</h4>
+<ul>
+<li>Ruta <code>/reportes</code> existe pero hay que verificar si tiene datos reales</li>
+<li>Sugerencia: préstamos por mes, libros más prestados, top estudiantes, multas recaudadas</li>
+</ul>
+<h4>Carga Masiva de Estudiantes (CSV)</h4>
+<ul>
+<li>Ya existe para libros (MantenedorLibros)</li>
+<li>Crear equivalente para estudiantes: importar desde CSV con validación de RUT</li>
+</ul>
+<h4>Log de Accesos</h4>
+<ul>
+<li>Registrar inicio/cierre de sesión: quién, cuándo, IP, user-agent</li>
+<li>Diferente del monitoreo de operaciones (que ya registra CRUDs)</li>
+<li>Util para auditoría de seguridad</li>
+</ul>
+<hr>
+<h2>Prioridades Sugeridas</h2>
+<h3>🔴 Crítico (Corto Plazo)</h3>
+<ol>
+<li>Paginación en MantenedorCursos, MantenedorFuncionarios, MantenedorMotivos</li>
+<li>Completar MantenedorFuncionarios (backen y frontend)</li>
+<li>Corregir inconsistencia de rutas PROFESOR (sidebar vs AppContent)</li>
+</ol>
+<h3>🟡 Importante (Mediano Plazo)</h3>
+<ol start="4">
+<li>Responsive móvil en dashboards Inspector, Estudiante, Apoderado</li>
+<li>Ubicaciones estructuradas (estantería/fila) en Biblioteca</li>
+<li>Categorías de libros estructuradas</li>
+<li>Vista móvil en mantenedores principales</li>
+</ol>
+<h3>🟢 Mejora (Largo Plazo)</h3>
+<ol start="8">
+<li>Módulo de temas extensibles</li>
+<li>Reportes y estadísticas</li>
+<li>Carga masiva de estudiantes CSV</li>
+<li>Log de accesos</li>
+</ol>
+<h3>🔵 Opcional</h3>
+<ol start="12">
+<li>2FA / MFA</li>
+<li>Modo offline con SQLite (solo si es necesario)</li>
+</ol>
+<hr>
+<p><em>Fin del informe.</em></p>
+
+</body>
+</html>

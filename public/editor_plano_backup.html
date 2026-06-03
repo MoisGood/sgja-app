@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plano Edificio — Editor</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; background: #1e293b; color: #f1f5f9; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; }
+  h1 { font-size: 1.3rem; }
+  .sub { color: #94a3b8; font-size: .8rem; margin-bottom: .5rem; }
+
+  .toolbar {
+    display: flex; gap: .5rem; margin-bottom: .8rem; flex-wrap: wrap; align-items: center;
+  }
+  .toolbar button, .toolbar select {
+    padding: .4rem .8rem; border-radius: 6px; border: 1px solid #475569;
+    background: #0f172a; color: #f1f5f9; font-size: .75rem; cursor: pointer;
+  }
+  .toolbar button:hover { background: #1e293b; border-color: #3b82f6; }
+  .toolbar label { font-size: .75rem; color: #94a3b8; }
+  .toolbar input[type="color"] { width: 30px; height: 26px; border: none; border-radius: 4px; cursor: pointer; background: none; }
+
+  .mapa {
+    position: relative;
+    width: 1300px;
+    height: 880px;
+    background: #2d3a4f;
+    border-radius: 10px;
+    border: 2px solid #475569;
+    user-select: none;
+    overflow: hidden;
+  }
+  .mapa.grid-on {
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size: 145px 110px;
+  }
+
+  .room {
+    position: absolute;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .6rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: grab;
+    overflow: hidden;
+    padding: 2px;
+    line-height: 1.15;
+    min-width: 20px;
+    min-height: 20px;
+    transition: box-shadow .12s;
+    pointer-events: all;
+    z-index: 1;
+  }
+  .room:hover { z-index: 10; border-color: rgba(255,255,255,.35); box-shadow: 0 3px 15px rgba(0,0,0,.5); }
+  .room.editing { cursor: move; border-color: #fbbf24 !important; box-shadow: 0 0 0 2px #fbbf24; z-index: 20; }
+  .room.editing .resize-handle { display: block; }
+  .room.dragging { opacity: .8; z-index: 100; }
+
+  .resize-handle {
+    display: none;
+    position: absolute;
+    width: 10px; height: 10px;
+    background: #fbbf24;
+    border: 1px solid #000;
+    border-radius: 2px;
+    z-index: 5;
+  }
+  .rh-nw { top: -4px; left: -4px; cursor: nw-resize; }
+  .rh-ne { top: -4px; right: -4px; cursor: ne-resize; }
+  .rh-sw { bottom: -4px; left: -4px; cursor: sw-resize; }
+  .rh-se { bottom: -4px; right: -4px; cursor: se-resize; }
+  .rh-n  { top: -4px; left: 50%; margin-left: -5px; cursor: n-resize; }
+  .rh-s  { bottom: -4px; left: 50%; margin-left: -5px; cursor: s-resize; }
+  .rh-e  { top: 50%; right: -4px; margin-top: -5px; cursor: e-resize; }
+  .rh-w  { top: 50%; left: -4px; margin-top: -5px; cursor: w-resize; }
+
+  .room-label {
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,.5);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .xy-info {
+    position: absolute;
+    bottom: 4px; right: 6px;
+    font-size: .5rem;
+    color: rgba(255,255,255,.35);
+    pointer-events: none;
+  }
+
+  /* Zones */
+  .z-lab    { background: #0891b2; }
+  .z-patio  { background: #4ade80; color: #14532d; }
+  .z-pasillo { background: #64748b; }
+  .z-admin  { background: #3b82f6; }
+  .z-sala   { background: #8b5cf6; }
+  .z-com    { background: #d97706; }
+  .z-acceso { background: #22c55e; color: #052e16; }
+  .z-park   { background: #78716c; }
+  .z-internado { background: #f43f5e; }
+  .z-pie    { background: #a21caf; }
+  .z-bib    { background: #0ea5e9; }
+  .z-other  { background: #6366f1; }
+  .z-empty  { background: #334155; color: #64748b; }
+
+  .legend {
+    display: flex; gap: 1rem; margin-top: .8rem; flex-wrap: wrap; justify-content: center; font-size: .7rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: .35rem; }
+  .ldot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    background: #0f172a; color: #f1f5f9; padding: .6rem 1.2rem; border-radius: 8px;
+    border: 1px solid #334155; font-size: .8rem; z-index: 999;
+    opacity: 0; transition: opacity .3s;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<h1>🏢 Plano Edificio — Editor</h1>
+<p class="sub">8 filas × 9 columnas · Arrastra para mover · Esquinas para redimensionar</p>
+
+<div class="toolbar">
+  <button onclick="toggleEdit()" id="btnEdit">✏️ Editar</button>
+  <button onclick="addRoom()">➕ Añadir sala</button>
+  <button onclick="deleteRoom()" id="btnDelete" style="opacity:.4">🗑️ Eliminar</button>
+  <button onclick="copyRoom()" id="btnCopy" style="opacity:.4">📋 Copiar</button>
+  <button onclick="exportJSON()">💾 Exportar JSON</button>
+  <button onclick="document.getElementById('fileInput').click()">📂 Cargar JSON</button>
+  <input type="file" id="fileInput" accept=".json" style="display:none" onchange="loadJSONFile(event)">
+  <button onclick="exportHTML()">📄 Exportar HTML</button>
+  <button onclick="toggleGrid()">🔲 Cuadrícula</button>
+  <label>Ancho: <input type="number" id="mapW" value="1300" min="400" max="2000" style="width:55px;background:#0f172a;border:1px solid #475569;border-radius:4px;padding:2px 4px;color:#f1f5f9;font-size:.75rem"></label>
+  <label>Alto: <input type="number" id="mapH" value="880" min="400" max="2000" style="width:55px;background:#0f172a;border:1px solid #475569;border-radius:4px;padding:2px 4px;color:#f1f5f9;font-size:.75rem"></label>
+  <button onclick="resizeMap()">Aplicar</button>
+</div>
+
+<div class="mapa" id="mapa">
+  <!-- Las salas se generan desde JS -->
+</div>
+
+<div class="legend" id="legend"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+// Estado inicial vacío; se carga desde JSON con el botón "Cargar JSON"
+const zoneLabels = {
+  'z-lab':'Laboratorios','z-bib':'Biblioteca','z-sala':'Salas','z-admin':'Administración',
+  'z-com':'Comedor / Fitness','z-patio':'Patio','z-pasillo':'Pasillo','z-acceso':'Acceso',
+  'z-park':'Estacionamiento','z-internado':'Internado','z-pie':'PIE','z-other':'Equipo Mult.','z-empty':'Sin uso'
+};
+
+let rooms = [];
+let editing = false;
+let gridOn = false;
+let nextId = 1;
+let selectedId = null;
+
+// ===== CARGAR JSON =====
+function loadJSONFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const json = JSON.parse(e.target.result);
+      if (!Array.isArray(json) || !json.length) throw new Error('JSON inválido');
+      rooms = json.map((r,i) => ({ id: nextId++, l:r.left, t:r.top, w:r.width, h:r.height, txt:r.text, cls:r.zone || 'z-other' }));
+      render();
+      renderLegend();
+      toast(`✅ Cargadas ${rooms.length} salas`);
+    } catch(err) {
+      toast('❌ Error al cargar JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ===== INIT =====
+function init() {
+  // Sin datos iniciales — el usuario carga su JSON
+  render();
+  renderLegend();
+  document.getElementById('btnEdit').textContent = editing ? '🔒 Vista' : '✏️ Editar';
+}
+
+// ===== RENDER =====
+function render() {
+  const m = document.getElementById('mapa');
+  m.innerHTML = '';
+  rooms.forEach(r => {
+    const el = document.createElement('div');
+    el.className = `room ${r.cls}`;
+    el.dataset.id = r.id;
+    el.style.left = r.l + 'px';
+    el.style.top = r.t + 'px';
+    el.style.width = r.w + 'px';
+    el.style.height = r.h + 'px';
+
+    const label = document.createElement('span');
+    label.className = 'room-label';
+    label.textContent = r.txt;
+    el.appendChild(label);
+
+    // Resize handles
+    ['nw','n','ne','e','se','s','sw','w'].forEach(dir => {
+      const h = document.createElement('div');
+      h.className = `resize-handle rh-${dir}`;
+      h.dataset.dir = dir;
+      el.appendChild(h);
+    });
+
+    // Double click to rename
+    el.addEventListener('dblclick', () => {
+      const name = prompt('Nombre de la sala:', r.txt);
+      if (name && name.trim()) { r.txt = name.trim(); render(); }
+    });
+
+    // Click to select + zone change
+    el.addEventListener('click', (e) => {
+      if (!editing) return;
+      if (e.target.classList.contains('resize-handle')) return;
+      selectRoom(el);
+    });
+
+    // Drag
+    el.addEventListener('mousedown', (e) => {
+      if (!editing) return;
+      if (e.target.classList.contains('resize-handle')) return;
+      e.preventDefault();
+      startDrag(e, el);
+    });
+
+    // Resize
+    el.querySelectorAll('.resize-handle').forEach(h => {
+      h.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        startResize(e, el, h.dataset.dir);
+      });
+    });
+
+    // XY info
+    const info = document.createElement('div');
+    info.className = 'xy-info';
+    info.textContent = `${r.l},${r.t} ${r.w}×${r.h}`;
+    el.appendChild(info);
+
+    m.appendChild(el);
+  });
+
+  // Click en fondo → deseleccionar
+  m.addEventListener('click', (e) => {
+    if (e.target === m) {
+      document.querySelectorAll('.room.editing').forEach(x => { x.style.outline = ''; });
+      selectedId = null;
+      document.getElementById('btnDelete').style.opacity = '.4';
+      document.getElementById('btnCopy').style.opacity = '.4';
+    }
+  });
+
+  updateEditing();
+}
+
+function updateEditing() {
+  document.querySelectorAll('.room').forEach(el => {
+    el.classList.toggle('editing', editing);
+  });
+}
+
+// ===== DRAG =====
+let dragData = null;
+function startDrag(e, el) {
+  const id = parseInt(el.dataset.id);
+  const r = rooms.find(x => x.id === id);
+  if (!r) return;
+  const rect = document.getElementById('mapa').getBoundingClientRect();
+  dragData = { el, id, ox: e.clientX - r.l - rect.left, oy: e.clientY - r.t - rect.top };
+  el.classList.add('dragging');
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('mouseup', endDrag);
+}
+function onDrag(e) {
+  if (!dragData) return;
+  const rect = document.getElementById('mapa').getBoundingClientRect();
+  const r = rooms.find(x => x.id === dragData.id);
+  if (!r) return;
+  r.l = Math.max(0, e.clientX - rect.left - dragData.ox);
+  r.t = Math.max(0, e.clientY - rect.top - dragData.oy);
+  dragData.el.style.left = r.l + 'px';
+  dragData.el.style.top = r.t + 'px';
+  dragData.el.querySelector('.xy-info').textContent = `${Math.round(r.l)},${Math.round(r.t)} ${r.w}×${r.h}`;
+}
+function endDrag() {
+  if (dragData) { dragData.el.classList.remove('dragging'); dragData = null; }
+  document.removeEventListener('mousemove', onDrag);
+  document.removeEventListener('mouseup', endDrag);
+}
+
+// ===== RESIZE =====
+let resizeData = null;
+function startResize(e, el, dir) {
+  const id = parseInt(el.dataset.id);
+  const r = rooms.find(x => x.id === id);
+  if (!r) return;
+  resizeData = { el, id, dir, l:r.l, t:r.t, w:r.w, h:r.h, sx: e.clientX, sy: e.clientY };
+  document.addEventListener('mousemove', onResize);
+  document.addEventListener('mouseup', endResize);
+}
+function onResize(e) {
+  if (!resizeData) return;
+  const r = rooms.find(x => x.id === resizeData.id);
+  if (!r) return;
+  const dx = e.clientX - resizeData.sx;
+  const dy = e.clientY - resizeData.sy;
+  const d = resizeData.dir;
+  if (d.includes('w')) { r.l = resizeData.l + dx; r.w = resizeData.w - dx; }
+  if (d.includes('e')) { r.w = resizeData.w + dx; }
+  if (d.includes('n')) { r.t = resizeData.t + dy; r.h = resizeData.h - dy; }
+  if (d.includes('s')) { r.h = resizeData.h + dy; }
+  if (r.w < 20) { r.w = 20; }
+  if (r.h < 20) { r.h = 20; }
+  if (r.l < 0) r.l = 0;
+  if (r.t < 0) r.t = 0;
+  resizeData.el.style.left = r.l + 'px';
+  resizeData.el.style.top = r.t + 'px';
+  resizeData.el.style.width = r.w + 'px';
+  resizeData.el.style.height = r.h + 'px';
+  resizeData.el.querySelector('.xy-info').textContent = `${Math.round(r.l)},${Math.round(r.t)} ${Math.round(r.w)}×${Math.round(r.h)}`;
+}
+function endResize() {
+  resizeData = null;
+  document.removeEventListener('mousemove', onResize);
+  document.removeEventListener('mouseup', endResize);
+}
+
+// ===== SELECT =====
+function selectRoom(el) {
+  document.querySelectorAll('.room.editing').forEach(x => { x.style.outline = ''; });
+  el.style.outline = '2px solid #fbbf24';
+  selectedId = parseInt(el.dataset.id);
+  document.getElementById('btnDelete').style.opacity = '1';
+  document.getElementById('btnCopy').style.opacity = '1';
+}
+
+// ===== DELETE ROOM =====
+function deleteRoom() {
+  if (!selectedId) { toast('Selecciona una sala primero'); return; }
+  if (!confirm('¿Eliminar esta sala?')) return;
+  rooms = rooms.filter(r => r.id !== selectedId);
+  selectedId = null;
+  document.getElementById('btnDelete').style.opacity = '.4';
+  document.getElementById('btnCopy').style.opacity = '.4';
+  render();
+  toast('🗑️ Sala eliminada');
+}
+
+// ===== COPY ROOM =====
+function copyRoom() {
+  if (!selectedId) { toast('Selecciona una sala primero'); return; }
+  const src = rooms.find(r => r.id === selectedId);
+  if (!src) return;
+  const copy = {
+    id: nextId++,
+    l: src.l + 20, t: src.t + 20,
+    w: src.w, h: src.h,
+    txt: src.txt + ' (copia)',
+    cls: src.cls
+  };
+  rooms.push(copy);
+  render();
+  toast('📋 Sala copiada');
+}
+
+// ===== TOGGLE EDIT =====
+function toggleEdit() {
+  editing = !editing;
+  document.getElementById('btnEdit').textContent = editing ? '🔒 Vista' : '✏️ Editar';
+  updateEditing();
+}
+
+// ===== ADD ROOM =====
+function addRoom() {
+  const name = prompt('Nombre de la nueva sala:') || 'Nueva sala';
+  rooms.push({ id: nextId++, l: 100, t: 100, w: 140, h: 105, txt: name, cls: 'z-other' });
+  render();
+  if (!editing) toggleEdit();
+}
+
+// ===== GRID =====
+function toggleGrid() {
+  gridOn = !gridOn;
+  document.getElementById('mapa').classList.toggle('grid-on', gridOn);
+}
+
+// ===== RESIZE MAP =====
+function resizeMap() {
+  const w = parseInt(document.getElementById('mapW').value) || 1300;
+  const h = parseInt(document.getElementById('mapH').value) || 880;
+  document.getElementById('mapa').style.width = w + 'px';
+  document.getElementById('mapa').style.height = h + 'px';
+}
+
+// ===== EXPORT JSON =====
+function exportJSON() {
+  const data = rooms.map(r => ({
+    left: Math.round(r.l), top: Math.round(r.t),
+    width: Math.round(r.w), height: Math.round(r.h),
+    text: r.txt, zone: r.cls
+  }));
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'plano_edificio.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ JSON exportado');
+}
+
+// ===== EXPORT HTML =====
+function exportHTML() {
+  const mw = document.getElementById('mapa').offsetWidth;
+  const mh = document.getElementById('mapa').offsetHeight;
+  let roomsHTML = '';
+  rooms.forEach(r => {
+    roomsHTML += `  <div class="room ${r.cls}" style="left:${Math.round(r.l)}px;top:${Math.round(r.t)}px;width:${Math.round(r.w)}px;height:${Math.round(r.h)}px">${r.txt}</div>\n`;
+  });
+  let legendHTML = '';
+  Object.entries(zoneLabels).forEach(([k,v]) => {
+    if (rooms.some(r => r.cls === k)) legendHTML += `  <span class="legend-item"><span class="ldot ${k}"></span> ${v}</span>\n`;
+  });
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Plano Edificio</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#1e293b;color:#f1f5f9;padding:1.5rem;display:flex;flex-direction:column;align-items:center}
+.mapa{position:relative;width:${mw}px;height:${mh}px;background:#2d3a4f;border-radius:10px;border:2px solid #475569}
+.room{position:absolute;border-radius:4px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:500;text-align:center;padding:2px;line-height:1.15;overflow:hidden}
+.z-lab{background:#0891b2}.z-patio{background:#4ade80;color:#14532d}.z-pasillo{background:#64748b}.z-admin{background:#3b82f6}
+.z-sala{background:#8b5cf6}.z-com{background:#d97706}.z-acceso{background:#22c55e;color:#052e16}.z-park{background:#78716c}
+.z-internado{background:#f43f5e}.z-pie{background:#a21caf}.z-bib{background:#0ea5e9}.z-other{background:#6366f1}.z-empty{background:#334155;color:#64748b}
+.legend{display:flex;gap:1rem;margin-top:.8rem;flex-wrap:wrap;justify-content:center;font-size:.7rem}
+.legend-item{display:flex;align-items:center;gap:.35rem}.ldot{width:12px;height:12px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+<h1>🏢 Plano Edificio — Primer Piso</h1>
+<div class="mapa">
+${roomsHTML}</div>
+<div class="legend">\n${legendHTML}</div>
+</body>
+</html>`;
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'plano_edificio.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ HTML exportado');
+}
+
+// ===== RENDER LEGEND =====
+function renderLegend() {
+  const used = new Set(rooms.map(r => r.cls));
+  const l = document.getElementById('legend');
+  l.innerHTML = '';
+  Object.entries(zoneLabels).forEach(([k,v]) => {
+    if (used.has(k)) {
+      const item = document.createElement('span');
+      item.className = 'legend-item';
+      item.innerHTML = `<span class="ldot ${k}"></span> ${v}`;
+      l.appendChild(item);
+    }
+  });
+}
+
+// ===== TOAST =====
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== START =====
+document.addEventListener('keydown', (e) => {
+  if ((e.key === 'Delete' || e.key === 'Supr') && selectedId && editing) {
+    deleteRoom();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedId && editing) {
+    e.preventDefault();
+    copyRoom();
+  }
+});
+init();
+</script>
+</body>
+</html>

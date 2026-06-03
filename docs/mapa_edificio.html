@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plano Edificio — SGJA</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #0b1120;
+    color: #f1f5f9;
+    min-height: 100vh;
+    padding-right: 360px;
+  }
+
+  .layout {
+    display: flex;
+    gap: 0;
+    max-width: 1720px;
+    margin: 0 auto;
+    padding: 20px 24px 20px 24px;
+    min-height: 100vh;
+  }
+
+  .mapa-section {
+    flex: 1;
+    min-width: 0;
+  }
+
+  header {
+    margin-bottom: 20px;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  header h1 span {
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .sub {
+    color: #64748b;
+    font-size: .85rem;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  .mapa-wrapper {
+    overflow-x: auto;
+    padding-bottom: 12px;
+    border-radius: 12px;
+  }
+
+  .mapa {
+    position: relative;
+    width: 1300px;
+    height: 880px;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(56, 189, 248, 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 50%, rgba(129, 140, 248, 0.04) 0%, transparent 60%),
+      #131e2f;
+    border-radius: 12px;
+    border: 1px solid #1e3a5f;
+    box-shadow: 0 4px 40px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.04);
+    flex-shrink: 0;
+  }
+
+  .room {
+    position: absolute;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .6rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all .15s ease;
+    overflow: hidden;
+    padding: 3px;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    user-select: none;
+    word-break: break-word;
+  }
+
+  .room::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .room:hover {
+    transform: scale(1.04);
+    z-index: 100;
+    border-color: rgba(255,255,255,.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,.5), 0 0 20px rgba(56,189,248,.12);
+  }
+
+  .room.active {
+    transform: scale(1.04);
+    z-index: 101;
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56,189,248,.4), 0 4px 20px rgba(0,0,0,.5);
+  }
+
+  .z-lab    { background: #0e7490; }
+  .z-patio  { background: #16a34a; color: #052e16; }
+  .z-pasillo { background: #475569; }
+  .z-admin  { background: #2563eb; }
+  .z-sala   { background: #7c3aed; }
+  .z-com    { background: #b45309; }
+  .z-acceso { background: #15803d; color: #052e16; }
+  .z-park   { background: #57534e; }
+  .z-internado { background: #e11d48; }
+  .z-pie    { background: #86198f; }
+  .z-bib    { background: #0284c7; }
+  .z-other  { background: #4f46e5; }
+
+  .legend {
+    display: flex;
+    gap: 1rem;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: .7rem;
+    padding: 10px 16px;
+    background: #0f172a;
+    border-radius: 10px;
+    border: 1px solid #1e293b;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    color: #94a3b8;
+    transition: color .15s;
+  }
+
+  .legend-item:hover {
+    color: #f1f5f9;
+  }
+
+  .ldot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* ====== SIDEBAR ====== */
+  .sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: #0f172a;
+    border-left: 1px solid #1e293b;
+    box-shadow: -4px 0 30px rgba(0,0,0,.3);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #1e293b;
+    flex-shrink: 0;
+  }
+
+  .sidebar-header h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-header h2 .icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1e293b;
+    border-radius: 6px;
+    font-size: .85rem;
+  }
+
+  .sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .sidebar-body::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-body::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+  }
+
+  .welcome-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    min-height: 300px;
+    padding: 20px;
+  }
+
+  .welcome-state .big-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: .5;
+  }
+
+  .welcome-state h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  .welcome-state p {
+    font-size: .85rem;
+    color: #475569;
+    max-width: 240px;
+  }
+
+  .room-info {
+    display: none;
+    animation: fadeUp .3s ease;
+  }
+
+  .room-info.visible {
+    display: block;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .room-info .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: .7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 12px;
+  }
+
+  .room-info .badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .room-info h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+
+  .room-info .location {
+    color: #64748b;
+    font-size: .85rem;
+    margin-bottom: 20px;
+  }
+
+  .room-info .desc {
+    color: #94a3b8;
+    font-size: .9rem;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #1e293b;
+    border-radius: 10px;
+    border: 1px solid #1e293b;
+  }
+
+  .room-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .meta-item {
+    padding: 12px 14px;
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+  }
+
+  .meta-item .label {
+    font-size: .65rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #64748b;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .meta-item .value {
+    font-size: .9rem;
+    font-weight: 500;
+    color: #f1f5f9;
+  }
+
+  /* ====== RESPONSIVE ====== */
+  @media (max-width: 1024px) {
+    body {
+      padding-right: 300px;
+    }
+
+    .sidebar {
+      width: 300px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    body {
+      padding-right: 0;
+    }
+
+    .layout {
+      padding: 12px;
+    }
+
+    .mapa-wrapper {
+      border-radius: 8px;
+    }
+
+    .mapa {
+      border-radius: 8px;
+    }
+
+    .sidebar {
+      width: 100%;
+      height: auto;
+      max-height: 50vh;
+      top: auto;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-left: none;
+      border-top: 1px solid #1e293b;
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -4px 30px rgba(0,0,0,.4);
+    }
+
+    .sidebar-header {
+      padding: 12px 16px 10px;
+    }
+
+    .sidebar-header h2 {
+      font-size: .95rem;
+    }
+
+    .sidebar-header h2 .icon {
+      width: 24px;
+      height: 24px;
+      font-size: .75rem;
+    }
+
+    .sidebar-body {
+      padding: 12px 16px 16px;
+    }
+
+    .room-meta {
+      grid-template-columns: 1fr;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+    }
+
+    .legend {
+      font-size: .6rem;
+      gap: .6rem;
+      padding: 8px 12px;
+    }
+
+    .room {
+      font-size: .5rem;
+    }
+
+    .welcome-state {
+      min-height: auto;
+      padding: 8px 12px;
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 12px;
+      height: auto;
+    }
+
+    .welcome-state .big-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0;
+      opacity: .4;
+    }
+
+    .welcome-state h3 {
+      font-size: .9rem;
+      margin-bottom: 2px;
+    }
+
+    .welcome-state p {
+      font-size: .75rem;
+      max-width: none;
+    }
+
+    .room-info h3 {
+      font-size: 1.1rem;
+    }
+
+    .room-info .desc {
+      font-size: .8rem;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .meta-item {
+      padding: 8px 12px;
+    }
+
+    .meta-item .label {
+      font-size: .6rem;
+    }
+
+    .meta-item .value {
+      font-size: .8rem;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <div class="mapa-section">
+
+    <header>
+      <h1><span>Plano Edificio</span> — Primer Piso</h1>
+      <p class="sub">8 filas × 9 columnas · Haz clic en una sala para ver información</p>
+    </header>
+
+    <div class="mapa-wrapper">
+      <div class="mapa">
+
+        <!-- Pasillo Lincoyán -->
+        <div class="room z-pasillo" style="left:145px;top:110px;width:140px;height:615px"
+             data-name="Pasillo Lincoyán" data-category="Pasillo"
+             data-desc="Pasillo principal que recorre el edificio de norte a sur por el costado oriente, conectando las distintas áreas."
+             data-capacity="—" data-floor="1" data-code="PL-01">Pasillo Lincoyán</div>
+
+        <!-- ROW 1 (y=0) -->
+        <div class="room z-lab" style="left:0;top:0;width:140px;height:105px"
+             data-name="Lab Biología" data-category="Laboratorio"
+             data-desc="Laboratorio equipado para experimentos y clases prácticas de ciencias biológicas con microscopios y material especializado."
+             data-capacity="30" data-floor="1" data-code="LB-01">Lab Biología</div>
+
+        <div class="room z-park" style="left:145px;top:0;width:240px;height:105px"
+             data-name="Estacionamiento" data-category="Estacionamiento"
+             data-desc="Área de estacionamiento vehicular para personal y visitas del establecimiento."
+             data-capacity="12" data-floor="1" data-code="ES-01">Estacionamiento</div>
+
+        <div class="room z-internado" style="left:435px;top:0;width:140px;height:105px"
+             data-name="Internado" data-category="Internado"
+             data-desc="Dormitorios y áreas comunes para estudiantes internos del establecimiento."
+             data-capacity="40" data-floor="1" data-code="IN-01">Internado</div>
+
+        <div class="room z-com" style="left:580px;top:0;width:140px;height:105px"
+             data-name="Cocina Comedor" data-category="Comedor"
+             data-desc="Cocina industrial y comedor auxiliar para preparación y servicio de alimentos."
+             data-capacity="—" data-floor="1" data-code="CC-01">Cocina Comedor</div>
+
+        <div class="room z-patio" style="left:725px;top:0;width:140px;height:105px"
+             data-name="Patio Biblioteca" data-category="Patio"
+             data-desc="Patio exterior adjunto a la biblioteca, ideal para lectura y descanso al aire libre."
+             data-capacity="—" data-floor="1" data-code="PB-01">Patio Biblioteca</div>
+
+        <div class="room z-bib" style="left:870px;top:0;width:140px;height:215px"
+             data-name="Biblioteca" data-category="Biblioteca"
+             data-desc="Biblioteca con colección de textos, material de estudio y espacios de lectura para la comunidad educativa."
+             data-capacity="35" data-floor="1" data-code="BI-01">Biblioteca</div>
+
+        <div class="room z-sala" style="left:1155px;top:0;width:140px;height:105px"
+             data-name="Sala 2" data-category="Sala de Clases"
+             data-desc="Sala de clases equipada con mobiliario y recursos pedagógicos para actividades de aprendizaje."
+             data-capacity="32" data-floor="1" data-code="SL-02">Sala 2</div>
+
+        <!-- ROW 2 (y=110) -->
+        <div class="room z-com" style="left:290px;top:110px;width:285px;height:105px"
+             data-name="Sala Fitness" data-category="Comedor / Fitness"
+             data-desc="Sala equipada con implementos deportivos y máquinas de ejercicio para la comunidad escolar."
+             data-capacity="20" data-floor="1" data-code="SF-01">Sala Fitness</div>
+
+        <div class="room z-admin" style="left:435px;top:110px;width:140px;height:105px"
+             data-name="Paradocentes" data-category="Administración"
+             data-desc="Oficina del equipo de paradocentes encargado del apoyo administrativo y asistencia educativa."
+             data-capacity="4" data-floor="1" data-code="PD-01">Paradocentes</div>
+
+        <div class="room z-com" style="left:580px;top:110px;width:285px;height:105px"
+             data-name="Comedor" data-category="Comedor"
+             data-desc="Comedor principal con capacidad para almorzar y compartir en un ambiente acogedor."
+             data-capacity="80" data-floor="1" data-code="CO-01">Comedor</div>
+
+        <div class="room z-sala" style="left:1155px;top:110px;width:140px;height:105px"
+             data-name="Sala 1" data-category="Sala de Clases"
+             data-desc="Sala de clases con recursos didácticos y tecnología para el desarrollo de actividades académicas."
+             data-capacity="32" data-floor="1" data-code="SL-01">Sala 1</div>
+
+        <!-- ROW 3 (y=220) -->
+        <div class="room z-acceso" style="left:0;top:110px;width:140px;height:105px"
+             data-name="Acceso Lincoyán" data-category="Acceso"
+             data-desc="Ingreso principal del edificio por calle Lincoyán, con control de acceso y recepción."
+             data-capacity="—" data-floor="1" data-code="AL-01">Acceso Lincoyán</div>
+
+        <div class="room z-patio" style="left:290px;top:220px;width:285px;height:435px"
+             data-name="Patio A" data-category="Patio"
+             data-desc="Patio principal con áreas verdes, bancas y espacio para actividades recreativas y formación."
+             data-capacity="200" data-floor="1" data-code="PA-01">Patio A</div>
+
+        <div class="room z-patio" style="left:580px;top:220px;width:285px;height:435px"
+             data-name="Patio B" data-category="Patio"
+             data-desc="Patio secundario con juegos infantiles y zona de esparcimiento para los estudiantes."
+             data-capacity="150" data-floor="1" data-code="PB-02">Patio B</div>
+
+        <div class="room z-pasillo" style="left:870px;top:220px;width:140px;height:435px"
+             data-name="Pasillo Rengo" data-category="Pasillo"
+             data-desc="Pasillo que conecta el sector poniente del edificio hacia la salida por calle Rengo."
+             data-capacity="—" data-floor="1" data-code="PR-01">Pasillo Rengo</div>
+
+        <div class="room z-other" style="left:1155px;top:220px;width:140px;height:105px"
+             data-name="Equipo Multidisciplinario" data-category="Equipo de Apoyo"
+             data-desc="Oficina del equipo multidisciplinario compuesto por psicólogos, asistentes sociales y terapeutas."
+             data-capacity="6" data-floor="1" data-code="EM-01">Equipo Mult.</div>
+
+        <!-- ROW 4 (y=330) -->
+        <div class="room z-admin" style="left:1155px;top:330px;width:140px;height:105px"
+             data-name="Inspectoría" data-category="Administración"
+             data-desc="Oficina de inspectoría general encargada de la disciplina, convivencia y control escolar."
+             data-capacity="3" data-floor="1" data-code="IG-01">Inspectoría</div>
+
+        <!-- ROW 5 (y=440) -->
+        <div class="room z-lab" style="left:0;top:220px;width:140px;height:210px"
+             data-name="Lab Física" data-category="Laboratorio"
+             data-desc="Laboratorio de física con instrumentos de medición, experimentos de mecánica, óptica y electricidad."
+             data-capacity="28" data-floor="1" data-code="LF-01">Lab Física</div>
+
+        <div class="room z-acceso" style="left:1155px;top:440px;width:140px;height:105px"
+             data-name="Acceso Rengo" data-category="Acceso"
+             data-desc="Ingreso al edificio por calle Rengo, utilizado como acceso secundario y salida de emergencia."
+             data-capacity="—" data-floor="1" data-code="AR-01">Acceso Rengo</div>
+
+        <!-- ROW 6 (y=550) -->
+        <div class="room z-lab" style="left:0;top:435px;width:140px;height:210px"
+             data-name="Lab Química" data-category="Laboratorio"
+             data-desc="Laboratorio de química con equipamiento para experimentación, análisis y proyectos científicos."
+             data-capacity="28" data-floor="1" data-code="LQ-01">Lab Química</div>
+
+        <div class="room z-admin" style="left:1155px;top:550px;width:140px;height:105px"
+             data-name="Secretaría" data-category="Administración"
+             data-desc="Oficina de secretaría académica y administrativa, encargada de documentación y atención a apoderados."
+             data-capacity="3" data-floor="1" data-code="SE-01">Secretaría</div>
+
+        <!-- ROW 7 (y=660) -->
+        <div class="room z-pie" style="left:145px;top:660px;width:140px;height:105px"
+             data-name="PIE 1" data-category="Programa de Integración"
+             data-desc="Sala del Programa de Integración Escolar (PIE) para atención y apoyo de estudiantes con necesidades educativas especiales."
+             data-capacity="10" data-floor="1" data-code="P1-01">PIE 1</div>
+
+        <div class="room z-pie" style="left:290px;top:660px;width:140px;height:105px"
+             data-name="PIE 2" data-category="Programa de Integración"
+             data-desc="Segunda sala del Programa de Integración Escolar para talleres y terapias personalizadas."
+             data-capacity="10" data-floor="1" data-code="P2-01">PIE 2</div>
+
+        <div class="room z-sala" style="left:435px;top:660px;width:140px;height:105px"
+             data-name="Sala 105" data-category="Sala de Clases"
+             data-desc="Sala de clases con recursos pedagógicos y tecnología para la enseñanza académica."
+             data-capacity="32" data-floor="1" data-code="105">Sala 105</div>
+
+        <div class="room z-sala" style="left:580px;top:660px;width:140px;height:105px"
+             data-name="Sala 104" data-category="Sala de Clases"
+             data-desc="Sala de clases con entorno preparado para el aprendizaje y desarrollo de los estudiantes."
+             data-capacity="32" data-floor="1" data-code="104">Sala 104</div>
+
+        <div class="room z-sala" style="left:725px;top:660px;width:140px;height:105px"
+             data-name="Sala 103" data-category="Sala de Clases"
+             data-desc="Sala de clases con mobiliario moderno y recursos didácticos para la enseñanza."
+             data-capacity="32" data-floor="1" data-code="103">Sala 103</div>
+
+        <div class="room z-sala" style="left:870px;top:660px;width:140px;height:105px"
+             data-name="Sala 102" data-category="Sala de Clases"
+             data-desc="Sala de clases equipada con material pedagógico y tecnológico para el aprendizaje."
+             data-capacity="32" data-floor="1" data-code="102">Sala 102</div>
+
+        <div class="room z-sala" style="left:1015px;top:660px;width:140px;height:105px"
+             data-name="Sala 101" data-category="Sala de Clases"
+             data-desc="Sala de clases con pizarra interactiva y recursos para el desarrollo de las actividades curriculares."
+             data-capacity="32" data-floor="1" data-code="101">Sala 101</div>
+
+        <div class="room z-admin" style="left:1160px;top:660px;width:140px;height:105px"
+             data-name="Dirección" data-category="Administración"
+             data-desc="Oficina del equipo directivo del establecimiento educacional."
+             data-capacity="4" data-floor="1" data-code="DR-01">Dirección</div>
+
+        <!-- ROW 8 (y=770) -->
+        <div class="room z-pasillo" style="left:145px;top:770px;width:285px;height:105px"
+             data-name="Pasillo Linc → Coch" data-category="Pasillo"
+             data-desc="Pasillo que conecta el sector de calle Lincoyán con el acceso a Hall Cochrane."
+             data-capacity="—" data-floor="1" data-code="PLC-01">Pasillo Linc → Coch</div>
+
+        <div class="room z-acceso" style="left:435px;top:770px;width:140px;height:105px"
+             data-name="Acceso Hall Cochrane" data-category="Acceso"
+             data-desc="Acceso al Hall Cochrane, punto de conexión entre distintos sectores del edificio."
+             data-capacity="—" data-floor="1" data-code="AHC-01">Acceso Hall Cochrane</div>
+
+        <div class="room z-pasillo" style="left:580px;top:770px;width:285px;height:105px"
+             data-name="Pasillo Cochrane" data-category="Pasillo"
+             data-desc="Pasillo que recorre el sector sur del edificio hacia la salida por Cochrane."
+             data-capacity="—" data-floor="1" data-code="PC-01">Pasillo Cochrane</div>
+
+        <div class="room z-acceso" style="left:870px;top:770px;width:140px;height:105px"
+             data-name="Acceso Int. Pas. Cochrane" data-category="Acceso"
+             data-desc="Acceso interior que conecta con el pasaje Cochrane."
+             data-capacity="—" data-floor="1" data-code="AIP-01">Acceso Int. Pas. Cochrane</div>
+
+        <div class="room z-empty" style="left:1015px;top:770px;width:140px;height:105px;background:#334155;color:#64748b"
+             data-name="Acceso Esquina (sin uso)" data-category="Sin uso"
+             data-desc="Acceso esquinero actualmente sin uso, pendiente de habilitación."
+             data-capacity="—" data-floor="1" data-code="AE-01">Acceso Esquina (sin uso)</div>
+
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><span class="ldot z-lab"></span> Laboratorios</span>
+      <span class="legend-item"><span class="ldot z-bib"></span> Biblioteca</span>
+      <span class="legend-item"><span class="ldot z-sala"></span> Salas</span>
+      <span class="legend-item"><span class="ldot z-admin"></span> Administración</span>
+      <span class="legend-item"><span class="ldot z-com"></span> Comedor / Fitness</span>
+      <span class="legend-item"><span class="ldot z-patio"></span> Patio</span>
+      <span class="legend-item"><span class="ldot z-pasillo"></span> Pasillo</span>
+      <span class="legend-item"><span class="ldot z-acceso"></span> Acceso</span>
+      <span class="legend-item"><span class="ldot z-park"></span> Estacionamiento</span>
+      <span class="legend-item"><span class="ldot z-internado"></span> Internado</span>
+      <span class="legend-item"><span class="ldot z-pie"></span> PIE</span>
+      <span class="legend-item"><span class="ldot z-other"></span> Equipo Mult.</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar" role="complementary" aria-label="Información de sala">
+  <div class="sidebar-header">
+    <h2><span class="icon">🗺️</span> Información</h2>
+  </div>
+  <div class="sidebar-body">
+
+    <div class="welcome-state" id="welcomeState">
+      <div class="big-icon">📋</div>
+      <div>
+        <h3>Sin datos</h3>
+        <p>Selecciona una sala en el plano para ver su información.</p>
+      </div>
+    </div>
+
+    <div class="room-info" id="roomInfo">
+      <div class="badge" id="roomBadge"><span class="dot"></span> <span id="roomCategory"></span></div>
+      <h3 id="roomName"></h3>
+      <p class="location" id="roomLocation"></p>
+      <p class="desc" id="roomDesc"></p>
+      <div class="room-meta">
+        <div class="meta-item">
+          <span class="label">Capacidad</span>
+          <span class="value" id="roomCapacity"></span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Piso</span>
+          <span class="value" id="roomFloor"></span>
+        </div>
+        <div class="meta-item" style="grid-column: span 2;">
+          <span class="label">Código</span>
+          <span class="value" id="roomCode"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</aside>
+
+<script>
+(function() {
+  const rooms = document.querySelectorAll('.room');
+  const welcomeState = document.getElementById('welcomeState');
+  const roomInfo = document.getElementById('roomInfo');
+  const roomBadge = document.getElementById('roomBadge');
+  const roomCategory = document.getElementById('roomCategory');
+  const roomName = document.getElementById('roomName');
+  const roomLocation = document.getElementById('roomLocation');
+  const roomDesc = document.getElementById('roomDesc');
+  const roomCapacity = document.getElementById('roomCapacity');
+  const roomFloor = document.getElementById('roomFloor');
+  const roomCode = document.getElementById('roomCode');
+
+  const categoryColors = {
+    'Laboratorio': '#0891b2',
+    'Pasillo': '#64748b',
+    'Estacionamiento': '#78716c',
+    'Internado': '#f43f5e',
+    'Comedor': '#d97706',
+    'Patio': '#4ade80',
+    'Biblioteca': '#0ea5e9',
+    'Sala de Clases': '#8b5cf6',
+    'Administración': '#3b82f6',
+    'Acceso': '#22c55e',
+    'Equipo de Apoyo': '#6366f1',
+    'Programa de Integración': '#a21caf',
+    'Sin uso': '#64748b',
+    'Comedor / Fitness': '#d97706'
+  };
+
+  function getCategoryColor(cat) {
+    return categoryColors[cat] || '#6366f1';
+  }
+
+  function showRoomInfo(roomEl) {
+    const name = roomEl.dataset.name || roomEl.textContent.trim();
+    const category = roomEl.dataset.category || 'General';
+    const desc = roomEl.dataset.desc || 'Sin descripción disponible.';
+    const capacity = roomEl.dataset.capacity || '—';
+    const floor = roomEl.dataset.floor || '1';
+    const code = roomEl.dataset.code || '—';
+    const color = getCategoryColor(category);
+
+    roomCategory.textContent = category;
+    roomName.textContent = name;
+    roomLocation.textContent = 'Primer piso';
+    roomDesc.textContent = desc;
+    roomCapacity.textContent = capacity;
+    roomFloor.textContent = floor + '° Piso';
+    roomCode.textContent = code;
+
+    roomBadge.style.background = color + '22';
+    roomBadge.style.color = color;
+    roomBadge.querySelector('.dot').style.background = color;
+
+    welcomeState.style.display = 'none';
+    roomInfo.classList.add('visible');
+
+    rooms.forEach(r => r.classList.remove('active'));
+    roomEl.classList.add('active');
+  }
+
+  rooms.forEach(function(room) {
+    room.addEventListener('click', function(e) {
+      showRoomInfo(this);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

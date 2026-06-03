@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Módulo S.O.S. — Convivencia Escolar</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #fef2f2; color: #1e293b; padding: 2rem; line-height: 1.6; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; color: #991b1b; margin-bottom: .25rem; }
+  .subtitle { color: #64748b; margin-bottom: 2rem; font-size: .95rem; }
+  h2 { font-size: 1.25rem; color: #7f1d1d; margin: 2rem 0 .75rem; padding-bottom: .4rem; border-bottom: 2px solid #fecaca; }
+  h3 { font-size: 1.05rem; color: #334155; margin: 1.25rem 0 .5rem; }
+  .card { background: #fff; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #e2e8f0; }
+  .card-red { border-left: 4px solid #ef4444; }
+  .card-amber { border-left: 4px solid #f59e0b; }
+  .card-green { border-left: 4px solid #22c55e; }
+  .card-blue { border-left: 4px solid #3b82f6; }
+  .card-purple { border-left: 4px solid #8b5cf6; }
+  .badge { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-amber { background: #fef9c3; color: #854d0e; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  ul, ol { padding-left: 1.25rem; }
+  li { margin-bottom: .35rem; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+  .flow { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; padding: .75rem; background: #f1f5f9; border-radius: 8px; font-size: .85rem; }
+  .flow-step { background: #fff; padding: .4rem .8rem; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 500; }
+  .flow-arrow { color: #94a3b8; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: .6rem .75rem; border-bottom: 1px solid #e2e8f0; }
+  th { font-weight: 600; color: #475569; background: #f8fafc; }
+  .emoji-big { font-size: 1.5rem; }
+  .quote { background: #f8fafc; border-left: 4px solid #94a3b8; padding: .75rem 1rem; margin: .75rem 0; border-radius: 0 8px 8px 0; font-style: italic; color: #475569; }
+  .warning { background: #fef9c3; border: 1px solid #fde68a; border-radius: 8px; padding: .75rem 1rem; margin: .75rem 0; font-size: .85rem; }
+  @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } body { padding: 1rem; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🆘 Módulo S.O.S. — Convivencia Escolar</h1>
+<p class="subtitle">Submódulo del Equipo Multidisciplinario — Reportes de acoso escolar, bullying y apoyo estudiantil.</p>
+
+<!-- ============ 1. CONTEXTO ============ -->
+<h2>1. Contexto</h2>
+<div class="card card-amber">
+  <ul style="font-size:.9rem">
+    <li><strong>Prohibición de móviles</strong> — existe una ley que prohíbe el uso de celulares en el establecimiento, pero en la práctica los estudiantes igual los usan, juegan en ellos, y los docentes ya no dicen nada. El director puede hacer excepciones.</li>
+    <li><strong>No todos tienen móvil</strong> — algunos estudiantes no tienen celular o no tienen datos móviles.</li>
+    <li><strong>Acceso alternativo</strong> — se necesita que el sistema sea accesible desde computadores de aula, laboratorios de informática, biblioteca, o desde la casa.</li>
+    <li><strong>Público objetivo:</strong> estudiantes (todas las edades), testigos, víctimas, y el equipo multidisciplinario (orientadores, psicólogos, inspectores).</li>
+  </ul>
+</div>
+
+<!-- ============ 2. VÍAS DE ACCESO ============ -->
+<h2>2. Vías de Acceso</h2>
+<div class="grid-3">
+  <div class="card card-red">
+    <h3>📱 QR en paredes</h3>
+    <ul style="font-size:.85rem">
+      <li>Impreso en aulas, pasillos, baños, patio</li>
+      <li>Cada QR tiene un <strong>ID de ubicación</strong> (aula 301, patio norte, etc.)</li>
+      <li>Escanea → abre la página de reporte</li>
+      <li>Funciona con o sin datos (WiFi del colegio)</li>
+    </ul>
+  </div>
+  <div class="card card-blue">
+    <h3>💻 Link en computadores</h3>
+    <ul style="font-size:.85rem">
+      <li>Accesso directo en el escritorio de las salas de computación</li>
+      <li>Favorito en los navegadores de biblioteca y laboratorios</li>
+      <li>Sin necesidad de móvil</li>
+      <li>Misma URL: <code>https://app.com/sos</code></li>
+    </ul>
+  </div>
+  <div class="card card-purple">
+    <h3>🏠 Acceso externo</h3>
+    <ul style="font-size:.85rem">
+      <li>Desde la casa (computador familiar, tablet, o móvil personal)</li>
+      <li>No requiere estar en la red del colegio</li>
+      <li>Misma URL pública: <code>https://app.com/sos</code></li>
+      <li>El estudiante puede reportar fuera del horario escolar</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ 3. FLUJO ============ -->
+<h2>3. Flujo del Reporte</h2>
+
+<div class="card card-amber">
+  <h3>Paso 1: ¿Quién eres?</h3>
+  <div class="grid-2" style="margin-top:.5rem">
+    <div style="font-size:.85rem">
+      <p><strong>🔴 "Me está pasando a mí"</strong></p>
+      <ul>
+        <li>Formulario con datos opcionales</li>
+        <li>Puede dejar nombre/correo/curso para seguimiento</li>
+        <li>O puede elegir anonimato total</li>
+      </ul>
+    </div>
+    <div style="font-size:.85rem">
+      <p><strong>👀 "Vi que le está pasando a alguien"</strong></p>
+      <ul>
+        <li>Testigo, anónimo siempre</li>
+        <li>Describe lo que observó</li>
+        <li>Puede indicar curso o lugar donde ocurre</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card card-red">
+  <h3>Paso 2: Detalles</h3>
+  <table>
+    <thead>
+      <tr><th>Campo</th><th>Tipo</th><th>Detalle</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Urgencia</td><td>Select</td><td>🔴 Ya, estoy en peligro / 🟡 Sucede seguido / 🟢 Lo vi una vez</td></tr>
+      <tr><td>Ubicación</td><td>Auto desde QR</td><td>Si escanea QR, se precarga el lugar. Si no, puede escribirlo</td></tr>
+      <tr><td>Descripción</td><td>Textarea</td><td>Texto libre: qué pasó, cuándo, quiénes (opcional)</td></tr>
+      <tr><td>Foto / evidencia</td><td>Archivo opcional</td><td>Una foto si se siente seguro de adjuntarla</td></tr>
+      <tr><td>Datos de contacto</td><td>Opcional</td><td>Nombre, curso, correo — solo si quiere seguimiento</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card card-green">
+  <h3>Paso 3: Post-reporte</h3>
+  <div class="grid-2">
+    <div style="font-size:.85rem">
+      <p><strong>🔑 Token anónimo</strong></p>
+      <p>Si fue anónimo, el sistema genera <code>SOS-A7X3</code>. El estudiante lo anota (foto, papel) y puede consultar después: <em>"¿Mi caso fue revisado?"</em> sin revelar identidad.</p>
+    </div>
+    <div style="font-size:.85rem">
+      <p><strong>📚 Recursos automáticos</strong></p>
+      <p>"Gracias por avisar. Mientras tanto:"</p>
+      <ul>
+        <li>📞 Líneas de ayuda</li>
+        <li>🧑‍🏫 Contacto del orientador</li>
+        <li>💡 Tips de autocuidado</li>
+        <li>📍 Dónde pedir ayuda presencial</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4. TOKEN ============ -->
+<h2>4. Token de Seguimiento</h2>
+<div class="card card-blue">
+  <h3>¿Cómo funciona?</h3>
+  <div class="flow" style="margin:.75rem 0">
+    <span class="flow-step">📤 Envía reporte anónimo</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">🔑 Recibe código <code>SOS-A7X3</code></span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">⏳ Vuelve después</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">🔍 Ingresa código</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">📋 Ve estado: <em>Recibido / En revisión / Cerrado</em></span>
+  </div>
+  <ul style="font-size:.85rem">
+    <li>El token se genera con hash del reporte + timestamp + salt</li>
+    <li>No revela identidad del estudiante en ningún momento</li>
+    <li>El estudiante puede consultar cuándo quiera sin loguearse</li>
+    <li>Si perdió el token, no hay forma de recuperarlo (medida de privacidad)</li>
+  </ul>
+</div>
+
+<!-- ============ 5. MAPA DE CALOR ============ -->
+<h2>5. Mapa de Calor (Anónimo)</h2>
+<div class="card card-amber">
+  <ul style="font-size:.85rem">
+    <li>Los QR tienen ID de ubicación (aula 201, baño hombres, patio techado, etc.)</li>
+    <li>Con el tiempo se genera un <strong>mapa anónimo</strong> de zonas con más reportes</li>
+    <li>Sin datos personales — solo coordenadas + cantidad de reportes en el tiempo</li>
+    <li>El equipo multidisciplinario puede ver tendencias: <em>"El patio norte concentra el 40% de los reportes este mes"</em></li>
+    <li>Permite intervenciones preventivas focalizadas (ej: más supervisión en el patio norte)</li>
+  </ul>
+</div>
+
+<!-- ============ 6. CHECK-IN ============ -->
+<h2>6. Check-in Semanal Voluntario</h2>
+<div class="card card-purple">
+  <p style="font-size:.85rem">Un QR fijo en cada aula: <strong>"¿Cómo estuvo tu semana?"</strong></p>
+  <div class="flow" style="margin:.75rem 0">
+    <span class="flow-step">😊 Bien</span>
+    <span class="flow-arrow">/</span>
+    <span class="flow-step">😐 Regular</span>
+    <span class="flow-arrow">/</span>
+    <span class="flow-step">😢 Mal</span>
+  </div>
+  <ul style="font-size:.85rem">
+    <li>Sin identificación — solo registro del aula + emoji + timestamp</li>
+    <li>Si un aula muestra 😢 repetidamente, el sistema alerta al equipo multidisciplinario</li>
+    <li>Herramienta de detección temprana sin exponer a ningún estudiante</li>
+  </ul>
+</div>
+
+<!-- ============ 7. PERFILES Y ACCESOS ============ -->
+<h2>7. Perfiles y Accesos</h2>
+<table>
+  <thead>
+    <tr><th>Rol</th><th>Puede hacer</th><th>Autenticación</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Estudiante</td><td>Reportar (anónimo o con datos), consultar token, check-in semanal</td><td>Ninguna — acceso público a /sos</td></tr>
+    <tr><td>Equipo Multidisciplinario</td><td>Ver reportes, cambiar estado, contactar si hay datos, ver mapa de calor</td><td>Login requerido</td></tr>
+    <tr><td>Inspector / Director</td><td>Ver estadísticas, reportes derivados, alertas del sistema</td><td>Login requerido</td></tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <strong>⚠️ Privacidad:</strong> El equipo solo ve datos de contacto si el estudiante los proporcionó voluntariamente. Los reportes anónimos no pueden vincularse a una persona ni siquiera por el administrador del sistema.
+</div>
+
+<!-- ============ 8. TABLAS ============ -->
+<h2>8. Tablas Propuestas</h2>
+<table>
+  <thead>
+    <tr><th>Tabla</th><th>Descripción</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>sos_reportes</code></td><td>Reportes de estudiantes con tipo (víctima/testigo), urgencia, descripción, ubicación, foto opcional, datos de contacto opcionales</td><td><span class="badge badge-amber">Por crear</span></td></tr>
+    <tr><td><code>sos_tokens</code></td><td>Hash token → id_reporte, fecha_creacion, fecha_consulta</td><td><span class="badge badge-amber">Por crear</span></td></tr>
+    <tr><td><code>sos_checkin</code></td><td>id_aula, emoji, timestamp — anónimo</td><td><span class="badge badge-amber">Por crear</span></td></tr>
+    <tr><td><code>sos_ubicaciones_qr</code></td><td>ID único QR, descripción lugar, activo</td><td><span class="badge badge-amber">Por crear</span></td></tr>
+    <tr><td><code>sos_estados</code></td><td>Historial de cambios: Recibido → En revisión → Cerrado</td><td><span class="badge badge-amber">Por crear</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ============ 9. REGLAS DE NEGOCIO ============ -->
+<h2>9. Reglas de Negocio</h2>
+<div class="card card-red">
+  <ol style="font-size:.85rem">
+    <li><strong>Anonimato absoluto</strong> — el sistema no puede almacenar IP, user-agent, ni metadata que identifique al estudiante en reportes anónimos</li>
+    <li><strong>Sin login obligatorio</strong> — la página /sos es pública, no requiere autenticación para reportar</li>
+    <li><strong>Foto opcional</strong> — nunca obligatoria. Si se adjunta, se almacena sin metadatos EXIF</li>
+    <li><strong>Token irrecuperable</strong> — si el estudiante pierde el token, no hay forma de recuperarlo. Es su llave de seguimiento</li>
+    <li><strong>Check-in agrega aula, no persona</strong> — los datos del check-in son agregados por aula, nunca individuales</li>
+    <li><strong>Mapa de calor anónimo</strong> — solo muestra cantidad de reportes por ubicación, sin datos personales</li>
+    <li><strong>Derivación automática</strong> — urgencia 🔴 notifica al equipo multidisciplinario de inmediato (correo o dashboard)</li>
+    <li><strong>Retención de datos</strong> — reportes y tokens se eliminan después de 6 meses (o según normativa local)</li>
+    <li><strong>El QR y el link /sos llevan al mismo lugar</strong> — la diferencia es que el QR precarga la ubicación</li>
+    <li><strong>Acceso desde cualquier dispositivo</strong> — responsive, funciona en móvil, tablet y computador de escritorio</li>
+  </ol>
+</div>
+
+<!-- ============ 10. PENDIENTE ============ -->
+<h2>10. Pendiente para Próxima Iteración</h2>
+<div class="grid-2">
+<div class="card card-blue">
+  <h3>🔜 Dashboard equipo</h3>
+  <ul style="font-size:.85rem">
+    <li>Lista de reportes con filtros (urgencia, estado, ubicación)</li>
+    <li>Detalle del reporte + cambio de estado</li>
+    <li>Contactar al estudiante (si dejó datos)</li>
+    <li>Mapa de calor visual</li>
+  </ul>
+</div>
+<div class="card card-purple">
+  <h3>🔜 Alertas automáticas</h3>
+  <ul style="font-size:.85rem">
+    <li>Notificación por correo cuando llegue reporte 🔴</li>
+    <li>Alerta semanal si un aula acumula 😢 en check-in</li>
+    <li>Resumen semanal de reportes para el equipo</li>
+  </ul>
+</div>
+</div>
+
+<hr>
+<p style="text-align:center;color:#94a3b8;font-size:.85rem">
+  Documento generado el 25 de mayo de 2026 — SGJA Módulo S.O.S. Convivencia Escolar
+</p>
+
+</div>
+</body>
+</html>

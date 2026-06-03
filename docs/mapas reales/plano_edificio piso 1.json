@@ -1,0 +1,306 @@
+[
+  {
+    "left": 57.0,
+    "top": 42.0,
+    "width": 55,
+    "height": 302,
+    "text": "Pasillo Lincoyán",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 0.0,
+    "top": 1.0,
+    "width": 55,
+    "height": 44,
+    "text": "Lab Biología",
+    "zone": "z-lab"
+  },
+  {
+    "left": 56.0,
+    "top": 0.0,
+    "width": 167,
+    "height": 41,
+    "text": "Estacionamiento",
+    "zone": "z-park"
+  },
+  {
+    "left": 224.0,
+    "top": 0.0,
+    "width": 55,
+    "height": 41,
+    "text": "Internado",
+    "zone": "z-internado"
+  },
+  {
+    "left": 280.0,
+    "top": 1.0,
+    "width": 55,
+    "height": 41,
+    "text": "Cocina Comedor",
+    "zone": "z-com"
+  },
+  {
+    "left": 336.0,
+    "top": 0.0,
+    "width": 55,
+    "height": 41,
+    "text": "Patio Biblioteca",
+    "zone": "z-patio"
+  },
+  {
+    "left": 393.0,
+    "top": 0.0,
+    "width": 55,
+    "height": 84,
+    "text": "Biblioteca",
+    "zone": "z-bib"
+  },
+  {
+    "left": 448.0,
+    "top": 0.0,
+    "width": 59,
+    "height": 41,
+    "text": "Sala 2",
+    "zone": "z-sala"
+  },
+  {
+    "left": 113.0,
+    "top": 42.0,
+    "width": 133,
+    "height": 41,
+    "text": "Sala Fitness",
+    "zone": "z-com"
+  },
+  {
+    "left": 247.0,
+    "top": 42.0,
+    "width": 55,
+    "height": 41,
+    "text": "Paradocentes",
+    "zone": "z-admin"
+  },
+  {
+    "left": 304.0,
+    "top": 42.0,
+    "width": 88,
+    "height": 41,
+    "text": "Comedor",
+    "zone": "z-com"
+  },
+  {
+    "left": 449.0,
+    "top": 43.0,
+    "width": 58,
+    "height": 41,
+    "text": "Sala 1",
+    "zone": "z-sala"
+  },
+  {
+    "left": 1.0,
+    "top": 47.0,
+    "width": 55,
+    "height": 34,
+    "text": "Acceso Lincoyán",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 112.0,
+    "top": 116.0,
+    "width": 135,
+    "height": 142,
+    "text": "Patio A",
+    "zone": "z-patio"
+  },
+  {
+    "left": 296.0,
+    "top": 114.0,
+    "width": 105,
+    "height": 142,
+    "text": "Patio B",
+    "zone": "z-patio"
+  },
+  {
+    "left": 402.0,
+    "top": 84.0,
+    "width": 46,
+    "height": 212,
+    "text": "Pasillo Rengo",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 450.0,
+    "top": 86.0,
+    "width": 57,
+    "height": 41,
+    "text": "Equipo Multidisciplinario",
+    "zone": "z-other"
+  },
+  {
+    "left": 449.0,
+    "top": 129.0,
+    "width": 58,
+    "height": 41,
+    "text": "Inspectoría",
+    "zone": "z-admin"
+  },
+  {
+    "left": 1.0,
+    "top": 83.0,
+    "width": 55,
+    "height": 98,
+    "text": "Lab Física",
+    "zone": "z-lab"
+  },
+  {
+    "left": 450.0,
+    "top": 172.0,
+    "width": 57,
+    "height": 41,
+    "text": "Acceso Rengo",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 0.0,
+    "top": 183.0,
+    "width": 55,
+    "height": 114,
+    "text": "Lab Química",
+    "zone": "z-lab"
+  },
+  {
+    "left": 450.0,
+    "top": 214.0,
+    "width": 57,
+    "height": 41,
+    "text": "Secretaría",
+    "zone": "z-admin"
+  },
+  {
+    "left": 149.0,
+    "top": 257.0,
+    "width": 35,
+    "height": 41,
+    "text": "PIE 1",
+    "zone": "z-pie"
+  },
+  {
+    "left": 112.0,
+    "top": 257.0,
+    "width": 35,
+    "height": 41,
+    "text": "PIE 2",
+    "zone": "z-pie"
+  },
+  {
+    "left": 185.0,
+    "top": 257.0,
+    "width": 35,
+    "height": 41,
+    "text": "Sala 105",
+    "zone": "z-sala"
+  },
+  {
+    "left": 222.0,
+    "top": 256.0,
+    "width": 35,
+    "height": 41,
+    "text": "Sala 104",
+    "zone": "z-sala"
+  },
+  {
+    "left": 294.0,
+    "top": 255.0,
+    "width": 35,
+    "height": 41,
+    "text": "Sala 103",
+    "zone": "z-sala"
+  },
+  {
+    "left": 330.0,
+    "top": 255.0,
+    "width": 35,
+    "height": 41,
+    "text": "Sala 102",
+    "zone": "z-sala"
+  },
+  {
+    "left": 366.0,
+    "top": 255.0,
+    "width": 35,
+    "height": 41,
+    "text": "Sala 101",
+    "zone": "z-sala"
+  },
+  {
+    "left": 450.0,
+    "top": 257.0,
+    "width": 57,
+    "height": 41,
+    "text": "Dirección",
+    "zone": "z-admin"
+  },
+  {
+    "left": 113.0,
+    "top": 300.0,
+    "width": 145,
+    "height": 41,
+    "text": "Pasillo Linc → Coch",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 259.0,
+    "top": 256.0,
+    "width": 34,
+    "height": 84,
+    "text": "Acceso Hall Cochrane",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 294.0,
+    "top": 298.0,
+    "width": 107,
+    "height": 41,
+    "text": "Pasillo Cochrane",
+    "zone": "z-pasillo"
+  },
+  {
+    "left": 402.0,
+    "top": 298.0,
+    "width": 47,
+    "height": 41,
+    "text": "Acceso Int. Pas. Cochrane",
+    "zone": "z-acceso"
+  },
+  {
+    "left": 450.0,
+    "top": 300.0,
+    "width": 57,
+    "height": 41,
+    "text": "Acceso Esquina (sin uso)",
+    "zone": "z-empty"
+  },
+  {
+    "left": 112.0,
+    "top": 84.0,
+    "width": 292,
+    "height": 32,
+    "text": "Pasillo Internado",
+    "zone": "z-other"
+  },
+  {
+    "left": 249.0,
+    "top": 118.0,
+    "width": 46,
+    "height": 137,
+    "text": "Pasillo Pergola",
+    "zone": "z-other"
+  },
+  {
+    "left": 0.0,
+    "top": 298.0,
+    "width": 55,
+    "height": 41,
+    "text": "Escaleras Esq. Lin+Coc",
+    "zone": "z-other"
+  }
+]

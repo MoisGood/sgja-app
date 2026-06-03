@@ -1,0 +1,241 @@
+/* ============================================================
+   SGJA – Estilos Layout
+   src/styles/layout.css
+   ============================================================ */
+
+.layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .layout-wrapper {
+  background-color: #111827;
+}
+
+.layout-sidebar {
+  width: 250px;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  position: fixed;
+  height: 100vh;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .layout-sidebar {
+  background: #1f2937;
+  border-right-color: #374151;
+}
+
+.layout-main {
+  flex: 1;
+  margin-left: 250px;
+}
+
+.layout-topbar {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .layout-topbar {
+  background: #1f2937;
+  border-bottom-color: #374151;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topbar-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-user-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .topbar-user-name {
+  color: #f3f4f6;
+}
+
+.topbar-user-email {
+  font-size: 0.875rem;
+  color: #6b7280;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .topbar-user-email {
+  color: #9ca3af;
+}
+
+.layout-content {
+  padding: 2rem;
+  background-color: #f9fafb;
+  min-height: calc(100vh - 65px);
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .layout-content {
+  background-color: #111827;
+}
+
+/* Sidebar Menu */
+.sidebar-menu {
+  list-style: none;
+  padding: 1rem 0;
+}
+
+.sidebar-item {
+  padding: 0;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #6b7280;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+html[data-theme="dark"] .sidebar-link {
+  color: #d1d5db;
+}
+
+.sidebar-link:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+html[data-theme="dark"] .sidebar-link:hover {
+  background-color: #374151;
+  color: #f3f4f6;
+}
+
+.sidebar-link.active {
+  background-color: #e0e7ff;
+  color: #2563eb;
+  border-right: 3px solid #2563eb;
+  padding-right: calc(1rem - 3px);
+  transition: all 0.2s ease;
+}
+
+html[data-theme="dark"] .sidebar-link.active {
+  background-color: #1e40af;
+  color: #93c5fd;
+  border-right-color: #3b82f6;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+html[data-theme="dark"] .mobile-menu-toggle {
+  color: #f3f4f6;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .layout-sidebar {
+    position: fixed;
+    left: -250px;
+    transition: left 0.3s ease;
+    width: 250px;
+    height: 100vh;
+    top: 0;
+    z-index: 2000;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .layout-sidebar.open {
+    left: 0;
+  }
+
+  .layout-main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .layout-content {
+    padding: 1rem;
+    min-height: calc(100vh - 65px);
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-topbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .topbar-user-info {
+    display: none;
+  }
+
+  .layout-content {
+    padding: 0.75rem;
+  }
+}
+
+/* Scrollbar */
+.layout-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.layout-sidebar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .layout-sidebar::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+.layout-sidebar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+html[data-theme="dark"] .layout-sidebar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.layout-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+html[data-theme="dark"] .layout-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}

@@ -1,0 +1,1 @@
+ALTER TABLE email_config ADD COLUMN IF NOT EXISTS reverify_minutos INTEGER DEFAULT 0;

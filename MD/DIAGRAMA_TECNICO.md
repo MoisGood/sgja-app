@@ -1,0 +1,390 @@
+# 🔐 ARQUITECTURA DE SESIONES - DIAGRAMA TÉCNICO
+
+## 1. FLUJO DE REUTILIZACIÓN DE SESIONES
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    USUARIO INICIA SESIÓN                         │
+│                      registrarInicio()                            │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │ Obtener Device  │
+                    │ ID (Hash del    │
+                    │ navegador)      │
+                    └────────┬────────┘
+                             │
+        ┌────────────────────▼────────────────────┐
+        │ Buscar sesión existente                 │
+        │ SELECT * FROM online                    │
+        │ WHERE id_usuario = ? AND                │
+        │       id_dispositivo = ? AND            │
+        │       estado = "conectado"              │
+        └────────┬────────────────┬───────────────┘
+                 │                │
+        ┌────────▼────┐    ┌──────▼──────────┐
+        │ ENCONTRADA  │    │ NO ENCONTRADA   │
+        │ (Reutilizar)│    │ (Crear nueva)   │
+        └────────┬────┘    └──────┬──────────┘
+                 │                │
+        ┌────────▼────┐    ┌──────▼──────────┐
+        │ UPDATE:     │    │ INSERT:        │
+        │ - estado    │    │ - id_usuario   │
+        │   = conectado   │ - timestamp    │
+        │ - timestamp     │ - timestamp    │
+        │   _ultima_      │ - heartbeat    │
+        │   actividad     │ - ... otros    │
+        │ - timestamp     │                │
+        │   _heartbeat    │                │
+        └────────┬────┘    └──────┬──────────┘
+                 │                │
+                 └────────┬───────┘
+                          │
+                    ┌─────▼──────┐
+                    │ SESIÓN     │
+                    │ ACTIVA     │
+                    └─────┬──────┘
+                          │
+                ┌─────────▼──────────┐
+                │ USUARIO NAVEGANDO  │
+                └─────────┬──────────┘
+                          │
+```
+
+## 2. MONITOREO DE ACTIVIDAD (Heartbeat + Activity)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│         USUARIO NAVEGANDO LA APP (useSessionActivity)       │
+└─────────────────────────────────────────────────────────────┘
+          │
+          │ Se monta el hook
+          │
+    ┌─────▼─────────────────────────────────────┐
+    │ Agregar event listeners:                  │
+    │ - mousedown                               │
+    │ - keydown                                 │
+    │ - scroll                                  │
+    │ - touchstart                              │
+    │ - click                                   │
+    └──────────────────┬────────────────────────┘
+                       │
+    ┌──────────────────┴──────────────────┐
+    │                                     │
+ Cada 30 segundos              Cuando hay actividad
+    │                                     │
+    ├─────────────────────┐   ┌──────────▼──────────┐
+    │  enviarHeartbeat()  │   │ handleActivity()    │
+    │                     │   │                     │
+    │ UPDATE online SET   │   │ UPDATE online SET   │
+    │ timestamp_heartbeat │   │ timestamp_ultima_   │
+    │ = NOW()             │   │ actividad = NOW()   │
+    │                     │   │ (cada 5 minutos)    │
+    └─────────────────────┘   └──────────┬──────────┘
+                       │
+                       ▼
+            ┌──────────────────┐
+            │ Firestore Update │
+            │ (servidor)       │
+            └──────────────────┘
+                       │
+            ┌──────────▼──────────┐
+            │ Listener en tiempo  │
+            │ real detecta cambio │
+            │ (EnLinea, Seguridad)│
+            └─────────────────────┘
+```
+
+## 3. DETECCIÓN DE SESIONES INACTIVAS
+
+```
+┌────────────────────────────────────────────────────────────┐
+│          Verificación de Sesiones Inactivas                │
+│     (Manual en Seguridad.tsx o Cloud Function)             │
+└────────────────────────────────────────────────────────────┘
+                       │
+        ┌──────────────▼──────────────┐
+        │ OBTENER TODAS LAS SESIONES  │
+        │ SELECT * FROM online        │
+        │ WHERE id_usuario = ?        │
+        │ AND estado = "conectado"    │
+        └──────────────┬──────────────┘
+                       │
+                       │ Para cada sesión:
+                       │
+    ┌──────────────────┴──────────────────┐
+    │                                     │
+    │  ┌─────────────────────────────┐   │
+    │  │ Obtener timestamps:         │   │
+    │  │ - heartbeat                 │   │
+    │  │ - ultima_actividad          │   │
+    │  │ - ahora = Date.now()        │   │
+    │  └──────────────┬──────────────┘   │
+    │                 │                   │
+    │  ┌──────────────▼──────────────┐   │
+    │  │ Calcular diferencias:       │   │
+    │  │ - sinHeartbeat =            │   │
+    │  │   ahora - heartbeat         │   │
+    │  │ - sinActividad =            │   │
+    │  │   ahora - ultima_actividad  │   │
+    │  └──────────────┬──────────────┘   │
+    │                 │                   │
+    │     ┌───────────▼────────────┐     │
+    │     │ ¿sinHeartbeat > 5 min? │     │
+    │     └──┬──────────────────┬──┘     │
+    │        │                  │         │
+    │      SÍ                 NO          │
+    │        │                  │         │
+    │   ┌────▼────┐      ┌──────▼──────┐ │
+    │   │NAVEGADOR│      │ ¿sinActiv > │ │
+    │   │CERRADO! │      │ 30 min?     │ │
+    │   │CERRAR   │      └──┬────────┬─┘ │
+    │   │SESIÓN   │         │        │   │
+    │   └─────────┘       SÍ       NO   │
+    │                      │        │    │
+    │                   ┌──▼──┐   ┌─▼──┐ │
+    │                   │INAC-│   │VIVO│ │
+    │                   │TIVO │   │OK  │ │
+    │                   └─────┘   └────┘ │
+    │                                     │
+    └─────────────────────────────────────┘
+                       │
+            ┌──────────▼──────────┐
+            │ SI INACTIVA O MUERTA│
+            │ UPDATE online SET   │
+            │ estado = "desconec"  │
+            │ timestamp_fin = NOW()│
+            │ razon_cierre = ...  │
+            └─────────────────────┘
+```
+
+## 4. CLOUD FUNCTION (Con Blaze)
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│        Cloud Function: closeInactiveSessions                 │
+│        (Se ejecuta automáticamente cada 10 minutos)          │
+└──────────────────────────────────────────────────────────────┘
+                       │
+        ┌──────────────▼──────────────┐
+        │ Trigger: Pub/Sub Scheduler  │
+        │ "every 10 minutes"          │
+        └──────────────┬──────────────┘
+                       │
+        ┌──────────────▼──────────────┐
+        │ Calcular:                   │
+        │ hace5Minutos = ahora - 5min │
+        └──────────────┬──────────────┘
+                       │
+        ┌──────────────▼──────────────────────────────┐
+        │ Query:                                      │
+        │ SELECT * FROM online                        │
+        │ WHERE estado = "conectado" AND              │
+        │       timestamp_heartbeat < hace5Minutos    │
+        └──────────────┬───────────────────────────────┘
+                       │
+              ┌────────▼────────┐
+              │ Para cada doc:  │
+              │ - Cierra        │
+              │ - Log           │
+              │ - Notifica*     │
+              │   (*opcional)   │
+              └────────┬────────┘
+                       │
+        ┌──────────────▼──────────────┐
+        │ UPDATE online SET           │
+        │ - estado = "desconectado"   │
+        │ - timestamp_fin = NOW()     │
+        │ - razon_cierre =            │
+        │   "Sin heartbeat >5min"     │
+        └─────────────────────────────┘
+```
+
+## 5. FLUJO COMPLETO: 3 ESCENARIOS
+
+### ESCENARIO 1: LOGOUT NORMAL
+```
+10:00 AM ┌──────────────────────────┐
+         │ User clicks "Logout"     │
+         │ Seguridad > Cerrar       │
+         └──────────┬───────────────┘
+                    │
+         ┌──────────▼───────────┐
+         │ registrarCierre()    │
+         │ - Find conectado     │
+         │ - Mark desconectado  │
+         │ - Set timestamp_fin  │
+         └──────────┬───────────┘
+                    │
+         ┌──────────▼────────────────┐
+         │ SESIÓN CERRADA            │
+         │ estado: "desconectado"    │
+         └───────────────────────────┘
+```
+
+### ESCENARIO 2: INACTIVIDAD (30 minutos)
+```
+10:00 AM ┌──────────────────────────┐
+         │ User logs in             │
+         │ Uses app for 10 minutes  │
+         └──────────┬───────────────┘
+                    │
+10:10 AM │ User STOPS using app
+         │ but leaves browser OPEN
+         │
+10:30 AM │ Still no activity
+         │ (30 minutes without click)
+         │
+         ┌──────────┼───────────┐
+         │ Option A: Open        │
+         │ Seguridad tab         │
+         │ See "INACTIVA"        │
+         │ Click close           │
+         │                       │
+         │ Option B: Client-side │
+         │ timeout triggers      │
+         │ (si está implementado)│
+         └──────────┬───────────┘
+                    │
+         ┌──────────▼────────────────┐
+         │ SESIÓN CERRADA            │
+         │ Razon: Sin actividad      │
+         └───────────────────────────┘
+```
+
+### ESCENARIO 3: NAVEGADOR CERRADO ❌
+```
+10:00 AM ┌──────────────────────────┐
+         │ User logs in             │
+         │ timestamp_heartbeat:10:00│
+         └──────────┬───────────────┘
+                    │
+         (Usuario interactúa normalmente)
+                    │
+         Cada 30 seg: heartbeat se actualiza
+         Cada 5 min: actividad se actualiza
+                    │
+10:15 AM │ USER CIERRA NAVEGADOR ❌
+         │ (sin logout)
+         │
+         │ ❌ registrarCierre() NO se ejecuta
+         │ ❌ Sesión queda "conectado"
+         │
+10:15:30 │ HEARTBEAT STOPS ❌
+         │ (no más actualizaciones)
+         │
+10:20 AM │ Sesión en Firestore:
+         │ - estado: "conectado"  (¡INCORRECTO!)
+         │ - timestamp_heartbeat: 10:15 (5 min atrás)
+         │ - timestamp_ultima_actividad: 10:15
+         │
+         ├─ SIN CLOUD FUNCTION:
+         │  └─ User abre en otra ventana
+         │     Seguridad > Ve sesión antigua
+         │     Click "Cerrar inactivas"
+         │     → Detecta sin heartbeat
+         │     → Cierra manualmente
+         │
+         └─ CON CLOUD FUNCTION (Blaze):
+            10:20 AM
+            └─ Cloud Function ejecuta
+               cada 10 minutos
+               └─ Detecta: sin heartbeat > 5 min
+               └─ CIERRA AUTOMÁTICAMENTE
+               └─ estado: "desconectado"
+               └─ razon: "Sin heartbeat"
+```
+
+## 6. BASE DE DATOS (Firestore)
+
+```
+collection: online
+│
+├─ document: user123_1704067200000 (sesión 1)
+│  ├─ id_usuario: "user123"
+│  ├─ email_usuario: "user@example.com"
+│  ├─ rol_usuario: "PROFESOR"
+│  ├─ id_dispositivo: "h4sh_browser_os_ip"
+│  ├─ navegador: "Chrome"
+│  ├─ sistema_operativo: "Windows 10"
+│  ├─ ip_cliente: "192.168.1.100"
+│  ├─ tipo_dispositivo: "desktop"
+│  │
+│  ├─ estado: "conectado"
+│  │
+│  ├─ timestamp_inicio: 2026-03-31T13:00:00Z
+│  ├─ timestamp_fin: null
+│  │
+│  ├─ timestamp_heartbeat: 2026-03-31T13:30:30Z ← ACTUALIZADO CADA 30 SEG
+│  ├─ timestamp_ultima_actividad: 2026-03-31T13:30:00Z ← ACTUALIZADO CADA 5 MIN
+│  │
+│  └─ razon_cierre: null
+│
+├─ document: user123_1704067260000 (sesión 2 - CERRADA)
+│  ├─ id_usuario: "user123"
+│  ├─ email_usuario: "user@example.com"
+│  ├─ ...
+│  ├─ estado: "desconectado"
+│  ├─ timestamp_inicio: 2026-03-31T10:00:00Z
+│  ├─ timestamp_fin: 2026-03-31T10:35:00Z
+│  ├─ timestamp_heartbeat: 2026-03-31T10:15:00Z
+│  ├─ timestamp_ultima_actividad: 2026-03-31T10:15:00Z
+│  │
+│  └─ razon_cierre: "Sin heartbeat > 5 min (navegador cerrado)"
+│
+└─ ...
+```
+
+## 7. ESTADÍSTICAS & MONITOREO
+
+```
+┌────────────────────────────────────────┐
+│        SEGURIDAD TAB (React UI)        │
+├────────────────────────────────────────┤
+│                                        │
+│ 🟢 SESIONES ACTIVAS: 1                 │
+│ ├─ desktop (Chrome) | Windows | 30m   │
+│ │  IP: 192.168.1.100                   │
+│ │  Última actividad: 2 minutos atrás   │
+│ │  [Cerrar sesión]                     │
+│                                        │
+│ 🔴 SESIONES INACTIVAS: 2               │
+│ ├─ desktop (Firefox) | Mac | 35m       │
+│ │  IP: 192.168.1.101                   │
+│ │  Última actividad: 35 minutos atrás  │
+│ │  [Cerrar sesión]                     │
+│ │                                      │
+│ └─ mobile (Safari) | iOS | 2h          │
+│    IP: 203.123.45.67                   │
+│    Última actividad: 2 horas atrás     │
+│    [Cerrar sesión]                     │
+│                                        │
+│ ⚙️ CONFIGURACIÓN:                      │
+│ ├─ Minutos de inactividad: [30] min    │
+│ ├─ Cerrar automáticamente: [ON] 🔘     │
+│ └─ [Cerrar todas las inactivas]        │
+│                                        │
+└────────────────────────────────────────┘
+```
+
+## 8. TABLA COMPARATIVA: CON vs SIN Cloud Function
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ESCENARIO           │ SIN Cloud Function │ CON Cloud Function│
+├─────────────────────────────────────────────────────────────┤
+│ Logout normal       │ ✅ (manual)        │ ✅ (manual)      │
+├─────────────────────────────────────────────────────────────┤
+│ Timeout 30 min      │ ✅ (ver + cerrar)  │ ✅ (ver + cerrar)│
+├─────────────────────────────────────────────────────────────┤
+│ Navegador cerrado   │ ⚠️ (manual)        │ ✅ (automático)  │
+│                     │ User ve en        │ Cierra auto      │
+│                     │ Seguridad y cierra│ cada 10 min      │
+├─────────────────────────────────────────────────────────────┤
+│ Costo               │ $0                 │ ~$2-5/mes        │
+├─────────────────────────────────────────────────────────────┤
+│ Requiere            │ Plan Spark         │ Plan Blaze       │
+├─────────────────────────────────────────────────────────────┤
+│ Implementado        │ ✅                 │ ✅ (listo)       │
+└─────────────────────────────────────────────────────────────┘
+```
