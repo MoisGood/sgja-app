@@ -380,6 +380,19 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
         ⚙️ Configuración Técnico
       </h1>
 
+      <div style={{ marginBottom: 20 }}>
+        <Button tipo="secundario" tamaño="pequeño" onClick={async () => {
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const reg of regs) await reg.unregister();
+            const keys = await caches.keys();
+            for (const key of keys) await caches.delete(key);
+            alert('Cache y Service Worker desactivados. La página se recargará.');
+            window.location.reload();
+          }
+        }}>🧹 Desactivar cache</Button>
+      </div>
+
       {errorMsg && (
         <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B', padding: '10px 16px', borderRadius: 8, marginBottom: 20, fontSize: 13 }}>
           {errorMsg}
