@@ -1,0 +1,172 @@
+[
+    {
+        "id":  "d781b265-89f4-449c-99ca-39f9ea2c5644",
+        "id_lugar":  "530129ad-c35a-4ecf-94b0-f2c4ec95febe",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Proyector",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T01:05:51.65514+00:00",
+        "updated_at":  "2026-05-26T01:05:51.65514+00:00"
+    },
+    {
+        "id":  "45903f92-bc33-4584-aedb-065c22311f62",
+        "id_lugar":  "a1176e50-35ae-42a3-8893-7447c89af16f",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Internet Cable",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T01:10:56.685371+00:00",
+        "updated_at":  "2026-05-26T01:10:56.685371+00:00"
+    },
+    {
+        "id":  "7251269e-d4d0-48ad-84bb-89471236f838",
+        "id_lugar":  "530129ad-c35a-4ecf-94b0-f2c4ec95febe",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Notebook",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T01:11:11.775224+00:00",
+        "updated_at":  "2026-05-26T01:11:11.775224+00:00"
+    },
+    {
+        "id":  "3114e2a2-6795-4f0c-821a-ed3656d239cc",
+        "id_lugar":  "d5abd35f-c137-41a6-bf45-14a1f549b755",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Internet Cable",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:11:41.031577+00:00",
+        "updated_at":  "2026-05-26T12:11:41.031577+00:00"
+    },
+    {
+        "id":  "0752a2ff-3738-40e7-bfb9-51e821fb282a",
+        "id_lugar":  "18b0a502-1192-416f-934b-19ab74c093e5",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Internet Cable",
+        "cantidad":  5,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:11:53.627467+00:00",
+        "updated_at":  "2026-05-26T12:11:53.627467+00:00"
+    },
+    {
+        "id":  "4f391466-54b3-43fa-b16d-833445231c9e",
+        "id_lugar":  "c93ea90d-35de-407b-a3a4-dca232b93085",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Internet Cable",
+        "cantidad":  5,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:12:01.787026+00:00",
+        "updated_at":  "2026-05-26T12:12:01.787026+00:00"
+    },
+    {
+        "id":  "ab559021-1b92-44d3-a358-533479f50eba",
+        "id_lugar":  "4fd8a449-2971-45a1-9e93-64d7fb3f4051",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Internet Cable",
+        "cantidad":  4,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:12:07.490532+00:00",
+        "updated_at":  "2026-05-26T12:12:07.490532+00:00"
+    },
+    {
+        "id":  "5e06e2de-88af-41ac-a02e-20840a3e0011",
+        "id_lugar":  "73ddc90e-3de2-4742-933a-cc57d01c246c",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Internet Cable",
+        "cantidad":  3,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:12:12.650372+00:00",
+        "updated_at":  "2026-05-26T12:12:12.650372+00:00"
+    },
+    {
+        "id":  "a33f9bea-e36d-4178-919f-4ecd840f535f",
+        "id_lugar":  "874f305f-5c41-461a-b78a-69574fea8030",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Internet Cable",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:12:20.552228+00:00",
+        "updated_at":  "2026-05-26T12:12:20.552228+00:00"
+    },
+    {
+        "id":  "aafef4a6-ba93-4b7c-9fd1-3911c8a2cdc6",
+        "id_lugar":  "530129ad-c35a-4ecf-94b0-f2c4ec95febe",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Computador",
+        "cantidad":  5,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:12:34.421712+00:00",
+        "updated_at":  "2026-05-26T12:12:34.421712+00:00"
+    },
+    {
+        "id":  "af37db14-4b9a-49df-ae8c-d76683214641",
+        "id_lugar":  "18b0a502-1192-416f-934b-19ab74c093e5",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Impresora Color",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:13:01.88749+00:00",
+        "updated_at":  "2026-05-26T12:13:01.88749+00:00"
+    },
+    {
+        "id":  "615e87fa-4f25-4a9d-ba74-e419670fbf95",
+        "id_lugar":  "18b0a502-1192-416f-934b-19ab74c093e5",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Impresora",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:13:09.152911+00:00",
+        "updated_at":  "2026-05-26T12:13:09.152911+00:00"
+    },
+    {
+        "id":  "774ee3cb-e836-4913-a578-82cacdeba5f6",
+        "id_lugar":  "18b0a502-1192-416f-934b-19ab74c093e5",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Computador",
+        "cantidad":  2,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:13:18.463982+00:00",
+        "updated_at":  "2026-05-26T12:13:18.463982+00:00"
+    },
+    {
+        "id":  "219f4565-3aa3-4427-916c-e326e9b57f3a",
+        "id_lugar":  "ae585954-ff06-4ae4-88c1-5fffe7863fac",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Cable HDMI",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:13:28.273839+00:00",
+        "updated_at":  "2026-05-26T12:13:28.273839+00:00"
+    },
+    {
+        "id":  "e4771050-9776-46c3-bbad-8c2fd0ad2849",
+        "id_lugar":  "ae585954-ff06-4ae4-88c1-5fffe7863fac",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Computador",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-26T12:13:34.592378+00:00",
+        "updated_at":  "2026-05-26T12:13:34.592378+00:00"
+    },
+    {
+        "id":  "3cfd3bdf-127c-4c4b-bac0-a5bb3baa298b",
+        "id_lugar":  "69cb4051-20c1-4495-b9d5-6b0e617a89dd",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Rack de Piso",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-28T15:06:38.671683+00:00",
+        "updated_at":  "2026-05-28T15:06:38.671683+00:00"
+    },
+    {
+        "id":  "959b2d6f-50a0-4b40-bed4-5d477fc1f18c",
+        "id_lugar":  "914517b6-6583-4570-972a-4be4ea55d3ac",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "dispositivo_nombre":  "Rack de Piso",
+        "cantidad":  1,
+        "activo":  true,
+        "created_at":  "2026-05-28T18:47:14.78353+00:00",
+        "updated_at":  "2026-05-28T18:47:14.78353+00:00"
+    }
+]

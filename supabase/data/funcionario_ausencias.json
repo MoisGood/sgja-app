@@ -1,0 +1,22 @@
+[
+    {
+        "id":  "16e442b1-97a7-4b4f-95de-0e1325cf6954",
+        "rut_funcionario":  "15665444-4",
+        "tipo":  "permiso_admin",
+        "fecha_inicio":  "2026-05-26",
+        "fecha_termino":  "2026-05-29",
+        "motivo":  null,
+        "registrado_por":  null,
+        "creado_en":  "2026-05-21T23:16:30.778+00:00"
+    },
+    {
+        "id":  "4f86042e-36d2-4f58-b64d-1e0655568214",
+        "rut_funcionario":  "d893ecc8-95e1-44fa-8c28-88f1dce22feb",
+        "tipo":  "licencia",
+        "fecha_inicio":  "2026-05-24",
+        "fecha_termino":  "2026-05-30",
+        "motivo":  null,
+        "registrado_por":  null,
+        "creado_en":  "2026-05-24T00:22:52.424+00:00"
+    }
+]

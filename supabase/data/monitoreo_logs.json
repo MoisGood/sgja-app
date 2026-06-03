@@ -1,0 +1,42 @@
+[
+    {
+        "id":  "b3107837-4804-4fa3-a8c4-92abe421a9b8",
+        "accion":  "prestar",
+        "entidad":  "prestamo",
+        "estado":  "exito",
+        "detalle":  "Estudiante: EST-006, Copia: b66d34aa-3f75-46da-a10e-99614f5815d4",
+        "usuario_id":  "c88e105c-b950-427c-9552-9b57e982a0fe",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-05-19T14:12:53.188875+00:00"
+    },
+    {
+        "id":  "021afea3-08a7-4608-b9ce-d4bb12640602",
+        "accion":  "prestar",
+        "entidad":  "prestamo",
+        "estado":  "exito",
+        "detalle":  "Estudiante: EST-004, Copia: 61d11eb4-346a-4266-bea7-9fab92661bf9",
+        "usuario_id":  "c88e105c-b950-427c-9552-9b57e982a0fe",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-05-19T17:40:18.301837+00:00"
+    },
+    {
+        "id":  "7284bf2c-0af8-4849-86a7-2404df700671",
+        "accion":  "prestar",
+        "entidad":  "prestamo",
+        "estado":  "exito",
+        "detalle":  "Estudiante: EST-001, Copia: c6dfe527-3407-420f-8f12-18e92f47704f",
+        "usuario_id":  "c88e105c-b950-427c-9552-9b57e982a0fe",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-05-20T13:07:28.184007+00:00"
+    },
+    {
+        "id":  "c86cc855-0695-4054-8eb5-c0954e9743b9",
+        "accion":  "prestar",
+        "entidad":  "prestamo",
+        "estado":  "exito",
+        "detalle":  "Estudiante: EST-001, Copia: d05f7784-7f7f-44c7-9c13-941f0d988537",
+        "usuario_id":  "d893ecc8-95e1-44fa-8c28-88f1dce22feb",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-05-21T19:09:48.499408+00:00"
+    }
+]

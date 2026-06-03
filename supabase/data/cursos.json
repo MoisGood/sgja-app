@@ -1,0 +1,211 @@
+[
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440001",
+        "codigo":  "4A",
+        "nombre":  "4to Grado A",
+        "nivel":  "4",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440002",
+        "codigo":  "4B",
+        "nombre":  "4to Grado B",
+        "nivel":  "4",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440003",
+        "codigo":  "4C",
+        "nombre":  "4to Grado C",
+        "nivel":  "4",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440004",
+        "codigo":  "4D",
+        "nombre":  "4to Grado D",
+        "nivel":  "4",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440005",
+        "codigo":  "3A",
+        "nombre":  "3ro Grado A",
+        "nivel":  "3",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440006",
+        "codigo":  "3B",
+        "nombre":  "3ro Grado B",
+        "nivel":  "3",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440007",
+        "codigo":  "3C",
+        "nombre":  "3ro Grado C",
+        "nivel":  "3",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440008",
+        "codigo":  "3D",
+        "nombre":  "3ro Grado D",
+        "nivel":  "3",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440009",
+        "codigo":  "2A",
+        "nombre":  "2do Grado A",
+        "nivel":  "2",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440010",
+        "codigo":  "2B",
+        "nombre":  "2do Grado B",
+        "nivel":  "2",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440011",
+        "codigo":  "2C",
+        "nombre":  "2do Grado C",
+        "nivel":  "2",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440012",
+        "codigo":  "2D",
+        "nombre":  "2do Grado D",
+        "nivel":  "2",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440013",
+        "codigo":  "1A",
+        "nombre":  "1ro Grado A",
+        "nivel":  "1",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440014",
+        "codigo":  "1B",
+        "nombre":  "1ro Grado B",
+        "nivel":  "1",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440015",
+        "codigo":  "1C",
+        "nombre":  "1ro Grado C",
+        "nivel":  "1",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440016",
+        "codigo":  "1D",
+        "nombre":  "1ro Grado D",
+        "nivel":  "1",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440017",
+        "codigo":  "EXTRA1",
+        "nombre":  "Curso Adicional 1",
+        "nivel":  "4",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440018",
+        "codigo":  "EXTRA2",
+        "nombre":  "Curso Adicional 2",
+        "nivel":  "4",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655440019",
+        "codigo":  "EXTRA3",
+        "nombre":  "Curso Adicional 3",
+        "nivel":  "4",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "profesor_jefe_id":  null,
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:45:25.508357",
+        "actualizado_en":  "2026-04-21T19:45:25.508357"
+    }
+]

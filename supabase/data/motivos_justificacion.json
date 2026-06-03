@@ -1,0 +1,42 @@
+[
+    {
+        "id":  "d3489f40-db58-454f-bee9-3f3451078365",
+        "codigo":  "MED",
+        "descripcion":  "Control médico",
+        "requiere_respaldo":  true,
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "b8cc1a54-60ec-4e73-a330-857962950727",
+        "codigo":  "FAM",
+        "descripcion":  "Razones familiares",
+        "requiere_respaldo":  false,
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "76c9509c-c82b-46bc-b027-4c16cac57023",
+        "codigo":  "OTR",
+        "descripcion":  "Otros",
+        "requiere_respaldo":  true,
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "2928facc-d58d-4f5f-b2b9-7744d53b77a3",
+        "codigo":  "ENF",
+        "descripcion":  "Enfermedad",
+        "requiere_respaldo":  true,
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "bdc24290-6cbe-4d20-990e-b8519bf7abc6",
+        "codigo":  "DEN",
+        "descripcion":  "Dentista",
+        "requiere_respaldo":  true,
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    }
+]

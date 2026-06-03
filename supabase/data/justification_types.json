@@ -1,0 +1,65 @@
+[
+    {
+        "id":  "ba69ece0-7093-41a0-a765-c42dc617026b",
+        "nombre":  "Enfermedad justificada en Inspectoría",
+        "descripcion":  "Esta justificación debe autorizar la devolución sin multa.",
+        "activo":  true,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "created_at":  "2026-05-18T02:33:03.187204+00:00",
+        "updated_at":  "2026-05-18T02:33:03.187204+00:00"
+    },
+    {
+        "id":  "76de600f-9a05-4b6a-a1de-2bc9e95c2aaa",
+        "nombre":  "Falte a clases",
+        "descripcion":  "Estudiante admite que esos días no estuvo en el establecimiento, sin multa.",
+        "activo":  true,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "created_at":  "2026-05-18T02:34:00.033216+00:00",
+        "updated_at":  "2026-05-18T02:34:00.033216+00:00"
+    },
+    {
+        "id":  "2cc59e0a-4535-42da-850f-4ebdf01b2c84",
+        "nombre":  "Olvido",
+        "descripcion":  "Usuario admite olvide y deber recibir multa.",
+        "activo":  true,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "created_at":  "2026-05-18T02:34:33.806828+00:00",
+        "updated_at":  "2026-05-18T02:34:33.806828+00:00"
+    },
+    {
+        "id":  "006f9314-4103-4d51-85c1-a58d23cdf152",
+        "nombre":  "Devolución con daño",
+        "descripcion":  "Informar el daño a UTP, ver el estado del libro, multa y suspensión de préstamos.",
+        "activo":  true,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "created_at":  "2026-05-18T12:23:36.749893+00:00",
+        "updated_at":  "2026-05-18T12:23:36.749893+00:00"
+    },
+    {
+        "id":  "a21eb951-e554-4f92-abc7-9400d4cb73a6",
+        "nombre":  "No devuelve el libro por robo",
+        "descripcion":  "Informar a UTP, el libro se perdió por robo, no aplica multa si la autoriza Inspectoría.",
+        "activo":  true,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "created_at":  "2026-05-18T12:24:58.025929+00:00",
+        "updated_at":  "2026-05-18T12:24:58.025929+00:00"
+    },
+    {
+        "id":  "cd1376f7-7c7c-430c-85ab-4d5ad8995a2d",
+        "nombre":  "Extravió del libro",
+        "descripcion":  "Declara que el libro lo perdió, informar a UTP, multa y suspensión.",
+        "activo":  true,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "created_at":  "2026-05-18T12:25:51.615895+00:00",
+        "updated_at":  "2026-05-18T12:25:51.615895+00:00"
+    },
+    {
+        "id":  "76109917-9a9e-4ec0-9fa3-e1411c5ae35a",
+        "nombre":  "Devuelto dentro de la Fecha",
+        "descripcion":  "Devuelve el libro dentro o en la fecha indicada.",
+        "activo":  false,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "created_at":  "2026-05-18T12:22:44.551464+00:00",
+        "updated_at":  "2026-05-18T12:22:44.551464+00:00"
+    }
+]

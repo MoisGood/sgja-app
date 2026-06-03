@@ -1,0 +1,50 @@
+[
+    {
+        "id":  "0c4e9e88-9f71-4753-a0e7-86cb24d47255",
+        "rol":  "ESTUDIANTE",
+        "dias_prestamo":  7,
+        "max_renovaciones":  2,
+        "max_prestamos_simultaneos":  3,
+        "multa_diaria":  0.00,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "activo":  true,
+        "created_at":  "2026-05-17T03:42:52.804501+00:00",
+        "updated_at":  "2026-05-17T23:13:52.352+00:00"
+    },
+    {
+        "id":  "f5b89b70-6c5a-42de-b1e0-508a634c7b79",
+        "rol":  "PROFESOR",
+        "dias_prestamo":  7,
+        "max_renovaciones":  4,
+        "max_prestamos_simultaneos":  3,
+        "multa_diaria":  0.00,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "activo":  true,
+        "created_at":  "2026-05-17T03:42:52.990684+00:00",
+        "updated_at":  "2026-05-17T23:13:52.602+00:00"
+    },
+    {
+        "id":  "dab6d9c8-26fc-4c96-85e0-4e8dc5e341aa",
+        "rol":  "INSPECTOR",
+        "dias_prestamo":  7,
+        "max_renovaciones":  2,
+        "max_prestamos_simultaneos":  3,
+        "multa_diaria":  0.00,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "activo":  true,
+        "created_at":  "2026-05-17T03:42:53.180528+00:00",
+        "updated_at":  "2026-05-17T23:13:52.839+00:00"
+    },
+    {
+        "id":  "af8a54c6-c2c5-4294-93a3-e95b0631cd45",
+        "rol":  "BIBLIOTECARIO",
+        "dias_prestamo":  7,
+        "max_renovaciones":  2,
+        "max_prestamos_simultaneos":  3,
+        "multa_diaria":  0.00,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "activo":  true,
+        "created_at":  "2026-05-17T03:42:53.37758+00:00",
+        "updated_at":  "2026-05-17T23:13:53.053+00:00"
+    }
+]

@@ -1,0 +1,29 @@
+[
+    {
+        "id_rol":  "6d5be632-b93b-4485-8832-6b95fb764df7",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre_rol":  "BIBLIOTECARIO",
+        "descripcion":  "Funcionario del CRA",
+        "activo":  true,
+        "creado_en":  "2026-05-16T23:43:05.932221+00:00",
+        "actualizado_en":  "2026-05-17T03:48:50.942+00:00"
+    },
+    {
+        "id_rol":  "75cbf3a0-c833-4930-829b-a3e9d76ff4f1",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre_rol":  "SECRETARIA",
+        "descripcion":  "Secretaria de dirección y establecimiento",
+        "activo":  true,
+        "creado_en":  "2026-05-22T01:01:00.38662+00:00",
+        "actualizado_en":  "2026-05-22T01:01:00.38662+00:00"
+    },
+    {
+        "id_rol":  "320884e9-4c8a-459d-9a19-d3823cfbeab6",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre_rol":  "TECNICO",
+        "descripcion":  "Informatico del establecimiento",
+        "activo":  true,
+        "creado_en":  "2026-05-26T19:02:52.396092+00:00",
+        "actualizado_en":  "2026-05-26T19:02:52.396092+00:00"
+    }
+]

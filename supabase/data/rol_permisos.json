@@ -1,0 +1,16 @@
+[
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655770001",
+        "nombre_rol":  "ADMIN",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-04-25T00:22:26.711447",
+        "descripcion_rol":  "Administrador del sistema con acceso total"
+    },
+    {
+        "id":  "550e8400-e29b-41d4-a716-446655770002",
+        "nombre_rol":  "PROFESOR",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-04-25T00:24:25.435389",
+        "descripcion_rol":  "Profesor de la institución"
+    }
+]

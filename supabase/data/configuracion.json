@@ -1,0 +1,153 @@
+[
+    {
+        "id":  2,
+        "rol":  "INSPECTOR",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "permisos":  [
+                         "/dashboard",
+                         "/justificaciones",
+                         "/registrar",
+                         "/ver-justificaciones",
+                         "/gestion-pases",
+                         "/estudiantes",
+                         "/catalogo",
+                         "/biblioteca",
+                         "/libros",
+                         "/prestamos",
+                         "/inventario",
+                         "/historial-biblioteca",
+                         "/config-biblioteca"
+                     ],
+        "actualizado_en":  "2026-05-22T15:04:01.282+00:00"
+    },
+    {
+        "id":  3,
+        "rol":  "PROFESOR",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "permisos":  [
+                         "/dashboard",
+                         "/justificaciones",
+                         "/ver-justificaciones",
+                         "/gestion-pases",
+                         "/estudiantes",
+                         "/historial"
+                     ],
+        "actualizado_en":  "2026-05-12T17:03:01.416+00:00"
+    },
+    {
+        "id":  9,
+        "rol":  "TECNICO",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "permisos":  [
+                         "/tecnico",
+                         "/tecnico/mapa",
+                         "/tecnico/equipos",
+                         "/tecnico/ubicaciones",
+                         "/tecnico/requerimientos",
+                         "/tecnico/accesos",
+                         "/tecnico/menu",
+                         "/tecnico/configuracion",
+                         "/tecnico/qr",
+                         "/ticket",
+                         "/tecnico/m/mapa",
+                         "/tecnico/m/equipos",
+                         "/tecnico/m/ubicaciones",
+                         "/tecnico/m/config",
+                         "/dashboard"
+                     ],
+        "actualizado_en":  "2026-05-28T14:36:45.04+00:00"
+    },
+    {
+        "id":  6,
+        "rol":  "ESTUDIANTE",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "permisos":  [
+                         "/dashboard",
+                         "/catalogo"
+                     ],
+        "actualizado_en":  "2026-05-17T07:14:51.719+00:00"
+    },
+    {
+        "id":  5,
+        "rol":  "BIBLIOTECARIO",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "permisos":  [
+                         "/historial-biblioteca",
+                         "/prestamos",
+                         "/dashboard",
+                         "/libros",
+                         "/catalogo",
+                         "/inventario"
+                     ],
+        "actualizado_en":  "2026-05-19T12:43:58.77+00:00"
+    },
+    {
+        "id":  7,
+        "rol":  "APODERADO",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "permisos":  [
+                         "/dashboard",
+                         "/historial",
+                         "/biblioteca",
+                         "/catalogo"
+                     ],
+        "actualizado_en":  "2026-05-20T13:04:32.54+00:00"
+    },
+    {
+        "id":  8,
+        "rol":  "SECRETARIA",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "permisos":  [
+                         "/dashboard",
+                         "/secretaria",
+                         "/secretaria/ausentes",
+                         "/secretaria/enviar-correo",
+                         "/mantenedor-funcionarios"
+                     ],
+        "actualizado_en":  "2026-05-22T01:29:45.64+00:00"
+    },
+    {
+        "id":  1,
+        "rol":  "ADMIN",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "permisos":  [
+                         "/secretaria",
+                         "/secretaria/ausentes",
+                         "/secretaria/enviar-correo",
+                         "/secretaria/plantillas-correo",
+                         "/secretaria/grupos-correo",
+                         "/mantenedor-funcionarios",
+                         "/dashboard",
+                         "/justificaciones",
+                         "/registrar",
+                         "/ver-justificaciones",
+                         "/gestion-pases",
+                         "/tecnico",
+                         "/biblioteca",
+                         "/libros",
+                         "/catalogo",
+                         "/prestamos",
+                         "/inventario",
+                         "/historial-biblioteca",
+                         "/config-biblioteca",
+                         "/monitoreo-correos",
+                         "/monitoreo-fallos",
+                         "/seguridad",
+                         "/configuracion",
+                         "/en-linea",
+                         "/gestion-usuarios",
+                         "/mantenedor-estudiantes",
+                         "/mantenedor-roles",
+                         "/mantenedor-motivos",
+                         "/solicitudes-registro",
+                         "/parametros",
+                         "/asignar-permisos",
+                         "/bloque-horario",
+                         "/reportes",
+                         "/mantenedor-cursos",
+                         "/correos",
+                         "/sistema"
+                     ],
+        "actualizado_en":  "2026-05-22T15:03:28.496+00:00"
+    }
+]

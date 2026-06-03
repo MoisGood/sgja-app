@@ -1,0 +1,58 @@
+[
+    {
+        "id":  "a05c7ca2-2858-4573-9da5-ba3cf7acf57e",
+        "nombre":  "ver_estudiantes",
+        "descripcion":  "Ver lista de estudiantes",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "745b6045-64d7-43f4-b585-82a9cb4a27f7",
+        "nombre":  "crear_solicitud",
+        "descripcion":  "Crear solicitudes de ausencia",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "f26437c4-f685-4e21-b9a8-a91daa992298",
+        "nombre":  "justificar",
+        "descripcion":  "Justificar ausencias",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "a0f726d6-9927-4705-ab2a-d3c6cba606d3",
+        "nombre":  "ver_reportes",
+        "descripcion":  "Ver reportes del sistema",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "7ee2ce97-0b14-42df-8451-c508cf118553",
+        "nombre":  "ver_funcionarios",
+        "descripcion":  "Ver registro de funcionarios",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "a0bf7263-c1ea-422c-a023-1941d44eebc7",
+        "nombre":  "mantenedor_funcionarios",
+        "descripcion":  "Acceder a mantenedor de funcionarios",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "5b122394-4502-4fb4-afe4-169a03c0efdf",
+        "nombre":  "mantenedor_establecimientos",
+        "descripcion":  "Acceder a mantenedor de establecimientos",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "8e97c8f5-fb1a-4fc4-8b37-01fec216a15f",
+        "nombre":  "admin_sistema",
+        "descripcion":  "Acceso total al sistema",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    }
+]

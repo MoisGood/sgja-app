@@ -1,0 +1,98 @@
+[
+    {
+        "id":  "c92b1d81-e4f0-490b-99f1-6956e8fcb380",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Cambio de teclado",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:27:42.069377+00:00",
+        "updated_at":  "2026-05-26T19:27:42.069377+00:00"
+    },
+    {
+        "id":  "01b10700-62a6-4bd3-b634-335dd2b86066",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Cambio de mouse",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:27:48.243221+00:00",
+        "updated_at":  "2026-05-26T19:27:48.243221+00:00"
+    },
+    {
+        "id":  "e5c46388-c661-4194-b5af-57fcd018973f",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Formateo de notebook",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:27:56.59162+00:00",
+        "updated_at":  "2026-05-26T19:27:56.59162+00:00"
+    },
+    {
+        "id":  "96063025-d50b-4f5e-be7f-06badaaa9636",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Formateo de AIO",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:28:11.391522+00:00",
+        "updated_at":  "2026-05-26T19:28:11.391522+00:00"
+    },
+    {
+        "id":  "081f5e80-4da0-4ddb-8290-48f4a92e88ca",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Cambio cable red",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:28:24.85361+00:00",
+        "updated_at":  "2026-05-26T19:28:24.85361+00:00"
+    },
+    {
+        "id":  "f8af2e4f-6d7b-404c-a968-e64b84dc2597",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Asistencia ofimatica",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:28:35.142317+00:00",
+        "updated_at":  "2026-05-26T19:28:35.142317+00:00"
+    },
+    {
+        "id":  "b465a214-a833-47e7-b1fc-5e0a21fc60af",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Asistencia en Netcore",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:28:44.038265+00:00",
+        "updated_at":  "2026-05-26T19:28:44.038265+00:00"
+    },
+    {
+        "id":  "b1d5c334-3128-4c52-9f71-a3e9008a075c",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Instalacion cable de red corto",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:28:57.45488+00:00",
+        "updated_at":  "2026-05-26T19:28:57.45488+00:00"
+    },
+    {
+        "id":  "1ee16360-4b64-47a5-bd19-8d7a85eb6ee8",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Instalacion cableado y canalizado, mas 10 metros",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:29:22.212636+00:00",
+        "updated_at":  "2026-05-26T19:29:22.212636+00:00"
+    },
+    {
+        "id":  "6fdb11dc-c508-4a86-b8e3-001c768c5b0b",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Cambio de proyecto(trabajo en alturas)",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:29:43.835025+00:00",
+        "updated_at":  "2026-05-26T19:29:43.835025+00:00"
+    },
+    {
+        "id":  "40028894-3f12-42c4-b8ae-55c6dc089ac9",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Cambio de cable VGA a HDMI . trabajo en altura",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:30:06.044446+00:00",
+        "updated_at":  "2026-05-26T19:30:06.044446+00:00"
+    },
+    {
+        "id":  "3b3dfab0-f05c-43b3-a6ce-4185f6df163f",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Instalacion de camara . trabajo en altura",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:30:18.506302+00:00",
+        "updated_at":  "2026-05-26T19:30:18.506302+00:00"
+    }
+]

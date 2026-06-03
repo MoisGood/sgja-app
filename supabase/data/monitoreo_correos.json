@@ -1,0 +1,35 @@
+[
+    {
+        "id":  "bdcb5abe-5c04-4e5e-8ad9-cce942d61915",
+        "tipo":  "vencido",
+        "destinatario":  "soportetipresente@gmail.com",
+        "estudiante_id":  "ADMIN-001",
+        "libro":  "Aura",
+        "estado":  "exito",
+        "error":  null,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-05-19T14:12:04.336537+00:00"
+    },
+    {
+        "id":  "cf1349e8-16fd-4199-b589-2c06ccd68758",
+        "tipo":  "vencido",
+        "destinatario":  "soportetipresente@gmail.com",
+        "estudiante_id":  "ADMIN-001",
+        "libro":  "Aura",
+        "estado":  "exito",
+        "error":  null,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-05-19T15:18:00.807595+00:00"
+    },
+    {
+        "id":  "6e74023f-9c97-43ed-9081-9ff9b4b0a9d0",
+        "tipo":  "vencido",
+        "destinatario":  "soportetipresente@gmail.com",
+        "estudiante_id":  "ADMIN-001",
+        "libro":  "Aura",
+        "estado":  "exito",
+        "error":  null,
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "creado_en":  "2026-05-19T17:40:38.340696+00:00"
+    }
+]

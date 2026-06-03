@@ -1,0 +1,128 @@
+[
+    {
+        "id":  "8e9b765c-c3ae-4f1f-8fbb-7ccf9c9e49dd",
+        "fecha":  "2024-01-01",
+        "descripcion":  "Año Nuevo",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:21.620351+00:00"
+    },
+    {
+        "id":  "a003d5ba-a2be-4f6e-a46e-5073bcb11c97",
+        "fecha":  "2024-05-01",
+        "descripcion":  "Día del Trabajo",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:21.898404+00:00"
+    },
+    {
+        "id":  "c3077311-573c-4ce0-9d45-578582acaa8b",
+        "fecha":  "2024-05-21",
+        "descripcion":  "Día de las Glorias Navales",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:22.11909+00:00"
+    },
+    {
+        "id":  "b7bf3219-4649-4873-8a0d-81a4171b0819",
+        "fecha":  "2024-06-29",
+        "descripcion":  "San Pedro y San Pablo",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:22.205584+00:00"
+    },
+    {
+        "id":  "53b7c987-3d91-415a-9d78-617a9dbf2482",
+        "fecha":  "2024-07-16",
+        "descripcion":  "Día de la Virgen del Carmen",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:22.313888+00:00"
+    },
+    {
+        "id":  "8d53a25c-dbbd-4a09-9a8e-3af4bf3e9547",
+        "fecha":  "2024-08-15",
+        "descripcion":  "Asunción de la Virgen",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:22.393883+00:00"
+    },
+    {
+        "id":  "6e5d5e02-acf8-4831-8785-009effa81527",
+        "fecha":  "2024-09-18",
+        "descripcion":  "Independencia Nacional",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:22.472105+00:00"
+    },
+    {
+        "id":  "20ff334e-5254-46a8-87ed-b9a9dd117654",
+        "fecha":  "2024-09-19",
+        "descripcion":  "Día de las Glorias del Ejército",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:22.557158+00:00"
+    },
+    {
+        "id":  "b5b2faa3-0b9e-4d94-ad50-3b90340890ba",
+        "fecha":  "2024-10-12",
+        "descripcion":  "Encuentro de Dos Mundos",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:22.643182+00:00"
+    },
+    {
+        "id":  "bb36d200-9fa3-4b74-99d4-eb6c66923c06",
+        "fecha":  "2024-10-31",
+        "descripcion":  "Día de las Iglesias Evangélicas",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:22.722076+00:00"
+    },
+    {
+        "id":  "9ab3f987-ac3a-4941-bb97-a9fbe7fca0b3",
+        "fecha":  "2024-11-01",
+        "descripcion":  "Día de Todos los Santos",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:23.178285+00:00"
+    },
+    {
+        "id":  "aa1d8b41-0128-4b60-95da-7eec0d18c717",
+        "fecha":  "2024-12-08",
+        "descripcion":  "Inmaculada Concepción",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:23.263779+00:00"
+    },
+    {
+        "id":  "0c8cb3d5-dff9-40ad-9679-5cb805ccceba",
+        "fecha":  "2024-12-25",
+        "descripcion":  "Navidad",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T03:24:23.345209+00:00"
+    },
+    {
+        "id":  "57fd4e35-47b2-4470-8717-58764a7c950d",
+        "fecha":  "2026-05-19",
+        "descripcion":  "test",
+        "anual":  true,
+        "id_establecimiento":  null,
+        "activo":  true,
+        "created_at":  "2026-05-17T22:10:07.871328+00:00"
+    }
+]

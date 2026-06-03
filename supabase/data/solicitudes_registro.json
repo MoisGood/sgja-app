@@ -1,0 +1,68 @@
+[
+    {
+        "id_solicitud":  1,
+        "uid":  "10b538bf-80b5-431d-95e2-30abe7498448",
+        "nombre":  "Moisés",
+        "apellidos":  "Zepeda Rebolledo",
+        "correo":  "moises.zepedar@andaliensur.cl",
+        "fecha_solicitud":  "2026-05-13T13:49:17.030872+00:00",
+        "estado":  "aprobado",
+        "respuesta_enviada":  false,
+        "fecha_respuesta":  "2026-05-13T16:33:18.569+00:00"
+    },
+    {
+        "id_solicitud":  2,
+        "uid":  "f26209c9-c869-44bd-9a1e-12883481644d",
+        "nombre":  "Ruben L",
+        "apellidos":  "Loyola",
+        "correo":  "rubenloyolaf@gmail.com",
+        "fecha_solicitud":  "2026-05-14T21:51:37.566563+00:00",
+        "estado":  "aprobado",
+        "respuesta_enviada":  false,
+        "fecha_respuesta":  "2026-05-14T21:54:41.427+00:00"
+    },
+    {
+        "id_solicitud":  3,
+        "uid":  "d893ecc8-95e1-44fa-8c28-88f1dce22feb",
+        "nombre":  "Moises Zelo",
+        "apellidos":  "Test",
+        "correo":  "soymoizelo@gmail.com",
+        "fecha_solicitud":  "2026-05-17T06:19:33.423198+00:00",
+        "estado":  "aprobado",
+        "respuesta_enviada":  false,
+        "fecha_respuesta":  "2026-05-17T06:16:30.163+00:00"
+    },
+    {
+        "id_solicitud":  4,
+        "uid":  "65b3e924-9bd4-45b8-93b4-68ac495a5ae9",
+        "nombre":  "Intranet Liceo de Niñas de Concepción",
+        "apellidos":  "ok",
+        "correo":  "intranet.lnconcepcion@andaliensur.cl",
+        "fecha_solicitud":  "2026-05-22T22:01:48.102561+00:00",
+        "estado":  "pendiente",
+        "respuesta_enviada":  false,
+        "fecha_respuesta":  null
+    },
+    {
+        "id_solicitud":  5,
+        "uid":  "1236daf4-f86e-44b2-9937-62ab320c964c",
+        "nombre":  "Eve Loyola",
+        "apellidos":  "Loyola",
+        "correo":  "evelynloyolar@gmail.com",
+        "fecha_solicitud":  "2026-05-24T05:29:43.912328+00:00",
+        "estado":  "aprobado",
+        "respuesta_enviada":  false,
+        "fecha_respuesta":  "2026-05-24T18:00:16.294+00:00"
+    },
+    {
+        "id_solicitud":  6,
+        "uid":  "763aa07e-22e0-416a-a1f6-96361c2b78d1",
+        "nombre":  "Emprendimientos ZepRo",
+        "apellidos":  "Hola",
+        "correo":  "emprendimientoszepro@gmail.com",
+        "fecha_solicitud":  "2026-05-29T12:11:03.416144+00:00",
+        "estado":  "pendiente",
+        "respuesta_enviada":  false,
+        "fecha_respuesta":  null
+    }
+]

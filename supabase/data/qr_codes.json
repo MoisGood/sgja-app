@@ -1,0 +1,38 @@
+[
+    {
+        "id":  "9180caba-2c09-44e8-8e4a-d38cc26dd68c",
+        "codigo":  "BIBLIOTECA",
+        "tipo":  "lugar",
+        "id_referencia":  "530129ad-c35a-4ecf-94b0-f2c4ec95febe",
+        "activo":  true,
+        "created_at":  "2026-05-26T19:30:30.779778+00:00",
+        "updated_at":  "2026-05-26T19:30:30.779778+00:00"
+    },
+    {
+        "id":  "af0c55f0-a02b-4b18-8cf6-edcd4d472cd8",
+        "codigo":  "SALA-2",
+        "tipo":  "lugar",
+        "id_referencia":  "a1176e50-35ae-42a3-8893-7447c89af16f",
+        "activo":  true,
+        "created_at":  "2026-05-27T01:19:18.164656+00:00",
+        "updated_at":  "2026-05-27T01:19:18.164656+00:00"
+    },
+    {
+        "id":  "7bc4a177-f2c3-4a67-a2b1-6f49fcb3fab1",
+        "codigo":  "SALA-1",
+        "tipo":  "lugar",
+        "id_referencia":  "d5abd35f-c137-41a6-bf45-14a1f549b755",
+        "activo":  true,
+        "created_at":  "2026-05-27T01:19:23.791848+00:00",
+        "updated_at":  "2026-05-27T01:19:23.791848+00:00"
+    },
+    {
+        "id":  "c0694c3b-02a5-4868-8777-1a4a47ba1536",
+        "codigo":  "EQUIPO-MULTIDISCIPLINARIO",
+        "tipo":  "lugar",
+        "id_referencia":  "18b0a502-1192-416f-934b-19ab74c093e5",
+        "activo":  true,
+        "created_at":  "2026-05-27T01:19:36.70529+00:00",
+        "updated_at":  "2026-05-27T01:19:36.70529+00:00"
+    }
+]

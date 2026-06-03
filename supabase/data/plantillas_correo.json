@@ -1,0 +1,28 @@
+[
+    {
+        "id":  "4837bd45-baf8-4ca1-a57b-ba2af98f856c",
+        "nombre":  "test",
+        "asunto":  "test",
+        "cuerpo":  "test",
+        "activo":  true,
+        "creado_en":  "2026-05-22T02:40:12.625+00:00",
+        "actualizado_en":  "2026-05-22T02:40:12.625+00:00",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "categoria":  null,
+        "ultimo_uso":  null,
+        "creado_por":  null
+    },
+    {
+        "id":  "82b992c5-7c00-4fd8-83e3-348d49727f98",
+        "nombre":  "Solicitud de antecedentes",
+        "asunto":  "Solicitud de certificados de antecedentes especiales",
+        "cuerpo":  "Estimados y estimadas,\n\nJunto con saludar y por encargo de dirección, solicito que enviar certificados de antecedentes especiales.\nLo enviar por correo o lo suben a la intranet. \n\nAtte \nSecretario ",
+        "activo":  true,
+        "creado_en":  "2026-05-22T02:47:42.365+00:00",
+        "actualizado_en":  "2026-05-22T02:47:42.365+00:00",
+        "id_establecimiento":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "categoria":  null,
+        "ultimo_uso":  null,
+        "creado_por":  null
+    }
+]

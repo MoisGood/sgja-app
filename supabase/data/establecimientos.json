@@ -1,0 +1,26 @@
+[
+    {
+        "id":  "ab916e8d-06e0-4fbd-aee7-52ee0895f93a",
+        "nombre":  "Colegio B",
+        "codigo":  "COL-002",
+        "region":  "Valparaíso",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    },
+    {
+        "id":  "18f3ec96-f15f-4787-a3ac-3c10f1cee55f",
+        "nombre":  "Establecimiento Principal",
+        "codigo":  "EST-001",
+        "region":  "Bio-Bio",
+        "activo":  true,
+        "creado_en":  "2026-04-21T19:44:51.671614"
+    },
+    {
+        "id":  "6482fe7b-e029-431d-857a-b90bed085396",
+        "nombre":  "Escuela C",
+        "codigo":  "ESC-003",
+        "region":  "Bio-Bio",
+        "activo":  true,
+        "creado_en":  "2026-04-16T16:14:05.515566"
+    }
+]
