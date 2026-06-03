@@ -61,8 +61,10 @@ export default function Ubicaciones({ idEstablecimiento }: Props) {
 
   async function eliminar(id: string) {
     if (!confirm('¿Eliminar esta asignación?')) return;
-    await supabase.from('ubicaciones').update({ activo: false }).eq('id', id);
-    load();
+    const r = await supabase.from('ubicaciones').update({ activo: false }).eq('id', id);
+    if (r.error) { alert('Error: ' + JSON.stringify(r.error)); return; }
+    if (r.status === 204 || r.status === 200) { load(); }
+    else { alert('Status inesperado: ' + r.status + ' ' + r.statusText); }
   }
 
   function editar(u: UbicacionRow & { lugar_nombre?: string; lugar_piso?: number }) {
