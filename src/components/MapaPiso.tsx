@@ -126,6 +126,7 @@ const [requerimientos, setRequerimientos] = useState<ReqRow[]>([]);
 const [ubicaciones, setUbicaciones] = useState<{ id: string; dispositivo_nombre: string; cantidad: number }[]>([]);
 const [dispositivosDB, setDispositivosDB] = useState<string[]>([]);
 const [dispositivosInv, setDispositivosInv] = useState<Record<string, boolean>>({});
+const [usuariosList, setUsuariosList] = useState<string[]>([]);
 const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 const [editUsuario, setEditUsuario] = useState<string | null>(null);
 const [editUsuarioVal, setEditUsuarioVal] = useState('');
@@ -236,6 +237,8 @@ const [qrExiste, setQrExiste] = useState(false);
           dispData.forEach((d: { nombre: string; inventariable: boolean }) => { invMap[d.nombre] = d.inventariable; });
           setDispositivosInv(invMap);
         }
+        const { data: usuariosData } = await supabase.from('usuarios').select('nombre_completo').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre_completo');
+        if (usuariosData) setUsuariosList(usuariosData.map(u => u.nombre_completo));
       } catch (err) {
         if (isMounted) {
           console.error('Error cargando lugares:', err);
@@ -922,27 +925,57 @@ const [qrExiste, setQrExiste] = useState(false);
                                     </div>
                                     <div style={{ display: 'flex', gap: 4, marginTop: 2, alignItems: 'center' }}>
                                       {editUsuario === eq.id ? (
-                                        <input
-                                          autoFocus
-                                          value={editUsuarioVal}
-                                          onChange={e => setEditUsuarioVal(e.target.value)}
-                                           onBlur={async () => {
-                                            await supabase.from('equipos').update({ usuario: editUsuarioVal || null }).eq('id', eq.id);
-                                            setEditUsuario(null);
-                                            if (ui.selected) cargarUbicaciones(ui.selected.id);
-                                          }}
-                                          onKeyDown={async e => {
-                                            if (e.key === 'Enter') {
-                                              await supabase.from('equipos').update({ usuario: editUsuarioVal || null }).eq('id', eq.id);
+                                        <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                                          <input
+                                            autoFocus
+                                            value={editUsuarioVal}
+                                            onChange={e => setEditUsuarioVal(e.target.value)}
+                                            list="usuarios-list"
+                                            onBlur={async () => {
+                                              const val = editUsuarioVal.trim();
+                                              if (val && !usuariosList.includes(val) && confirm(`¿Crear usuario "${val}"?`)) {
+                                                await supabase.from('usuarios').insert({ nombre_completo: val, id_establecimiento: idEstablecimiento, activo: true });
+                                                setUsuariosList(prev => [...prev, val]);
+                                              }
+                                              await supabase.from('equipos').update({ usuario: val || null }).eq('id', eq.id);
                                               setEditUsuario(null);
                                               if (ui.selected) cargarUbicaciones(ui.selected.id);
-                                            }
-                                            if (e.key === 'Escape') setEditUsuario(null);
-                                          }}
-                                          style={{ width: 140, padding: '2px 6px', fontSize: 10, border: '1px solid #3b82f6', borderRadius: 4, outline: 'none' }}
-                                          placeholder="Usuario"
-                                          maxLength={200}
-                                        />
+                                            }}
+                                            onKeyDown={async e => {
+                                              if (e.key === 'Enter') {
+                                                const val = editUsuarioVal.trim();
+                                                if (val && !usuariosList.includes(val) && confirm(`¿Crear usuario "${val}"?`)) {
+                                                  await supabase.from('usuarios').insert({ nombre_completo: val, id_establecimiento: idEstablecimiento, activo: true });
+                                                  setUsuariosList(prev => [...prev, val]);
+                                                }
+                                                await supabase.from('equipos').update({ usuario: val || null }).eq('id', eq.id);
+                                                setEditUsuario(null);
+                                                if (ui.selected) cargarUbicaciones(ui.selected.id);
+                                              }
+                                              if (e.key === 'Escape') setEditUsuario(null);
+                                            }}
+                                            style={{ width: 140, padding: '2px 6px', fontSize: 10, border: '1px solid #3b82f6', borderRadius: 4, outline: 'none' }}
+                                            placeholder="Usuario"
+                                            maxLength={200}
+                                          />
+                                          <datalist id="usuarios-list">
+                                            {usuariosList.map(u => <option key={u} value={u} />)}
+                                          </datalist>
+                                          {editUsuarioVal.trim() && !usuariosList.includes(editUsuarioVal.trim()) && (
+                                            <button
+                                              onClick={async () => {
+                                                const val = editUsuarioVal.trim();
+                                                await supabase.from('usuarios').insert({ nombre_completo: val, id_establecimiento: idEstablecimiento, activo: true });
+                                                setUsuariosList(prev => [...prev, val]);
+                                                await supabase.from('equipos').update({ usuario: val }).eq('id', eq.id);
+                                                setEditUsuario(null);
+                                                if (ui.selected) cargarUbicaciones(ui.selected.id);
+                                              }}
+                                              title="Crear usuario"
+                                              style={{ cursor: 'pointer', background: '#10b981', color: '#fff', border: 'none', borderRadius: 4, fontSize: 10, padding: '2px 6px', fontWeight: 700 }}
+                                            >+ Crear</button>
+                                          )}
+                                        </div>
                                       ) : (
                                         <span
                                           onClick={() => { setEditUsuario(eq.id); setEditUsuarioVal(eq.usuario || ''); }}
