@@ -14,7 +14,13 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   );
 }
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const customFetch: typeof fetch = (input, init) => {
+  return fetch(input, { ...init, cache: 'no-store' });
+};
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  global: { fetch: customFetch },
+});
 
 // Exportar tipos de Supabase
 export type { User } from '@supabase/supabase-js';
