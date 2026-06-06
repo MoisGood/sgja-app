@@ -45,8 +45,8 @@ export interface Establecimiento {
   id_establecimiento:   string;
   nombre:               string;
   logo_url:             string | null;
-  calendario_ano:       number;
-  hora_cierre_jornada:  string;
+  codigo?:              string;
+  region?:              string;
   activo:               boolean;
 }
 

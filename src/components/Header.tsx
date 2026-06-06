@@ -21,9 +21,11 @@ interface Props {
   usuarioId?: string;
   onAbrirDatos: () => void;
   establecimientoNombre?: string;
+  sistemaNombre?: string;
+  sistemaSubtitulo?: string;
 }
 
-export default function Header({ temaOscuro, setTemaOscuro, nombre, rol, email, usuarioId, onAbrirDatos, establecimientoNombre }: Props) {
+export default function Header({ temaOscuro, setTemaOscuro, nombre, rol, email, usuarioId, onAbrirDatos, establecimientoNombre, sistemaNombre = 'Intranet', sistemaSubtitulo = '' }: Props) {
   return (
     <header style={{
       backgroundColor: '#FFFFFF', borderBottom: '1px solid #E2E8F0',
@@ -32,11 +34,13 @@ export default function Header({ temaOscuro, setTemaOscuro, nombre, rol, email, 
     }}>
       <div>
         <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#1A3C6B', margin: 0 }}>
-          Intranet
+          {sistemaNombre}
         </h1>
-        <p style={{ fontSize: '12px', color: '#6B7280', margin: '2px 0 0 0' }}>
-          Apoyo en gestiones internas: {establecimientoNombre || 'Cargando…'}
-        </p>
+        {sistemaSubtitulo && (
+          <p style={{ fontSize: '12px', color: '#6B7280', margin: '2px 0 0 0' }}>
+            {sistemaSubtitulo}{establecimientoNombre ? ` · ${establecimientoNombre}` : ''}
+          </p>
+        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <IndicadorConexion />

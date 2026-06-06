@@ -121,12 +121,14 @@ const MENU_ITEMS: MenuItem[] = [
       { icono: <Users size={20}/>, etiqueta: 'Mantenedor Estudiantes', ruta: '/mantenedor-estudiantes', roles: [Rol.ADMIN] },
       { icono: <Users size={20}/>, etiqueta: 'Mantenedor de Roles', ruta: '/mantenedor-roles', roles: [Rol.ADMIN] },
       { icono: <ClipboardList size={20}/>, etiqueta: 'Motivos de Justificación', ruta: '/mantenedor-motivos', roles: [Rol.ADMIN] },
+      { icono: <Building2 size={20}/>, etiqueta: 'Mantenedor Establecimiento', ruta: '/mantenedor-establecimiento', roles: [Rol.ADMIN] },
+      { icono: <Settings size={20}/>, etiqueta: 'Sistema', ruta: '/sistema', roles: [Rol.ADMIN] },
       { icono: <Settings size={20}/>, etiqueta: 'Parámetros',    ruta: '/parametros',       roles: [Rol.ADMIN] },
       { icono: <Shield size={20}/>, etiqueta: 'Asignar Accesos', ruta: '/asignar-permisos', roles: [Rol.ADMIN] },
       { icono: <Calendar size={20}/>, etiqueta: 'Bloques Horarios', ruta: '/bloque-horario', roles: [Rol.ADMIN] },
       { icono: <Users size={20}/>, etiqueta: 'Solicitudes de Registro', ruta: '/solicitudes-registro', roles: [Rol.ADMIN] },
       { icono: <Mail size={20}/>, etiqueta: 'Correos', ruta: '/correos', roles: [Rol.ADMIN] },
-      { icono: <Settings size={20}/>, etiqueta: 'Sistema', ruta: '/sistema', roles: [Rol.ADMIN] },
+      { icono: <Settings size={20}/>, etiqueta: 'Sistema', ruta: '/config-sistema', roles: [Rol.ADMIN] },
     ]
   } 
 ];
@@ -139,6 +141,9 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   const [modalDatosAbierto, setModalDatosAbierto] = useState(false);
   const [establecimientoNombre, setEstablecimientoNombre] = useState('');
+  const [sistemaNombre, setSistemaNombre] = useState('SGJA');
+  const [sistemaSubtitulo, setSistemaSubtitulo] = useState('');
+  const [sistemaLogoUrl, setSistemaLogoUrl] = useState('');
 
   useEffect(() => {
     if (idEstablecimiento) {
@@ -146,6 +151,13 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
         .then(e => { if (e) setEstablecimientoNombre(e.nombre || ''); })
         .catch(() => {});
     }
+    supabase.from('config_sistema').select('nombre_sistema,subtitulo,favicon_url').eq('id', 1).single().then(({ data }) => {
+      if (data) {
+        if (data.nombre_sistema) setSistemaNombre(data.nombre_sistema);
+        if (data.subtitulo) setSistemaSubtitulo(data.subtitulo);
+        if (data.favicon_url) setSistemaLogoUrl(data.favicon_url);
+      }
+    });
   }, [idEstablecimiento]);
 
   React.useEffect(() => {
@@ -286,6 +298,9 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
         setSubmenuAbierto={setSubmenuAbierto}
         onRutaChange={onRutaChange}
         handleLogout={handleLogout}
+        sistemaNombre={sistemaNombre}
+        sistemaSubtitulo={sistemaSubtitulo || establecimientoNombre}
+        sistemaLogoUrl={sistemaLogoUrl}
       />
 
       <main style={styles.main}>
@@ -298,6 +313,8 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
           usuarioId={usuarioId}
           onAbrirDatos={() => setModalDatosAbierto(true)}
           establecimientoNombre={establecimientoNombre}
+          sistemaNombre={sistemaNombre}
+          sistemaSubtitulo={sistemaSubtitulo}
         />
 
         <div style={styles.contenido}>

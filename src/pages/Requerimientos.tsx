@@ -187,6 +187,7 @@ export default function Requerimientos({ idEstablecimiento }: Props) {
                     {r.estado === 'Pendiente' && <button onClick={() => cambiarEstado(r.id, 'En Proceso')} style={btnS} title="Iniciar">▶</button>}
                     {r.estado === 'En Proceso' && <button onClick={() => cambiarEstado(r.id, 'Completada')} style={{ ...btnS, background: '#166534' }} title="Completar">✓</button>}
                     {r.estado !== 'Cancelada' && r.estado !== 'Completada' && <button onClick={() => cambiarEstado(r.id, 'Cancelada')} style={btnS} title="Anular">✕</button>}
+                    <button onClick={() => { window.location.hash = `#/ticket?ticket=${r.id}`; }} style={btnS} title="Abrir Ticket">🎫</button>
                   </div>
                 </td>
               </tr>

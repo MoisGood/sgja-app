@@ -18,11 +18,15 @@ interface Props {
   setSubmenuAbierto: (v: string | null) => void;
   onRutaChange: (ruta: string) => void;
   handleLogout: () => void;
+  sistemaNombre?: string;
+  sistemaSubtitulo?: string;
+  sistemaLogoUrl?: string;
 }
 
 export default function Sidebar({
   sidebarAbierto, setSidebarAbierto, itemsFiltrados,
   rutaActiva, submenuAbierto, setSubmenuAbierto, onRutaChange, handleLogout,
+  sistemaNombre = 'SGJA', sistemaSubtitulo = '', sistemaLogoUrl = '',
 }: Props) {
   return (
     <aside style={{
@@ -34,10 +38,13 @@ export default function Sidebar({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         {sidebarAbierto && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '28px' }}>📋</span>
+            {sistemaLogoUrl
+              ? <img src={sistemaLogoUrl} alt="" style={{ width: 64, height: 'auto', borderRadius: 6, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              : <span style={{ fontSize: '28px' }}>📋</span>
+            }
             <div>
-              <p style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '18px', margin: 0 }}>SGJA</p>
-              <p style={{ color: '#93C5FD', fontSize: '12px', margin: 0 }}>CRAReservas</p>
+              <p style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '18px', margin: 0 }}>{sistemaNombre}</p>
+              <p style={{ color: '#93C5FD', fontSize: '12px', margin: 0 }}>{sistemaSubtitulo}</p>
             </div>
           </div>
         )}

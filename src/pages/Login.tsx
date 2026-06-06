@@ -13,6 +13,7 @@ export default function Login() {
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [mantenimientoActivo, setMantenimientoActivo] = useState(false);
   const [mostrarLogin, setMostrarLogin] = useState(false);
+  const [sistema, setSistema] = useState({ nombre_sistema: 'SGJA', subtitulo: '', favicon_url: '' });
 
   useEffect(() => {
     const leerErrorOAuth = () => {
@@ -46,8 +47,12 @@ export default function Login() {
     leerErrorOAuth();
     handleAuthCallback();
 
-    supabase.from('configuracion_sistema').select('mantenimiento_activo').limit(1).then(({ data }) => {
-      if (data?.[0]?.mantenimiento_activo) setMantenimientoActivo(true);
+    Promise.all([
+      supabase.from('config_sistema').select('nombre_sistema,subtitulo,favicon_url').eq('id', 1).single(),
+      supabase.from('configuracion_sistema').select('mantenimiento_activo').limit(1),
+    ]).then(([cs, cm]) => {
+      if (cs.data) setSistema({ nombre_sistema: cs.data.nombre_sistema || 'SGJA', subtitulo: cs.data.subtitulo || '', favicon_url: cs.data.favicon_url || '' });
+      if (cm.data?.[0]?.mantenimiento_activo) setMantenimientoActivo(true);
     });
   }, []);
 
@@ -91,18 +96,15 @@ export default function Login() {
         {/* Header */}
         <div className="login-header">
           <img 
-            src="/img/logoLiceo1.png"
-            alt="Logo Liceo de Niñas de Concepción"
+            src={sistema.favicon_url || '/img/logoLiceo1.png'}
+            alt="Logo"
             className="login-logo"
             width="64"
             height="184"
           />
-          <p className="login-institution">Liceo de Niñas de Concepción</p>
+          <h1 className="login-title" style={{ fontSize: 22, marginTop: 8 }}>{sistema.nombre_sistema}</h1>
+          {sistema.subtitulo && <p className="login-subtitle" style={{ fontSize: 13, color: '#64748b' }}>{sistema.subtitulo}</p>}
         </div>
-
-        {/* Títulos */}
-        <h1 className="login-title">Apoyo en Gestiones Internas</h1>
-        <h2 className="login-subtitle">Iniciar sesión</h2>
 
         {/* ── Cartel de mantenimiento ── */}
         {mantenimientoActivo && !mostrarLogin && (

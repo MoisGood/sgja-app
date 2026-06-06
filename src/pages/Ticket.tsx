@@ -9,7 +9,7 @@ interface Props {
 interface Lugar { id: string; nombre: string; piso: number }
 interface Equipo { id: string; nombre: string; id_lugar?: string }
 
-type Paso = 'loading' | 'splash' | 'create' | 'close' | 'done';
+type Paso = 'loading' | 'splash' | 'create' | 'close' | 'view' | 'done';
 
 const s = {
   page: {
@@ -83,8 +83,14 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
 
     const hash = window.location.hash.split('?')[1] || '';
     const params = new URLSearchParams(hash);
+    const ticketId = params.get('ticket');
     const lugarId = params.get('lugar');
     const equipoId = params.get('equipo');
+
+    if (ticketId) {
+      loadTicket(ticketId);
+      return;
+    }
 
     if (!lugarId && !equipoId) {
       setMensaje('⚠️ Falta parámetro ?lugar=ID o ?equipo=ID en la URL.');
@@ -189,6 +195,35 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
   useEffect(() => { cargarSugerencias(); }, [cargarSugerencias]);
 
   const [creando, setCreando] = useState(false);
+
+  // Ticket view state (desde ?ticket=ID)
+  const [ticketData, setTicketData] = useState<any>(null);
+  const [lugarTicket, setLugarticket] = useState<string>('');
+  const [equipoTicket, setEquipoTicket] = useState<string>('');
+  const [conforme, setConforme] = useState(false);
+  const [enviarCorreo, setEnviarCorreo] = useState(false);
+  const [cierreProgramado, setCierreProgramado] = useState('');
+
+  async function loadTicket(id: string) {
+    if (!idEstablecimiento) return;
+    setMensaje('');
+    const { data: req } = await supabase.from('requerimientos').select('*').eq('id', id).single();
+    if (!req) { setMensaje('⚠️ Ticket no encontrado.'); setPaso('done'); return; }
+    setTicketData(req);
+    setPosibleFalla(req.posible_falla || '');
+    setDiagnostico(req.diagnostico || '');
+    setSolucion(req.solucion || '');
+    setObservaciones(req.observaciones || '');
+    if (req.id_lugar) {
+      const { data: lug } = await supabase.from('lugares').select('nombre').eq('id', req.id_lugar).single();
+      if (lug) setLugarticket(lug.nombre);
+    }
+    if (req.id_equipo) {
+      const { data: eq } = await supabase.from('equipos').select('nombre').eq('id', req.id_equipo).single();
+      if (eq) setEquipoTicket(eq.nombre);
+    }
+    setPaso('view');
+  }
 
   async function crearTicket() {
     if (!diagnostico.trim() || creando) return;
@@ -518,6 +553,150 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                 ✕ Cancelar
               </button>
             </div>
+          </div>
+        )}
+
+        {/* View — 3 etapas para ticket existente desde mapa */}
+        {paso === 'view' && ticketData && (
+          <div>
+            {/* Volver */}
+            <button onClick={() => window.history.back()}
+              style={{ ...s.btnSec, width: '100%', marginBottom: 16, textAlign: 'center' }}>
+              ← Volver
+            </button>
+
+            {/* Etapa 1: Recepción */}
+            <div style={{ background: '#0f172a', borderRadius: 12, padding: 14, marginBottom: 12, border: '1px solid #334155' }}>
+              <h3 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 600, color: '#93c5fd', display: 'flex', alignItems: 'center', gap: 6 }}>
+                📋 Recepción
+              </h3>
+              {lugarTicket && <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>📍 {lugarTicket}</div>}
+              {equipoTicket && <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>🔧 {equipoTicket}</div>}
+              <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 8 }}>👤 {ticketData.descripcion}</div>
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 2 }}>Posible Falla</label>
+                <div style={{ fontSize: 13, color: '#f1f5f9' }}>{posibleFalla || '—'}</div>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 2 }}>Diagnóstico</label>
+                {ticketData.estado === 'En Proceso' ? (
+                  <input value={diagnostico} onChange={e => setDiagnostico(e.target.value)}
+                    placeholder="Describe el diagnóstico…"
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                ) : (
+                  <div style={{ fontSize: 13, color: '#f1f5f9' }}>{diagnostico || '—'}</div>
+                )}
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <span style={{ ...s.badge, background: ticketData.estado === 'En Proceso' ? '#1e3a5f' : ticketData.estado === 'Completada' ? '#064e3b' : '#451a03', color: ticketData.estado === 'En Proceso' ? '#93c5fd' : ticketData.estado === 'Completada' ? '#6ee7b7' : '#fcd34d' }}>
+                  {ticketData.estado}
+                </span>
+                <span style={{ ...s.badge, background: '#1e293b', color: '#94a3b8', marginLeft: 6 }}>{ticketData.prioridad}</span>
+              </div>
+            </div>
+
+            {/* Etapa 2: Avances */}
+            {(ticketData.estado === 'En Proceso' || ticketData.estado === 'Pendiente' || ticketData.estado === 'Completada') && (
+              <div style={{ background: '#0f172a', borderRadius: 12, padding: 14, marginBottom: 12, border: '1px solid #334155' }}>
+                <h3 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 600, color: '#fcd34d', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  🔧 Avances
+                </h3>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Solución</label>
+                  {ticketData.estado !== 'Completada' ? (
+                    <input value={solucion} onChange={e => setSolucion(e.target.value)}
+                      placeholder="¿Cómo lo solucionaste?"
+                      list="sols"
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                  ) : (
+                    <div style={{ fontSize: 13, color: '#f1f5f9' }}>{solucion || '—'}</div>
+                  )}
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Observaciones</label>
+                  {ticketData.estado !== 'Completada' ? (
+                    <textarea value={observaciones} onChange={e => setObservaciones(e.target.value)}
+                      placeholder="Notas adicionales…" rows={2}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                  ) : (
+                    <div style={{ fontSize: 13, color: '#f1f5f9' }}>{observaciones || '—'}</div>
+                  )}
+                </div>
+                {ticketData.estado !== 'Completada' && (
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={async () => {
+                      if (!solucion.trim()) return alert('Agrega una solución primero.');
+                      await supabase.from('requerimientos').update({ solucion: solucion || null, observaciones: observaciones || null, estado: 'Completada', fecha_cierre: new Date().toISOString() }).eq('id', ticketData.id);
+                      setMensaje('✅ Ticket completado.');
+                      setPaso('done');
+                    }} style={{
+                      flex: 1, padding: '10px', borderRadius: 10, border: 'none',
+                      background: '#059669', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    }}>
+                      ✓ Completado
+                    </button>
+                    <button onClick={async () => {
+                      await supabase.from('requerimientos').update({ solucion: solucion || null, observaciones: observaciones || null, estado: 'Pendiente' }).eq('id', ticketData.id);
+                      setMensaje('⏳ Ticket marcado como pendiente.');
+                      setPaso('done');
+                    }} style={{
+                      flex: 1, padding: '10px', borderRadius: 10, border: '1px solid #f59e0b',
+                      background: 'transparent', color: '#fcd34d', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    }}>
+                      Pendiente
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Etapa 3: Cierre */}
+            {ticketData.estado === 'Completada' && (
+              <div style={{ background: '#0f172a', borderRadius: 12, padding: 14, marginBottom: 12, border: '1px solid #334155' }}>
+                <h3 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 600, color: '#6ee7b7', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  ✅ Cierre
+                </h3>
+                {ticketData.fecha_cierre && (
+                  <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 6 }}>
+                    Cerrado: {new Date(ticketData.fecha_cierre).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                )}
+                <label style={{ fontSize: 12, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: 8 }}>
+                  <input type="checkbox" checked={conforme} onChange={e => setConforme(e.target.checked)} />
+                  Usuario conforme
+                </label>
+                <label style={{ fontSize: 12, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: 8 }}>
+                  <input type="checkbox" checked={enviarCorreo} onChange={e => setEnviarCorreo(e.target.checked)} />
+                  Enviar correo de cierre
+                </label>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Cierre programado</label>
+                  <input type="datetime-local" value={cierreProgramado} onChange={e => setCierreProgramado(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <button onClick={async () => {
+                  if (!conforme) return alert('Confirma que el usuario está conforme.');
+                  if (enviarCorreo) console.log('📧 Enviar correo de cierre (pendiente implementar)');
+                  const updates: any = { conforme: true };
+                  if (cierreProgramado) updates.fecha_cierre = new Date(cierreProgramado).toISOString();
+                  await supabase.from('requerimientos').update(updates).eq('id', ticketData.id);
+                  setMensaje('✅ Ticket cerrado definitivamente.');
+                  setPaso('done');
+                }} style={{
+                  width: '100%', padding: '10px', borderRadius: 10, border: 'none',
+                  background: conforme ? '#2563eb' : '#334155',
+                  color: conforme ? '#fff' : '#64748b', fontSize: 13, fontWeight: 600, cursor: conforme ? 'pointer' : 'not-allowed',
+                }}>
+                  Cerrar Definitivamente
+                </button>
+              </div>
+            )}
+
+            {mensaje && (
+              <p style={{ fontSize: 13, color: mensaje.includes('Error') ? '#fca5a5' : '#4ade80', textAlign: 'center', marginTop: 10 }}>
+                {mensaje}
+              </p>
+            )}
           </div>
         )}
 

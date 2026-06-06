@@ -65,6 +65,8 @@ import MobileQrScanner from './pages/MobileQrScanner';
 import MobileNavBar from './components/MobileNavBar';
 import QrRedirect from './pages/QrRedirect';
 import Configurar2FA from './pages/Configurar2FA';
+import MantenedorEstablecimiento from './pages/MantenedorEstablecimiento';
+import MantenedorSistema from './pages/MantenedorSistema';
 
 const MantenedorEstudiantes = lazy(() => import('./pages/MantenedorEstudiantes'));
 
@@ -98,6 +100,22 @@ export default function AppContent() {
     s.textContent = `@keyframes progBarKick { 0% { width: 0% } 100% { width: 100% } }`;
     document.head.appendChild(s);
     return () => s.remove();
+  }, []);
+
+  useEffect(() => {
+    supabase.from('config_sistema').select('*').eq('id', 1).single().then(({ data }) => {
+      if (!data) return;
+      if (data.favicon_url) {
+        let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+        if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+        link.href = data.favicon_url;
+      }
+      if (data.nombre_sistema) {
+        document.title = data.nombre_sistema;
+        document.querySelector('meta[property="og:title"]')?.setAttribute('content', data.nombre_sistema);
+        document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', data.nombre_sistema);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -441,6 +459,8 @@ export default function AppContent() {
         return puedeVer('/asignar-permisos', 'ADMIN') ? <AsignarPermisos idEstablecimiento={estab} /> : null;
       case '/mantenedor-roles':
         return puedeVer('/mantenedor-roles', 'ADMIN') ? <MantenedorRolesPage idEstablecimiento={estab} /> : null;
+      case '/mantenedor-establecimiento':
+        return puedeVer('/mantenedor-establecimiento', 'ADMIN') ? <MantenedorEstablecimiento idEstablecimiento={estab} /> : null;
       case '/reportes':
         return puedeVer('/reportes', 'ADMIN') ? <Reportes idEstablecimiento={estab} /> : null;
       case '/mantenedor-estudiantes':
@@ -470,6 +490,8 @@ export default function AppContent() {
         return puedeVer('/config-biblioteca', 'ADMIN') ? <ConfigBiblioteca idEstablecimiento={estab} /> : null;
       case '/correos':
         return puedeVer('/correos', 'ADMIN') ? <Correos idEstablecimiento={estab} /> : null;
+      case '/config-sistema':
+        return puedeVer('/config-sistema', 'ADMIN') ? <MantenedorSistema /> : null;
       case '/sistema':
         return puedeVer('/sistema', 'ADMIN') ? <MantenimientoConfig idEstablecimiento={estab} /> : null;
       case '/monitoreo-correos':

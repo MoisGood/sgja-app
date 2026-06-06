@@ -134,11 +134,16 @@ const [searchTerm, setSearchTerm] = useState('');
 interface PendienteResumen { id: string; tipo_requerimiento: string; prioridad: string; estado: string; }
 const [pendientesPorLugar, setPendientesPorLugar] = useState<Record<string, PendienteResumen[]>>({});
 const [qrExiste, setQrExiste] = useState(false);
+const [dispositivosAbierto, setDispositivosAbierto] = useState(false);
+const [historialAbierto, setHistorialAbierto] = useState(false);
+const [filtroMes, setFiltroMes] = useState('');
+const [filtroEstado, setFiltroEstado] = useState<string[]>([]);
+const [procesoModal, setProcesoModal] = useState<{ lugar: LugarRow; tickets: ReqRow[] } | null>(null);
   
   const [ui, dispatch] = useReducer(uiReducer, {
     piso: pisoInicial,
     cargando: true,
-    scale: 1.1,
+    scale: 1,
     scaleAuto: true,
     hovered: null,
     selected: null,
@@ -212,8 +217,7 @@ const [qrExiste, setQrExiste] = useState(false);
         if (idsLugar.length > 0) {
           const { data: reqs } = await supabase.from('requerimientos')
             .select('id_lugar,id,tipo_requerimiento,prioridad,estado')
-            .in('id_lugar', idsLugar).eq('activo', true)
-            .neq('estado', 'Completada').neq('estado', 'Cancelada');
+            .in('id_lugar', idsLugar).eq('activo', true);
           if (reqs) {
             const agrupado: Record<string, PendienteResumen[]> = {};
             for (const r of reqs) {
@@ -588,25 +592,59 @@ const [qrExiste, setQrExiste] = useState(false);
                       aria-label={`Lugar: ${l.nombre}${sinSoporte ? ' (sin soporte)' : ''}`}
                       aria-pressed={isSelected}
                       disabled={false}
+                      title={(() => {
+                        const items = pendientesPorLugar[l.id] || [];
+                        if (items.length === 0) return l.nombre;
+                        const urg = items.filter(p => p.prioridad === 'Urgente' || p.prioridad === 'Alta').length;
+                        const proc = items.filter(p => p.estado === 'En Proceso').length;
+                        const pend = items.filter(p => p.estado === 'Pendiente').length;
+                        return `🔴${urg} 🔵${proc} 🟠${pend} · ${l.nombre}`;
+                      })()}
                     >
                       <span style={STYLES.lugar.text}>
                         {l.nombre}
                         {sinSoporte && <span style={{ fontSize: 8, display: 'block', opacity: 0.7 }}>sin soporte</span>}
                       </span>
-                      {pendientesPorLugar[l.id]?.map((p, i) => (
-                        <span
-                          key={p.id}
-                          title={`${p.tipo_requerimiento} (${p.estado})`}
-                          style={{
-                            position: 'absolute',
-                            width: 7, height: 7, borderRadius: '50%',
-                            background: p.prioridad === 'Urgente' || p.prioridad === 'Alta' ? '#dc2626' : p.estado === 'En Proceso' ? '#2563eb' : '#f59e0b',
-                            top: 3,
-                            left: 3 + (i * 10),
-                            boxShadow: '0 0 0 1.5px rgba(255,255,255,0.9)',
-                          }}
-                        />
-                      ))}
+                      {(() => {
+                        const items = pendientesPorLugar[l.id] || [];
+                        const urgente = items.filter(p => p.prioridad === 'Urgente' || p.prioridad === 'Alta').length;
+                        const proceso = items.filter(p => p.estado === 'En Proceso').length;
+                        const pendiente = items.filter(p => p.estado === 'Pendiente').length;
+                        const completado = items.filter(p => p.estado === 'Completada' || p.estado === 'Cancelada').length;
+                        const dots: [string, number, string][] = [];
+                        if (urgente > 0) dots.push(['🔴', urgente, '#dc2626']);
+                        if (proceso > 0) dots.push(['🔵', proceso, '#2563eb']);
+                        if (pendiente > 0) dots.push(['🟠', pendiente, '#f59e0b']);
+                        if (completado > 0) dots.push(['⚪', completado, '#d1d5db']);
+                        if (dots.length === 0) return null;
+                        return (
+                          <div style={{ position: 'absolute', bottom: 2, right: 2, display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            {dots.map(([label, count, color], i) => {
+                              const esAzul = color === '#2563eb';
+                              return (
+                                <span key={i} title={esAzul ? 'En Proceso — clic para ver' : `${label} ${count}`}
+                                  onClick={esAzul ? async (e) => {
+                                    e.stopPropagation();
+                                    const { data } = await supabase.from('requerimientos')
+                                      .select('id,tipo_requerimiento,descripcion,estado,prioridad,created_at')
+                                      .eq('id_lugar', l.id).eq('activo', true).eq('estado', 'En Proceso')
+                                      .order('created_at', { ascending: false });
+                                    if (data) setProcesoModal({ lugar: l, tickets: data as ReqRow[] });
+                                  } : undefined}
+                                  style={{
+                                    width: 16, height: 16, borderRadius: '50%', background: color,
+                                    color: '#fff', fontSize: 9, fontWeight: 700,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 0 0 1.5px rgba(255,255,255,0.9)',
+                                    cursor: esAzul ? 'pointer' : 'default',
+                                  }}>
+                                  {count}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </button>
                   );
                 })}
@@ -760,13 +798,13 @@ const [qrExiste, setQrExiste] = useState(false);
             <button onClick={() => dispatch({ type: 'SET_MODAL_REQ', payload: true })}
               style={STYLES.button.secondary}
               aria-label="Crear nuevo requerimiento">
-              📋 Requerimiento
+              🎫 Ticket
             </button>
           </div>
 
           {ui.qrUrl && (
-            <div style={{ padding: '14px 16px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
-              <img src={ui.qrUrl} alt={`Código QR para ${ui.selected.nombre}`} style={{ width: 140, height: 140 }} />
+            <div style={{ padding: '10px 16px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
+              <img src={ui.qrUrl} alt={`Código QR para ${ui.selected.nombre}`} style={{ width: 80, height: 80 }} />
               {ui.qrCodeString && (
                 <div style={{ marginTop: 8 }}>
                   <code style={{
@@ -1006,69 +1044,112 @@ const [qrExiste, setQrExiste] = useState(false);
                 })()}
               </div>
 
-              <div style={{ padding: '12px 16px' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: 13, fontWeight: 600, color: '#374151', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }} id="historial-label" onClick={() => dispatch({ type: 'SET_HISTORIAL_MODAL', payload: true })}>
-                  📋 Historial {requerimientos.length > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({requerimientos.length})</span>}
-                  <span style={{ fontSize: 10, color: '#3b82f6', fontWeight: 400, marginLeft: 'auto' }}>Ver todo →</span>
-                </h4>
-                {requerimientos.length === 0 ? (
-                  <p style={{ margin: 0, fontSize: 12, color: '#9ca3af' }}>Sin requerimientos</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }} role="region" aria-labelledby="historial-label">
-                    {requerimientos.slice(0, 3).map(req => (
-                      <div key={req.id} style={{
-                        padding: '8px 10px', background: '#f9fafb', borderRadius: 6,
-                        border: '1px solid #e5e7eb', fontSize: 12,
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontWeight: 500, color: '#1f2937' }}>{req.tipo_requerimiento}</span>
-                          <span style={{
-                            ...STYLES.tag, fontSize: 10,
-                            background: req.estado === 'Completada' ? '#dcfce7' : req.estado === 'En Proceso' ? '#dbeafe' : req.estado === 'Cancelada' ? '#fee2e2' : '#fef3c7',
-                            color: req.estado === 'Completada' ? '#166534' : req.estado === 'En Proceso' ? '#0c4a6e' : req.estado === 'Cancelada' ? '#991b1b' : '#92400e',
-                          }}>
-                            {req.estado}
-                          </span>
-                        </div>
-                        <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: 11, lineHeight: 1.3 }}>{req.descripcion}</p>
-                        <span style={{ color: '#9ca3af', fontSize: 10, marginTop: 2, display: 'block' }}>
-                          {new Date(req.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </span>
-                      </div>
-                    ))}
-                    {requerimientos.length > 3 && (
-                      <div style={{ textAlign: 'center', marginTop: 2 }}>
-                        <button onClick={() => dispatch({ type: 'SET_HISTORIAL_MODAL', payload: true })} style={{
-                          background: 'none', border: 'none', color: '#3b82f6', fontSize: 12, cursor: 'pointer', padding: 0, fontWeight: 500,
-                        }}>
-                          +{requerimientos.length - 3} más — ver todos
+              <div style={{ padding: '10px 16px', borderTop: '1px solid #e5e7eb' }}>
+                <button onClick={() => setDispositivosAbierto(!dispositivosAbierto)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <h4 style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#374151' }} id="dispositivos-label">Agregar Dispositivos</h4>
+                  <span style={{ fontSize: 10, color: '#9ca3af' }}>{dispositivosAbierto ? '▲' : '▼'}</span>
+                </button>
+                {dispositivosAbierto && (
+                  <>
+                    <p style={{ margin: '6px 0 6px', fontSize: 10, color: '#9ca3af' }}>Arrastra uno a una sala del mapa o haz clic para agregar</p>
+                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }} role="region" aria-labelledby="dispositivos-label">
+                      {dispositivosDB.map(d => (
+                        <button
+                          key={d}
+                          draggable
+                          onDragStart={e => { dispatch({ type: 'SET_DRAG_DEVICE', payload: d }); e.dataTransfer.setData('text/plain', d); e.dataTransfer.effectAllowed = 'move'; }}
+                          onDragEnd={() => dispatch({ type: 'SET_DRAG_DEVICE', payload: null })}
+                          onClick={async () => {
+                            if (!ui.selected) return;
+                            const q = prompt(`¿Cuántos "${d}" hay en ${ui.selected.nombre}?`, '1');
+                            if (q === null) return;
+                            const n = parseInt(q);
+                            if (isNaN(n) || n < 0) return;
+                            const { error: upsertErr } = await supabase.rpc('upsertar_ubicacion', {
+                              p_id_lugar: ui.selected.id,
+                              p_id_establecimiento: idEstablecimiento,
+                              p_dispositivo_nombre: d,
+                              p_cantidad: n,
+                            });
+                            if (upsertErr) {
+                              const { error: fallbackErr } = await supabase.from('ubicaciones').upsert({
+                                id_lugar: ui.selected.id, id_establecimiento: idEstablecimiento,
+                                dispositivo_nombre: d, cantidad: n, activo: true,
+                              }, { onConflict: 'id_lugar, dispositivo_nombre', ignoreDuplicates: false }).select();
+                              if (fallbackErr) { console.error('Error al guardar ubicación:', fallbackErr); alert('Error al guardar. Revisa consola (F12).'); return; }
+                            }
+                            if (dispositivosInv[d] !== false) {
+                              const eqErr = await asegurarEquipo(d, ui.selected.id);
+                              if (eqErr) { console.error('Error al crear equipo:', eqErr); alert('Error al crear el equipo. Revisa consola (F12).'); return; }
+                            }
+                            await cargarUbicaciones(ui.selected.id);
+                          }}
+                          style={{
+                            ...STYLES.draggable,
+                            opacity: ui.dragDevice === d ? 0.4 : 1,
+                          }}
+                          aria-label={`Dispositivo ${d}. Arrástralo a una sala del mapa o haz clic para agregar`}
+                          title={`Arrastra o haz clic para agregar ${d}`}>
+                          {d}
                         </button>
-                      </div>
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
 
-              <div style={{ padding: '10px 16px', borderTop: '1px solid #e5e7eb' }}>
-                <h4 style={{ margin: '0 0 6px 0', fontSize: 12, fontWeight: 600, color: '#374151' }} id="dispositivos-label">Dispositivos</h4>
-                <p style={{ margin: '0 0 6px', fontSize: 10, color: '#9ca3af' }}>Arrastra uno a una sala del mapa</p>
-                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }} role="region" aria-labelledby="dispositivos-label">
-                  {dispositivosDB.map(d => (
-                    <button
-                      key={d}
-                      draggable
-                      onDragStart={e => { dispatch({ type: 'SET_DRAG_DEVICE', payload: d }); e.dataTransfer.setData('text/plain', d); e.dataTransfer.effectAllowed = 'move'; }}
-                      onDragEnd={() => dispatch({ type: 'SET_DRAG_DEVICE', payload: null })}
-                      style={{
-                        ...STYLES.draggable,
-                        opacity: ui.dragDevice === d ? 0.4 : 1,
-                      }}
-                      aria-label={`Dispositivo ${d}. Arrastralo a una sala del mapa`}
-                      title={`Arrastra ${d}`}>
-                      {d}
-                    </button>
-                  ))}
-                </div>
+              <div style={{ padding: '12px 16px' }}>
+                <button onClick={() => setHistorialAbierto(!historialAbierto)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <h4 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#374151' }} id="historial-label">
+                    Historial Reciente {requerimientos.length > 0 && <span style={{ color: '#9ca3af', fontWeight: 400 }}>({requerimientos.length})</span>}
+                  </h4>
+                  <span style={{ fontSize: 10, color: '#9ca3af' }}>{historialAbierto ? '▲' : '▼'}</span>
+                </button>
+                {historialAbierto && (
+                  <>
+                    {(() => {
+                      const grupos: Record<string, ReqRow[]> = { '🔴 Urgente': [], '🔄 En Proceso': [], '⏳ Pendiente': [], '✅ Completada': [], '❌ Cancelada': [] };
+                      for (const r of requerimientos) {
+                        if (r.prioridad === 'Urgente') grupos['🔴 Urgente'].push(r);
+                        else if (r.estado === 'En Proceso') grupos['🔄 En Proceso'].push(r);
+                        else if (r.estado === 'Pendiente') grupos['⏳ Pendiente'].push(r);
+                        else if (r.estado === 'Completada') grupos['✅ Completada'].push(r);
+                        else if (r.estado === 'Cancelada') grupos['❌ Cancelada'].push(r);
+                      }
+                      return Object.entries(grupos).filter(([, items]) => items.length > 0).map(([label, items]) => (
+                        <div key={label} style={{ marginBottom: 8 }}>
+                          <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 600, color: '#6b7280' }}>{label} ({items.length})</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {items.slice(0, 3).map(req => (
+                              <div key={req.id} style={{ padding: '6px 8px', background: '#f9fafb', borderRadius: 6, border: '1px solid #e5e7eb', fontSize: 12 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontWeight: 500, color: '#1f2937', fontSize: 11 }}>{req.tipo_requerimiento}</span>
+                                  <span style={{ ...STYLES.tag, fontSize: 9, background: req.estado === 'Completada' ? '#dcfce7' : req.estado === 'En Proceso' ? '#dbeafe' : req.estado === 'Cancelada' ? '#fee2e2' : '#fef3c7', color: req.estado === 'Completada' ? '#166534' : req.estado === 'En Proceso' ? '#0c4a6e' : req.estado === 'Cancelada' ? '#991b1b' : '#92400e' }}>
+                                    {req.estado}
+                                  </span>
+                                </div>
+                                <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: 10, lineHeight: 1.3 }}>{req.descripcion}</p>
+                                <span style={{ color: '#9ca3af', fontSize: 9, marginTop: 2, display: 'block' }}>
+                                  {new Date(req.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                    {requerimientos.length === 0 && <p style={{ margin: 0, fontSize: 12, color: '#9ca3af' }}>Sin requerimientos</p>}
+                    <div style={{ textAlign: 'center', marginTop: 4 }}>
+                      <button onClick={() => dispatch({ type: 'SET_HISTORIAL_MODAL', payload: true })} style={{
+                        background: 'none', border: 'none', color: '#3b82f6', fontSize: 12, cursor: 'pointer', padding: '4px 0', fontWeight: 500,
+                      }}>
+                        Ver todo →
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </>
           )}
@@ -1091,7 +1172,17 @@ const [qrExiste, setQrExiste] = useState(false);
         />
       )}
 
-      {ui.historialModalAbierto && (
+      {(() => {
+        const requerimientosFiltrados = requerimientos.filter(r => {
+          if (filtroMes) {
+            const fecha = new Date(r.created_at);
+            const mesVal = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+            if (mesVal !== filtroMes) return false;
+          }
+          if (filtroEstado.length > 0 && !filtroEstado.includes(r.estado)) return false;
+          return true;
+        });
+        return ui.historialModalAbierto && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1000,
           background: 'rgba(0,0,0,0.4)', display: 'flex',
@@ -1109,36 +1200,171 @@ const [qrExiste, setQrExiste] = useState(false);
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#1f2937' }}>
                 📋 Historial · {ui.selected?.nombre}
               </h3>
-              <button onClick={() => dispatch({ type: 'SET_HISTORIAL_MODAL', payload: false })}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button onClick={() => {
+                  const printWin = window.open('', '_blank');
+                  if (!printWin) return;
+                  const rows = requerimientosFiltrados.map(r =>
+                    `<tr>
+                      <td style="padding:6px 8px;border:1px solid #d1d5db;font-size:12px">${r.tipo_requerimiento}</td>
+                      <td style="padding:6px 8px;border:1px solid #d1d5db;font-size:12px">${r.prioridad}</td>
+                      <td style="padding:6px 8px;border:1px solid #d1d5db;font-size:12px">${r.estado}</td>
+                      <td style="padding:6px 8px;border:1px solid #d1d5db;font-size:12px">${r.descripcion}</td>
+                      <td style="padding:6px 8px;border:1px solid #d1d5db;font-size:12px">${new Date(r.created_at).toLocaleDateString('es-CL')}</td>
+                    </tr>`
+                  ).join('');
+                  printWin.document.write(`
+                    <html><head><title>Historial - ${ui.selected?.nombre}</title>
+                    <style>body{font-family:sans-serif;padding:20px}table{width:100%;border-collapse:collapse}
+                    th{background:#f3f4f6;padding:6px 8px;border:1px solid #d1d5db;font-size:12px;text-align:left}
+                    </style></head>
+                    <body><h2 style="font-size:16px">Historial · ${ui.selected?.nombre}</h2>
+                    <table><thead><tr>
+                      <th>Tipo</th><th>Prioridad</th><th>Estado</th><th>Descripción</th><th>Fecha</th>
+                    </tr></thead><tbody>${rows}</tbody></table></body></html>
+                  `);
+                  printWin.document.close();
+                  printWin.print();
+                }} style={{
+                  padding: '6px 12px', borderRadius: 6, border: '1px solid #475569',
+                  background: '#0f172a', color: '#f1f5f9', fontSize: 12, cursor: 'pointer',
+                }}>
+                  🖨️ PDF
+                </button>
+                <button onClick={() => dispatch({ type: 'SET_HISTORIAL_MODAL', payload: false })}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#9ca3af', padding: '0 4px' }}>
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div style={{ padding: '8px 20px', display: 'flex', gap: 8, alignItems: 'center', borderBottom: '1px solid #e5e7eb' }}>
+              <select value={filtroMes} onChange={e => setFiltroMes(e.target.value)}
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 12, background: '#fff', color: '#374151' }}>
+                <option value="">Todos los meses</option>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const d = new Date(); d.setMonth(d.getMonth() - i);
+                  const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                  return <option key={val} value={val}>{d.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}</option>;
+                })}
+              </select>
+              {['Pendiente', 'En Proceso', 'Completada', 'Cancelada'].map(est => (
+                <label key={est} style={{ fontSize: 12, color: '#374151', display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={filtroEstado.length === 0 || filtroEstado.includes(est)}
+                    onChange={() => setFiltroEstado(prev =>
+                      prev.includes(est) ? prev.filter(e => e !== est) : [...prev, est]
+                    )} />
+                  {est}
+                </label>
+              ))}
+            </div>
+            <div style={{ padding: '12px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {requerimientosFiltrados.length === 0 ? (
+                  <p style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', padding: 24 }}>Sin requerimientos para este lugar.</p>
+                ) : (
+                  requerimientosFiltrados.map(req => (
+                    <div key={req.id} style={{
+                      padding: '10px 12px', background: '#f9fafb', borderRadius: 8,
+                      border: '1px solid #e5e7eb', fontSize: 13,
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <span style={{ fontWeight: 600, color: '#1f2937' }}>{req.tipo_requerimiento}</span>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <span style={{ fontSize: 11, color: '#6b7280', background: '#e5e7eb', padding: '1px 8px', borderRadius: 4, fontWeight: 500 }}>{req.prioridad}</span>
+                          <span style={{
+                            ...STYLES.tag, fontSize: 10,
+                            background: req.estado === 'Completada' ? '#dcfce7' : req.estado === 'En Proceso' ? '#dbeafe' : req.estado === 'Cancelada' ? '#fee2e2' : '#fef3c7',
+                            color: req.estado === 'Completada' ? '#166534' : req.estado === 'En Proceso' ? '#0c4a6e' : req.estado === 'Cancelada' ? '#991b1b' : '#92400e',
+                          }}>
+                            {req.estado}
+                          </span>
+                        </div>
+                      </div>
+                      <p style={{ margin: 0, color: '#4b5563', fontSize: 12, lineHeight: 1.4 }}>{req.descripcion}</p>
+                      <div style={{ color: '#9ca3af', fontSize: 10, marginTop: 4 }}>
+                        {new Date(req.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {procesoModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1100,
+          background: 'rgba(0,0,0,0.4)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', padding: 16,
+        }} onClick={() => setProcesoModal(null)}>
+          <div style={{
+            background: '#fff', borderRadius: 12, width: '100%', maxWidth: 440,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)', overflow: 'hidden',
+            maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{
+              padding: '14px 18px', borderBottom: '1px solid #e5e7eb',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#1f2937' }}>
+                🔵 En Proceso · {procesoModal.lugar.nombre}
+              </h3>
+              <button onClick={() => setProcesoModal(null)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#9ca3af', padding: '0 4px' }}>
                 ✕
               </button>
             </div>
-            <div style={{ padding: '12px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {requerimientos.length === 0 ? (
-                <p style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', padding: 24 }}>Sin requerimientos para este lugar.</p>
+            <div style={{ padding: '12px 18px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {procesoModal.tickets.length === 0 ? (
+                <p style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', padding: 24 }}>Sin tickets en proceso.</p>
               ) : (
-                requerimientos.map(req => (
-                  <div key={req.id} style={{
+                procesoModal.tickets.map(ticket => (
+                  <div key={ticket.id} style={{
                     padding: '10px 12px', background: '#f9fafb', borderRadius: 8,
                     border: '1px solid #e5e7eb', fontSize: 13,
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                      <span style={{ fontWeight: 600, color: '#1f2937' }}>{req.tipo_requerimiento}</span>
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                        <span style={{ fontSize: 11, color: '#6b7280', background: '#e5e7eb', padding: '1px 8px', borderRadius: 4, fontWeight: 500 }}>{req.prioridad}</span>
-                        <span style={{
-                          ...STYLES.tag, fontSize: 10,
-                          background: req.estado === 'Completada' ? '#dcfce7' : req.estado === 'En Proceso' ? '#dbeafe' : req.estado === 'Cancelada' ? '#fee2e2' : '#fef3c7',
-                          color: req.estado === 'Completada' ? '#166534' : req.estado === 'En Proceso' ? '#0c4a6e' : req.estado === 'Cancelada' ? '#991b1b' : '#92400e',
-                        }}>
-                          {req.estado}
-                        </span>
-                      </div>
+                      <span style={{ fontWeight: 600, color: '#1f2937' }}>{ticket.tipo_requerimiento}</span>
+                      <span style={{
+                        ...STYLES.tag, fontSize: 10,
+                        background: '#dbeafe', color: '#0c4a6e',
+                      }}>{ticket.prioridad}</span>
                     </div>
-                    <p style={{ margin: 0, color: '#4b5563', fontSize: 12, lineHeight: 1.4 }}>{req.descripcion}</p>
-                    <div style={{ color: '#9ca3af', fontSize: 10, marginTop: 4 }}>
-                      {new Date(req.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    <p style={{ margin: '0 0 4px', color: '#4b5563', fontSize: 12, lineHeight: 1.4 }}>{ticket.descripcion}</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#9ca3af', fontSize: 10 }}>
+                        {new Date(ticket.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                      </span>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button onClick={() => { window.location.hash = `#/ticket?ticket=${ticket.id}`; }}
+                          style={{
+                            padding: '4px 10px', borderRadius: 6, border: 'none',
+                            background: '#2563eb', color: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600,
+                          }}>
+                          Ver
+                        </button>
+                        <button onClick={async () => {
+                          if (!confirm(`¿Completar "${ticket.tipo_requerimiento}"?`)) return;
+                          await supabase.from('requerimientos').update({
+                            estado: 'Completada',
+                            fecha_cierre: new Date().toISOString(),
+                          }).eq('id', ticket.id);
+                          setProcesoModal(null);
+                          if (procesoModal?.lugar) {
+                            const { data } = await supabase.from('requerimientos')
+                              .select('id,tipo_requerimiento,descripcion,estado,prioridad,created_at')
+                              .eq('id_lugar', procesoModal.lugar.id).eq('activo', true).eq('estado', 'En Proceso')
+                              .order('created_at', { ascending: false });
+                            if (data) setProcesoModal({ lugar: procesoModal.lugar, tickets: data as ReqRow[] });
+                          }
+                        }} style={{
+                          padding: '4px 10px', borderRadius: 6, border: 'none',
+                          background: '#059669', color: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600,
+                        }}>
+                          ✓
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))
