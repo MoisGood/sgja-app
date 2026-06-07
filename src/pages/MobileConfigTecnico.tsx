@@ -1,4 +1,5 @@
 import { useEffect, useState, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
@@ -25,9 +26,8 @@ const TABS: { key: Tab; label: string; icono: JSX.Element }[] = [
   { key: 'qr', label: 'QR', icono: <Smartphone size={16} /> },
 ];
 
-const irA = (ruta: string) => { window.location.hash = ruta };
-
 export default function MobileConfigTecnico({ idEstablecimiento: _idEst }: Props) {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('fallas');
   const [fallas, setFallas] = useState<PosibleFalla[]>([]);
   const [diagnosticos, setDiagnosticos] = useState<PosibleDiagnostico[]>([]);
@@ -154,7 +154,7 @@ export default function MobileConfigTecnico({ idEstablecimiento: _idEst }: Props
                 {qrCodes.length === 0 && (
                   <p style={{ textAlign: 'center', color: '#9CA3AF', fontSize: 13, padding: 16 }}>Sin QR generados</p>
                 )}
-                <motion.button whileTap={{ scale: 0.95 }} onClick={() => irA('/tecnico/accesos')} style={{
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => navigate('/tecnico/accesos')} style={{
                   marginTop: 8, padding: '10px 24px', borderRadius: 8, border: 'none',
                   background: '#1e40af', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 }}>Ir a Accesos Rapidos</motion.button>

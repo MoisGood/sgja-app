@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Camera, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 
-const irA = (ruta: string) => { window.location.hash = ruta };
-
 export default function MobileQrScanner() {
+  const navigate = useNavigate();
   const [camError, setCamError] = useState('');
   const [detenido, setDetenido] = useState(false);
   const [scanKey, setScanKey] = useState(0);
@@ -42,7 +42,7 @@ export default function MobileQrScanner() {
             setDetenido(true);
             const match = texto.match(/[?&]c=([^&]+)/);
             const codigo = match ? decodeURIComponent(match[1]) : texto;
-            irA(`/tecnico/qr?c=${encodeURIComponent(codigo)}`);
+            navigate(`/tecnico/qr?c=${encodeURIComponent(codigo)}`);
           },
           () => {},
         );
@@ -91,7 +91,7 @@ export default function MobileQrScanner() {
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => irA('/tecnico/m/inicio')}
+            onClick={() => navigate('/tecnico/m/inicio')}
             style={{
               padding: '10px 20px', borderRadius: 8, border: 'none',
               background: '#1e40af', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
@@ -116,7 +116,7 @@ export default function MobileQrScanner() {
   return (
     <div style={{ padding: '16px 16px 72px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <button onClick={() => irA('/tecnico/m/inicio')} style={{
+        <button onClick={() => navigate('/tecnico/m/inicio')} style={{
           background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#1A3C6B', display: 'flex',
         }}><ArrowLeft size={22} /></button>
         <h1 style={{ fontSize: 18, fontWeight: 700, color: '#1A3C6B', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>

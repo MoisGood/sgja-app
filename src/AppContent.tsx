@@ -7,6 +7,7 @@ import { useAuth } from './hooks/useAuth';
 import { useInactivityWarning } from './hooks/useInactivityWarning';
 import { usePermisosUsuario } from './hooks/usePermisosUsuario';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import { Rol } from './types';
 import Login from './pages/Login';
@@ -61,22 +62,7 @@ import Configurar2FA from './pages/Configurar2FA';
 
 export default function AppContent() {
   const { uid, rol, idEstablecimiento, cargando, autorizado, usuarioInactivo, documentoExiste, nombre, apellidos, email, datosPendientes, mantenimientoBloqueo, mttoHorario } = useAuth();
-  const [rutaActiva, setRutaActiva] = useState(() => {
-    const hash = window.location.hash.replace(/^#/, '') || '/dashboard';
-    return hash.split('?')[0];
-  });
-
-  // Redirigir TECNICO al dashboard móvil en carga inicial
-  const redirigidoRef = useRef(false);
-  useEffect(() => {
-    if ((rol as string) === 'TECNICO' && !redirigidoRef.current) {
-      const hash = window.location.hash.replace(/^#/, '').split('?')[0];
-      if (!hash || hash === '/dashboard') {
-        redirigidoRef.current = true;
-        window.location.hash = '/tecnico/m/inicio';
-      }
-    }
-  }, [rol]);
+  const location = useLocation();
   const [errorSesion, setErrorSesion] = useState<string | null>(null);
   const [mostrarFormDatos, setMostrarFormDatos] = useState(false);
   const [mfaPendiente, setMfaPendiente] = useState(false);
@@ -112,15 +98,6 @@ export default function AppContent() {
         document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', data.nombre_sistema);
       }
     });
-  }, []);
-
-  useEffect(() => {
-    const handler = () => {
-      const hash = window.location.hash.replace(/^#/, '') || '/dashboard';
-      setRutaActiva(hash.split('?')[0]);
-    };
-    window.addEventListener('hashchange', handler);
-    return () => window.removeEventListener('hashchange', handler);
   }, []);
 
   const { mostrarModal, segundosRestantes, cerrandoSesion, extenderSesion } = useInactivityWarning(rol, autorizado);
@@ -421,122 +398,23 @@ export default function AppContent() {
     return permisosRol.includes(ruta);
   };
 
-  const renderizarDashboard = () => {
+  const renderRoleDashboard = () => {
     if (!idEstablecimiento) return null;
-    const estab = idEstablecimiento;
-    const user = uid || '';
-    
-    switch (rutaActiva) {
-      case '/secretaria':
-        return <DashboardSecretaria nombre={nombre || 'Usuario'} onNavegar={setRutaActiva} />;
-      case '/secretaria/ausentes':
-        return puedeVer('/secretaria', 'ADMIN') ? <SecretariaAusentes /> : null;
-      case '/secretaria/enviar-correo':
-        return puedeVer('/secretaria', 'ADMIN') ? <EnviarCorreo idEstablecimiento={estab} /> : null;
-      case '/mantenedor-funcionarios':
-        return puedeVer('/mantenedor-funcionarios', 'ADMIN') ? <MantenedorFuncionarios /> : null;
-      case '/gestion-usuarios':
-        return puedeVer('/gestion-usuarios', 'ADMIN') ? <GestionUsuariosPage idEstablecimiento={estab} /> : null;
-      case '/gestion':
-        return puedeVer('/gestion', 'ADMIN') ? <GestionUsuariosPage idEstablecimiento={estab} /> : null;
-      case '/mantenedores':
-        return puedeVer('/mantenedores', 'ADMIN') ? <Mantenedores idEstablecimiento={estab} /> : null;
-      case '/registrar':
-        return (rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <RegistrarJustificacion idEstablecimiento={estab} idUsuario={user} /> : null;
-      case '/ver-justificaciones':
-        return (rol === 'ADMIN' || rol === 'INSPECTOR') ? <VerJustificaciones idEstablecimiento={estab} rol={rol} idUsuario={user} /> : null;
-      case '/gestion-pases':
-        return (rol === 'ADMIN' || rol === 'PROFESOR' || rol === 'INSPECTOR') ? <GestionPases idEstablecimiento={estab} rol={rol} idUsuarioActual={user} /> : null;
-      case '/justificaciones':
-        return (rol === 'ADMIN' || rol === 'INSPECTOR') ? <JustificacionesAtrasos idEstablecimiento={estab} /> : null;
-      case '/parametros':
-        return puedeVer('/parametros', 'ADMIN') ? <Parametros idEstablecimiento={estab} /> : null;
-      case '/en-linea':
-        return puedeVer('/en-linea', 'ADMIN') ? <EnLinea /> : null;
-      case '/seguridad':
-        return puedeVer('/seguridad', 'ADMIN') ? <Seguridad /> : null;
-      case '/configurar-2fa':
-        return <Configurar2FA />;
-      case '/asignar-permisos':
-        return puedeVer('/asignar-permisos', 'ADMIN') ? <AsignarPermisos idEstablecimiento={estab} /> : null;
-      case '/sistema':
-        return puedeVer('/sistema', 'ADMIN') ? <MantenimientoConfig idEstablecimiento={estab} /> : null;
-      case '/monitoreo-correos':
-        return puedeVer('/monitoreo-correos', 'ADMIN') ? <MonitoreoCorreos idEstablecimiento={estab} /> : null;
-      case '/monitoreo-fallos':
-        return puedeVer('/monitoreo-fallos', 'ADMIN') ? <MonitoreoFallos idEstablecimiento={estab} /> : null;
-      case '/libros':
-        return puedeVer('/libros', 'ADMIN') ? <MantenedorLibros idEstablecimiento={estab} /> : null;
-      case '/catalogo':
-        return puedeVer('/catalogo', 'ADMIN') ? <Catalogo idEstablecimiento={estab} /> : null;
-      case '/biblioteca':
-        return puedeVer('/biblioteca', 'ADMIN') ? <Catalogo idEstablecimiento={estab} /> : null;
-      case '/prestamos':
-        return puedeVer('/prestamos', 'ADMIN') ? <Circulacion idEstablecimiento={estab} usuarioId={uid || ''} /> : null;
-      case '/historial-biblioteca':
-        return puedeVer('/historial-biblioteca', 'ADMIN') ? <HistorialBiblioteca idEstablecimiento={estab} /> : null;
-      case '/config-biblioteca':
-        return puedeVer('/config-biblioteca', 'ADMIN') ? <ConfigBiblioteca idEstablecimiento={estab} /> : null;
-      case '/inventario':
-        return puedeVer('/inventario', 'ADMIN') ? <Inventario idEstablecimiento={estab} /> : null;
-      case '/tecnico/qr':
-        return <QrRedirect />;
-      case '/ticket':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <Ticket idEstablecimiento={estab} idUsuario={user} /> : null;
-      case '/tecnico':
-      case '/tecnico/mapa':
-        return puedeVer('/tecnico', 'ADMIN') ? <Tecnico idEstablecimiento={estab} /> : null;
-      case '/tecnico/equipos':
-        return puedeVer('/tecnico', 'ADMIN') ? <Equipos idEstablecimiento={estab} /> : null;
-      case '/tecnico/ubicaciones':
-        return puedeVer('/tecnico', 'ADMIN') ? <Ubicaciones idEstablecimiento={estab} /> : null;
-      case '/tecnico/requerimientos':
-        return puedeVer('/tecnico', 'ADMIN') ? <Requerimientos idEstablecimiento={estab} /> : null;
-      case '/tecnico/accesos':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <AccesosRapidos idEstablecimiento={estab} /> : null;
-      case '/tecnico/menu':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MenuTecnico idEstablecimiento={estab} /> : null;
-      case '/tecnico/m/inicio':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileDashboard idEstablecimiento={estab} /> : null;
-      case '/tecnico/m/mapa':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileMapa idEstablecimiento={estab} /> : null;
-      case '/tecnico/m/equipos':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileEquipos idEstablecimiento={estab} /> : null;
-      case '/tecnico/m/ubicaciones':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileUbicaciones idEstablecimiento={estab} /> : null;
-      case '/tecnico/m/config':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileConfigTecnico idEstablecimiento={estab} /> : null;
-      case '/tecnico/m/qr':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileQrScanner /> : null;
-      case '/tecnico/m/accesos':
-        return (rol === 'ADMIN' || rol === 'TECNICO' as string) ? <AccesosRapidos idEstablecimiento={estab} /> : null;
-      case '/tecnico/configuracion':
-        return puedeVer('/tecnico', 'ADMIN') ? <ConfiguracionTecnico idEstablecimiento={estab} /> : null;
-      default:
-        return renderizarPorRol();
-    }
-  };
-
-  const renderizarPorRol = () => {
-    if (!idEstablecimiento) return null;
-    const estab = idEstablecimiento;
-    const user = uid || '';
-    
     switch (rol as string) {
       case 'ADMIN':
-        return <DashboardAdmin idEstablecimiento={estab} onNavegar={setRutaActiva} />;
+        return <DashboardAdmin idEstablecimiento={idEstablecimiento} />;
       case 'INSPECTOR':
-        return <DashboardInspector idEstablecimiento={estab} />;
+        return <DashboardInspector idEstablecimiento={idEstablecimiento} />;
       case 'PROFESOR':
-        return <DashboardProfesor idEstablecimiento={estab} idProfesor={user} />;
+        return <DashboardProfesor idEstablecimiento={idEstablecimiento} idProfesor={uid || ''} />;
       case 'ESTUDIANTE':
-        return <DashboardEstudiante idEstudiante={user} />;
+        return <DashboardEstudiante idEstudiante={uid || ''} />;
       case 'APODERADO':
-        return <DashboardApoderado idApoderado={user} idEstablecimiento={estab} />;
+        return <DashboardApoderado idApoderado={uid || ''} idEstablecimiento={idEstablecimiento} />;
       case 'TECNICO':
-        return <AccesosRapidos idEstablecimiento={estab} />;
+        return <AccesosRapidos idEstablecimiento={idEstablecimiento} />;
       default:
-        return <DashboardSecretaria nombre={nombre || 'Usuario'} onNavegar={setRutaActiva} />;
+        return <DashboardSecretaria nombre={nombre || 'Usuario'} />;
     }
   };
 
@@ -676,13 +554,58 @@ export default function AppContent() {
         rol={rol}
         nombre={nombre || email || 'Usuario'}
         email={email || ''}
-        rutaActiva={rutaActiva}
-        onRutaChange={setRutaActiva}
         usuarioId={uid}
         idEstablecimiento={idEstablecimiento}
       >
-        {renderizarDashboard()}
-        {isMobile && rutaActiva.startsWith('/tecnico/m/') && <MobileNavBar />}
+        <Routes>
+          <Route path="/" element={(rol as string) === 'TECNICO' ? <Navigate to="/tecnico/m/inicio" replace /> : renderRoleDashboard()} />
+          <Route path="/dashboard" element={(rol as string) === 'TECNICO' ? <Navigate to="/tecnico/m/inicio" replace /> : renderRoleDashboard()} />
+          <Route path="/secretaria" element={<DashboardSecretaria nombre={nombre || 'Usuario'} />} />
+          <Route path="/secretaria/ausentes" element={puedeVer('/secretaria', 'ADMIN') ? <SecretariaAusentes /> : null} />
+          <Route path="/secretaria/enviar-correo" element={puedeVer('/secretaria', 'ADMIN') ? <EnviarCorreo idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/mantenedor-funcionarios" element={puedeVer('/mantenedor-funcionarios', 'ADMIN') ? <MantenedorFuncionarios /> : null} />
+          <Route path="/gestion-usuarios" element={puedeVer('/gestion-usuarios', 'ADMIN') ? <GestionUsuariosPage idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/gestion" element={puedeVer('/gestion', 'ADMIN') ? <GestionUsuariosPage idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/mantenedores" element={puedeVer('/mantenedores', 'ADMIN') ? <Mantenedores idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/registrar" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
+          <Route path="/ver-justificaciones" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <VerJustificaciones idEstablecimiento={idEstablecimiento!} rol={rol} idUsuario={uid || ''} /> : null} />
+          <Route path="/gestion-pases" element={(rol === 'ADMIN' || rol === 'PROFESOR' || rol === 'INSPECTOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol} idUsuarioActual={uid || ''} /> : null} />
+          <Route path="/justificaciones" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <JustificacionesAtrasos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/parametros" element={puedeVer('/parametros', 'ADMIN') ? <Parametros idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/en-linea" element={puedeVer('/en-linea', 'ADMIN') ? <EnLinea /> : null} />
+          <Route path="/seguridad" element={puedeVer('/seguridad', 'ADMIN') ? <Seguridad /> : null} />
+          <Route path="/configurar-2fa" element={<Configurar2FA />} />
+          <Route path="/asignar-permisos" element={puedeVer('/asignar-permisos', 'ADMIN') ? <AsignarPermisos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/sistema" element={puedeVer('/sistema', 'ADMIN') ? <MantenimientoConfig idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/monitoreo-correos" element={puedeVer('/monitoreo-correos', 'ADMIN') ? <MonitoreoCorreos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/monitoreo-fallos" element={puedeVer('/monitoreo-fallos', 'ADMIN') ? <MonitoreoFallos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/libros" element={puedeVer('/libros', 'ADMIN') ? <MantenedorLibros idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/catalogo" element={puedeVer('/catalogo', 'ADMIN') ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/biblioteca" element={puedeVer('/biblioteca', 'ADMIN') ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/prestamos" element={puedeVer('/prestamos', 'ADMIN') ? <Circulacion idEstablecimiento={idEstablecimiento!} usuarioId={uid || ''} /> : null} />
+          <Route path="/historial-biblioteca" element={puedeVer('/historial-biblioteca', 'ADMIN') ? <HistorialBiblioteca idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/config-biblioteca" element={puedeVer('/config-biblioteca', 'ADMIN') ? <ConfigBiblioteca idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/inventario" element={puedeVer('/inventario', 'ADMIN') ? <Inventario idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/qr" element={<QrRedirect />} />
+          <Route path="/ticket" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <Ticket idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
+          <Route path="/tecnico" element={puedeVer('/tecnico', 'ADMIN') ? <Tecnico idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/mapa" element={puedeVer('/tecnico', 'ADMIN') ? <Tecnico idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/equipos" element={puedeVer('/tecnico', 'ADMIN') ? <Equipos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/ubicaciones" element={puedeVer('/tecnico', 'ADMIN') ? <Ubicaciones idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/requerimientos" element={puedeVer('/tecnico', 'ADMIN') ? <Requerimientos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/accesos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <AccesosRapidos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/menu" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MenuTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/inicio" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileDashboard idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/mapa" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileMapa idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/equipos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileEquipos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/ubicaciones" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileUbicaciones idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/config" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileConfigTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/qr" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileQrScanner /> : null} />
+          <Route path="/tecnico/m/accesos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <AccesosRapidos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/configuracion" element={puedeVer('/tecnico', 'ADMIN') ? <ConfiguracionTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="*" element={renderRoleDashboard()} />
+        </Routes>
+        {isMobile && location.pathname.startsWith('/tecnico/m/') && <MobileNavBar />}
       </Layout>
     </>
   );

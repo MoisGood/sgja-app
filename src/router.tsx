@@ -3,22 +3,17 @@
 // src/router.tsx
 // ============================================================
 
-import { createBrowserRouter } from 'react-router-dom';
+import { createHashRouter } from 'react-router-dom';
 import Login from './pages/Login';
-import NotFound from './pages/NotFound';
 import AppContent from './AppContent';
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <AppContent />,
-  },
+export const router = createHashRouter([
   {
     path: '/login',
     element: <Login />,
   },
   {
     path: '*',
-    element: <NotFound />,
+    element: <AppContent />,
   },
 ]);

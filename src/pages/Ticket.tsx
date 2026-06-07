@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 interface Props {
@@ -57,6 +58,7 @@ const s = {
 };
 
 export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
+  const [searchParams] = useSearchParams();
   const [paso, setPaso] = useState<Paso>('loading');
   const [lugar, setLugar] = useState<Lugar | null>(null);
   const [equiposLugar, setEquiposLugar] = useState<Equipo[]>([]);
@@ -81,11 +83,9 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
     supabase.from('usuarios').select('id').eq('uid', idUsuario).maybeSingle()
       .then(({ data }) => { if (data) setIdUsuarioDb(data.id); });
 
-    const hash = window.location.hash.split('?')[1] || '';
-    const params = new URLSearchParams(hash);
-    const ticketId = params.get('ticket');
-    const lugarId = params.get('lugar');
-    const equipoId = params.get('equipo');
+    const ticketId = searchParams.get('ticket');
+    const lugarId = searchParams.get('lugar');
+    const equipoId = searchParams.get('equipo');
 
     if (ticketId) {
       loadTicket(ticketId);

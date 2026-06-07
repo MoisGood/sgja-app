@@ -1,3 +1,4 @@
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { Rol } from '../types';
 import { Menu, X, LogOut } from 'lucide-react';
 
@@ -13,10 +14,8 @@ interface Props {
   sidebarAbierto: boolean;
   setSidebarAbierto: (v: boolean) => void;
   itemsFiltrados: MenuItem[];
-  rutaActiva: string;
   submenuAbierto: string | null;
   setSubmenuAbierto: (v: string | null) => void;
-  onRutaChange: (ruta: string) => void;
   handleLogout: () => void;
   sistemaNombre?: string;
   sistemaSubtitulo?: string;
@@ -25,9 +24,12 @@ interface Props {
 
 export default function Sidebar({
   sidebarAbierto, setSidebarAbierto, itemsFiltrados,
-  rutaActiva, submenuAbierto, setSubmenuAbierto, onRutaChange, handleLogout,
+  submenuAbierto, setSubmenuAbierto, handleLogout,
   sistemaNombre = 'SGJA', sistemaSubtitulo = '', sistemaLogoUrl = '',
 }: Props) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const rutaActiva = location.pathname;
   return (
     <aside style={{
       backgroundColor: '#1A3C6B', display: 'flex', flexDirection: 'column',
@@ -62,7 +64,7 @@ export default function Sidebar({
           const submenuExpanded = submenuAbierto === item.ruta;
           return (
             <div key={item.ruta}>
-              <button type="button"                 onClick={() => { if (!sidebarAbierto) { setSidebarAbierto(true); if (tieneSubmenu) setSubmenuAbierto(item.ruta); } else { if (tieneSubmenu) { setSubmenuAbierto(submenuExpanded ? null : item.ruta); } else { onRutaChange(item.ruta); } } }}
+              <button type="button"                 onClick={() => { if (!sidebarAbierto) { setSidebarAbierto(true); if (tieneSubmenu) setSubmenuAbierto(item.ruta); } else { if (tieneSubmenu) { setSubmenuAbierto(submenuExpanded ? null : item.ruta); } else { navigate(item.ruta); } } }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '8px',
                   border: 'none', cursor: 'pointer', width: '100%', transition: 'background-color 0.15s',
@@ -84,7 +86,7 @@ export default function Sidebar({
                   {item.submenu?.map((sub) => {
                     const subactivo = rutaActiva === sub.ruta;
                     return (
-                      <button type="button" key={sub.ruta} onClick={() => onRutaChange(sub.ruta)} style={{
+                      <button type="button" key={sub.ruta} onClick={() => navigate(sub.ruta)} style={{
                         display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px 8px 20px',
                         borderRadius: '6px', border: 'none', cursor: 'pointer', width: '100%',
                         fontSize: '13px', transition: 'background-color 0.15s', background: 'transparent',

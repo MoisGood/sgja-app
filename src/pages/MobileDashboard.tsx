@@ -1,4 +1,5 @@
 import { useEffect, useState, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -7,8 +8,6 @@ import { supabase } from '../lib/supabase';
 import { tecnicoCache } from '../services/tecnicoCache';
 
 interface Props { idEstablecimiento: string }
-
-const irA = (ruta: string) => { window.location.hash = ruta };
 
 const ESTILOS_CARRUSEL: Record<string, { bg: string; icono: JSX.Element; label: string }> = {
   'En Proceso': { bg: '#dbeafe', icono: <RefreshCw size={28} />, label: 'En Proceso' },
@@ -22,6 +21,7 @@ interface HistoryItem {
 }
 
 export default function MobileDashboard({ idEstablecimiento }: Props) {
+  const navigate = useNavigate();
   const [resumen, setResumen] = useState<{ estado: string; count: number }[]>([]);
   const [hoy, setHoy] = useState<HistoryItem[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -107,8 +107,8 @@ export default function MobileDashboard({ idEstablecimiento }: Props) {
               <motion.div
                 whileTap={{ scale: 0.97 }}
                   onClick={() => {
-                    if (r.estado === 'Urgente') irA('/tecnico/requerimientos?prioridad=Urgente');
-                    else irA(`/tecnico/requerimientos?estado=${r.estado}`);
+                    if (r.estado === 'Urgente') navigate('/tecnico/requerimientos?prioridad=Urgente');
+                    else navigate(`/tecnico/requerimientos?estado=${r.estado}`);
                   }}
                 style={{
                   background: estilo.bg, borderRadius: 12, padding: '12px 20px',
@@ -126,7 +126,7 @@ export default function MobileDashboard({ idEstablecimiento }: Props) {
 
       <motion.button
         whileTap={{ scale: 0.95 }}
-        onClick={() => irA('/tecnico/m/mapa')}
+        onClick={() => navigate('/tecnico/m/mapa')}
         style={{
           width: '100%', padding: '12px', borderRadius: 10, border: 'none',
           background: '#1e40af', color: '#fff', fontSize: 14, fontWeight: 600,
@@ -161,7 +161,7 @@ export default function MobileDashboard({ idEstablecimiento }: Props) {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     if (r.estado === 'Completada' || r.estado === 'Cancelada') return;
-                    irA(`/tecnico/requerimientos`);
+                    navigate(`/tecnico/requerimientos`);
                   }}
                   style={{
                     padding: '10px 12px', background: '#fff', borderRadius: 8,

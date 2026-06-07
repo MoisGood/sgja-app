@@ -4,14 +4,15 @@
 // ============================================================
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/dashboard.css';
 
 interface Props {
   idEstablecimiento: string;
-  onNavegar?: (ruta: string) => void;
 }
 
-export default function DashboardAdmin({ onNavegar }: Props) {
+export default function DashboardAdmin(_props: Props) {
+  const navigate = useNavigate();
   const [configuracionExpandida, setConfiguracionExpandida] = useState(false);
 
   return (
@@ -29,10 +30,10 @@ export default function DashboardAdmin({ onNavegar }: Props) {
         <h3 style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 600, marginBottom: '0.5rem' }}>⚡ Accesos Rápidos</h3>
         <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1rem' }}>Funciones principales</p>
         <div className="dashboard-actions">
-          <AccesoRapido icono="👥" titulo="Gestionar Usuarios" onClick={() => onNavegar?.('/gestion-usuarios')} />
-          <AccesoRapido icono="📋" titulo="Crear Solicitud" onClick={() => onNavegar?.('/registrar')} />
-          <AccesoRapido icono="🛡️" titulo="Seguridad" onClick={() => onNavegar?.('/seguridad')} />
-          <AccesoRapido icono="⚙️" titulo="Parámetros" onClick={() => onNavegar?.('/parametros')} />
+          <AccesoRapido icono="👥" titulo="Gestionar Usuarios" onClick={() => navigate('/gestion-usuarios')} />
+          <AccesoRapido icono="📋" titulo="Crear Solicitud" onClick={() => navigate('/registrar')} />
+          <AccesoRapido icono="🛡️" titulo="Seguridad" onClick={() => navigate('/seguridad')} />
+          <AccesoRapido icono="⚙️" titulo="Parámetros" onClick={() => navigate('/parametros')} />
           <AccesoRapido icono="⚙️" titulo="Configuración" onClick={() => setConfiguracionExpandida(!configuracionExpandida)} />
         </div>
 
@@ -41,11 +42,11 @@ export default function DashboardAdmin({ onNavegar }: Props) {
           <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
             <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.5rem', fontWeight: 600 }}>🔧 Configuración del Sistema</p>
             <div className="dashboard-actions">
-              <AccesoRapido icono="🔐" titulo="Asignar Permisos" onClick={() => { onNavegar?.('/asignar-permisos'); setConfiguracionExpandida(false); }} />
-              <AccesoRapido icono="⏰" titulo="Bloques Horarios" onClick={() => { onNavegar?.('/bloque-horario'); setConfiguracionExpandida(false); }} />
-              <AccesoRapido icono="📚" titulo="Mantenedor Cursos" onClick={() => { onNavegar?.('/mantenedor-cursos'); setConfiguracionExpandida(false); }} />
-              <AccesoRapido icono="👥" titulo="Mantenedor Estudiantes" onClick={() => { onNavegar?.('/mantenedor-estudiantes'); setConfiguracionExpandida(false); }} />
-              <AccesoRapido icono="📊" titulo="Reportes" onClick={() => { onNavegar?.('/reportes'); setConfiguracionExpandida(false); }} />
+              <AccesoRapido icono="🔐" titulo="Asignar Permisos" onClick={() => { navigate('/asignar-permisos'); setConfiguracionExpandida(false); }} />
+              <AccesoRapido icono="⏰" titulo="Bloques Horarios" onClick={() => { navigate('/bloque-horario'); setConfiguracionExpandida(false); }} />
+              <AccesoRapido icono="📚" titulo="Mantenedor Cursos" onClick={() => { navigate('/mantenedor-cursos'); setConfiguracionExpandida(false); }} />
+              <AccesoRapido icono="👥" titulo="Mantenedor Estudiantes" onClick={() => { navigate('/mantenedor-estudiantes'); setConfiguracionExpandida(false); }} />
+              <AccesoRapido icono="📊" titulo="Reportes" onClick={() => { navigate('/reportes'); setConfiguracionExpandida(false); }} />
             </div>
           </div>
         )}

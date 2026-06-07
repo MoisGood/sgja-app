@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MapPin, ChevronRight, Loader } from 'lucide-react';
 import MobileSwipeWrapper from '../components/MobileSwipeWrapper';
@@ -16,9 +17,8 @@ interface LugarConUbis {
   dispositivos: { id: string; dispositivo_nombre: string; cantidad: number }[];
 }
 
-const irA = (ruta: string) => { window.location.hash = ruta };
-
 export default function MobileUbicaciones({ idEstablecimiento }: Props) {
+  const navigate = useNavigate();
   const [lugares, setLugares] = useState<LugarConUbis[]>([]);
   const [cargando, setCargando] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -112,7 +112,7 @@ export default function MobileUbicaciones({ idEstablecimiento }: Props) {
                     </div>
                   ))
                 )}
-                <motion.button whileTap={{ scale: 0.95 }} onClick={() => irA(`/tecnico/ubicaciones`)} style={{
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => navigate(`/tecnico/ubicaciones`)} style={{
                   width: '100%', padding: '8px', borderRadius: 8, border: '1px solid #D1D5DB',
                   background: '#fff', color: '#374151', fontSize: 12, cursor: 'pointer', marginTop: 4,
                 }}>

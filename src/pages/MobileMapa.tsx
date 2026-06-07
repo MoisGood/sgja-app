@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
@@ -40,9 +41,8 @@ const PISOS = [
   { valor: 3, label: 'Piso 3' },
 ];
 
-const irA = (ruta: string) => { window.location.hash = ruta };
-
 export default function MobileMapa({ idEstablecimiento }: Props) {
+  const navigate = useNavigate();
   const [lugares, setLugares] = useState<Lugar[]>([]);
   const [cargando, setCargando] = useState(true);
   const [reqsPorLugar, setReqsPorLugar] = useState<Record<string, ReqPendiente[]>>({});
@@ -182,7 +182,7 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
                             ) : (<>
                             <motion.button
                               whileTap={{ scale: 0.95 }}
-                              onClick={() => irA(`/ticket?lugar=${l.id}`)}
+                              onClick={() => navigate(`/ticket?lugar=${l.id}`)}
                               style={{
                                 width: '100%', padding: '10px', borderRadius: 8, border: 'none',
                                 background: '#1e40af', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
@@ -194,7 +194,7 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
                             {pends.length > 0 && (
                               <motion.button
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => irA(`/tecnico/requerimientos?lugar=${l.id}`)}
+                                onClick={() => navigate(`/tecnico/requerimientos?lugar=${l.id}`)}
                                 style={{
                                   width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #D1D5DB',
                                   background: '#fff', color: '#374151', fontSize: 13, fontWeight: 500, cursor: 'pointer',

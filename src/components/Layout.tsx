@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { registrarCierre } from '../services/online';
 import { obtenerConfiguracionInactividad } from '../services/online';
@@ -33,8 +34,6 @@ interface Props {
   rol:                  Rol;
   nombre:               string;
   email:                string;
-  rutaActiva:           string;
-  onRutaChange:         (ruta: string) => void;
   usuarioId?:           string;
   idEstablecimiento:    string | null;
 }
@@ -126,7 +125,8 @@ const MENU_ITEMS: MenuItem[] = [
   } 
 ];
 
-export default function Layout({ children, rol, nombre, email, rutaActiva, onRutaChange, usuarioId, idEstablecimiento }: Props) {
+export default function Layout({ children, rol, nombre, email, usuarioId, idEstablecimiento }: Props) {
+  const location = useLocation();
   const { temaOscuro, setTemaOscuro } = useTheme();
   const { permisos, cargando: cargandoPermisos } = usePermisosUsuario(idEstablecimiento || '', rol);
   const [sidebarAbierto, setSidebarAbierto] = useState(true);
@@ -264,13 +264,12 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
         rol={rol}
         nombre={nombre}
         email={email}
-        onRutaChange={onRutaChange}
         usuarioId={usuarioId}
         idEstablecimiento={idEstablecimiento}
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={rutaActiva}
+            key={location.pathname}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -290,10 +289,8 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
         sidebarAbierto={sidebarAbierto}
         setSidebarAbierto={setSidebarAbierto}
         itemsFiltrados={itemsFiltrados}
-        rutaActiva={rutaActiva}
         submenuAbierto={submenuAbierto}
         setSubmenuAbierto={setSubmenuAbierto}
-        onRutaChange={onRutaChange}
         handleLogout={handleLogout}
         sistemaNombre={sistemaNombre}
         sistemaSubtitulo={sistemaSubtitulo || establecimientoNombre}
@@ -317,7 +314,7 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
         <div style={styles.contenido}>
           <AnimatePresence mode="wait">
             <motion.div
-              key={rutaActiva}
+              key={location.pathname}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}

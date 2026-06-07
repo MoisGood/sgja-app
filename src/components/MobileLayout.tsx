@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { registrarCierre } from '../services/online';
 import { UsuariosOnlineIndicador } from './UsuariosOnlineIndicador';
@@ -13,7 +14,6 @@ interface Props {
   rol: Rol;
   nombre: string;
   email: string;
-  onRutaChange?: (ruta: string) => void;
   usuarioId?: string;
   idEstablecimiento?: string | null;
 }
@@ -47,10 +47,10 @@ export function MobileLayout({
   rol,
   nombre,
   email,
-  onRutaChange,
   usuarioId,
   idEstablecimiento,
 }: Props) {
+  const navigate = useNavigate();
   const [modalDatosAbierto, setModalDatosAbierto] = useState(false);
   const { temaOscuro, setTemaOscuro } = useTheme();
   const { permisos } = usePermisosUsuario(idEstablecimiento || '', rol);
@@ -250,7 +250,7 @@ export function MobileLayout({
           {botonesVisibles.map((btn) => (
             <button type="button" 
               key={btn.id}
-              onClick={() => onRutaChange?.(btn.ruta)}
+              onClick={() => navigate(btn.ruta)}
               style={{
                 ...styles.boton,
               }}

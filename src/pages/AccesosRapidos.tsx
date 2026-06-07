@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../lib/supabase';
 
@@ -14,6 +15,7 @@ interface ReqItem {
 const PAGE_SIZE = 10;
 
 export default function AccesosRapidos({ idEstablecimiento }: Props) {
+  const navigate = useNavigate();
   const [lugares, setLugares] = useState<Lugar[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [lugarSel, setLugarSel] = useState('');
@@ -66,15 +68,11 @@ export default function AccesosRapidos({ idEstablecimiento }: Props) {
 
   const equiposFiltrados = equipos.filter(e => !lugarSel || e.id_lugar === lugarSel);
 
-  const irA = (ruta: string) => {
-    window.location.hash = ruta;
-  };
-
   const irTicket = () => {
     const params = new URLSearchParams();
     if (equipoSel) params.set('equipo', equipoSel);
     else if (lugarSel) params.set('lugar', lugarSel);
-    irA(params.toString() ? `/ticket?${params.toString()}` : '/ticket');
+    navigate(params.toString() ? `/ticket?${params.toString()}` : '/ticket');
   };
 
   async function iniciarScanner() {
@@ -114,7 +112,7 @@ export default function AccesosRapidos({ idEstablecimiento }: Props) {
           detenerScanner();
           const match = texto.match(/[?&]c=([^&]+)/);
           const codigo = match ? decodeURIComponent(match[1]) : texto;
-          irA(`/tecnico/qr?c=${encodeURIComponent(codigo)}`);
+          navigate(`/tecnico/qr?c=${encodeURIComponent(codigo)}`);
         },
         () => {},
       );
@@ -215,9 +213,9 @@ export default function AccesosRapidos({ idEstablecimiento }: Props) {
             onChange={e => setCodigoTest(e.target.value)}
             placeholder="O escribe código manualmente"
             style={{ ...sInp, flex: 1, fontSize: 12 }}
-            onKeyDown={e => { if (e.key === 'Enter' && codigoTest.trim()) irA(`/tecnico/qr?c=${encodeURIComponent(codigoTest.trim())}`); }}
+            onKeyDown={e => { if (e.key === 'Enter' && codigoTest.trim()) navigate(`/tecnico/qr?c=${encodeURIComponent(codigoTest.trim())}`); }}
           />
-          <button onClick={() => { if (codigoTest.trim()) irA(`/tecnico/qr?c=${encodeURIComponent(codigoTest.trim())}`); }} style={sBtn}>Ir</button>
+          <button onClick={() => { if (codigoTest.trim()) navigate(`/tecnico/qr?c=${encodeURIComponent(codigoTest.trim())}`); }} style={sBtn}>Ir</button>
         </div>
       </div>
 
@@ -298,7 +296,7 @@ export default function AccesosRapidos({ idEstablecimiento }: Props) {
       </div>
 
       {/* Ver menú principal */}
-      <button onClick={() => irA('/tecnico/menu')} style={{
+      <button onClick={() => navigate('/tecnico/menu')} style={{
         width: '100%', padding: '12px', borderRadius: 10, border: '1px solid #1A3C6B',
         background: '#fff', color: '#1A3C6B', fontSize: 14, fontWeight: 600, cursor: 'pointer',
         marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,

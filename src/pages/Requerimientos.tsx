@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Requerimiento, Equipo, Lugar } from '../types';
 
@@ -9,6 +10,8 @@ const PRIORIDADES = ['Baja','Normal','Alta','Urgente'];
 const ESTADOS = ['Pendiente','En Proceso','Completada','Cancelada'];
 
 export default function Requerimientos({ idEstablecimiento }: Props) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState<(Requerimiento & { equipo_nombre?: string; lugar_nombre?: string })[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [lugares, setLugares] = useState<Lugar[]>([]);
@@ -19,17 +22,8 @@ export default function Requerimientos({ idEstablecimiento }: Props) {
   const [sugFallas, setSugFallas] = useState<string[]>([]);
   const [sugDiags, setSugDiags] = useState<string[]>([]);
   const [sugSols, setSugSols] = useState<string[]>([]);
-  const [filtroEstado, setFiltroEstado] = useState('');
-  const [filtroPrioridad, setFiltroPrioridad] = useState('');
-
-  function parsearHash() {
-    const hash = window.location.hash;
-    const idx = hash.indexOf('?');
-    if (idx === -1) { setFiltroEstado(''); setFiltroPrioridad(''); return; }
-    const params = new URLSearchParams(hash.slice(idx + 1));
-    setFiltroEstado(params.get('estado') || '');
-    setFiltroPrioridad(params.get('prioridad') || '');
-  }
+  const [filtroEstado] = useState(searchParams.get('estado') || '');
+  const [filtroPrioridad] = useState(searchParams.get('prioridad') || '');
 
   async function load() {
     const [rRes, eqRes, lugRes, fRes, dRes, sRes] = await Promise.all([
@@ -50,13 +44,6 @@ export default function Requerimientos({ idEstablecimiento }: Props) {
   }
 
   useEffect(() => { if (idEstablecimiento) load(); }, [idEstablecimiento]);
-
-  useEffect(() => {
-    parsearHash();
-    const handler = () => parsearHash();
-    window.addEventListener('hashchange', handler);
-    return () => window.removeEventListener('hashchange', handler);
-  }, []);
 
   const itemsFiltrados = items.filter(r => {
     if (filtroEstado && r.estado !== filtroEstado) return false;
@@ -187,7 +174,7 @@ export default function Requerimientos({ idEstablecimiento }: Props) {
                     {r.estado === 'Pendiente' && <button onClick={() => cambiarEstado(r.id, 'En Proceso')} style={btnS} title="Iniciar">▶</button>}
                     {r.estado === 'En Proceso' && <button onClick={() => cambiarEstado(r.id, 'Completada')} style={{ ...btnS, background: '#166534' }} title="Completar">✓</button>}
                     {r.estado !== 'Cancelada' && r.estado !== 'Completada' && <button onClick={() => cambiarEstado(r.id, 'Cancelada')} style={btnS} title="Anular">✕</button>}
-                    <button onClick={() => { window.location.hash = `#/ticket?ticket=${r.id}`; }} style={btnS} title="Abrir Ticket">🎫</button>
+                    <button onClick={() => { navigate(`/ticket?ticket=${r.id}`); }} style={btnS} title="Abrir Ticket">🎫</button>
                   </div>
                 </td>
               </tr>

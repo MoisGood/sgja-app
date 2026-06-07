@@ -1,9 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Map, Camera, Monitor, Settings } from 'lucide-react';
-
-const irA = (ruta: string) => {
-  window.location.hash = ruta;
-};
 
 const NAV_ITEMS = [
   { icono: <Home size={20} />, label: 'Inicio', ruta: '/tecnico/m/inicio' },
@@ -14,17 +10,9 @@ const NAV_ITEMS = [
 ];
 
 export default function MobileNavBar() {
-  const [activa, setActiva] = useState('');
-
-  useEffect(() => {
-    const actualizar = () => {
-      const hash = window.location.hash.replace(/^#/, '').split('?')[0];
-      setActiva(hash);
-    };
-    actualizar();
-    window.addEventListener('hashchange', actualizar);
-    return () => window.removeEventListener('hashchange', actualizar);
-  }, []);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activa = location.pathname;
 
   return (
     <nav style={{
@@ -38,7 +26,7 @@ export default function MobileNavBar() {
         return (
           <button
             key={item.ruta}
-            onClick={() => irA(item.ruta)}
+            onClick={() => navigate(item.ruta)}
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               gap: 1, background: 'none', border: 'none', cursor: 'pointer',

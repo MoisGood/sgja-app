@@ -1,13 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useEffect, useState } from 'react';
 
 interface Props { idEstablecimiento?: string }
 
-const irA = (ruta: string) => {
-  window.location.hash = ruta;
-};
-
 export default function MenuTecnico({ idEstablecimiento: _idEst }: Props) {
+  const navigate = useNavigate();
   const [usuario, setUsuario] = useState('');
   const [rol, setRol] = useState('');
 
@@ -48,7 +46,7 @@ export default function MenuTecnico({ idEstablecimiento: _idEst }: Props) {
         {menuItems.map(item => (
           <div
             key={item.ruta}
-            onClick={() => irA(item.ruta)}
+            onClick={() => navigate(item.ruta)}
             style={{
               display: 'flex', alignItems: 'center', gap: 14,
               padding: '14px 16px', borderRadius: 12,
@@ -67,7 +65,7 @@ export default function MenuTecnico({ idEstablecimiento: _idEst }: Props) {
         ))}
       </div>
 
-      <button onClick={() => irA('/tecnico/accesos')} style={{
+      <button onClick={() => navigate('/tecnico/accesos')} style={{
         width: '100%', padding: '12px', borderRadius: 10, border: '1px solid #D1D5DB',
         background: '#F9FAFB', color: '#374151', fontSize: 14, fontWeight: 500, cursor: 'pointer',
         marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,

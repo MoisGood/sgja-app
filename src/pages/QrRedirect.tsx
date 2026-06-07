@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 export default function QrRedirect() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [msg, setMsg] = useState('⏳ Resolviendo código QR…');
 
   useEffect(() => {
-    const hash = window.location.hash.split('?')[1] || '';
-    const params = new URLSearchParams(hash);
-    const codigo = params.get('c');
+    const codigo = searchParams.get('c');
 
     if (!codigo) {
       setMsg('⚠️ No se encontró código QR en la URL. Usa: /#/qr?c=CODIGO');
@@ -25,9 +26,9 @@ export default function QrRedirect() {
 
       if (qr) {
         const destino = qr.tipo === 'lugar'
-          ? `#/ticket?lugar=${qr.id_referencia}`
-          : `#/ticket?equipo=${qr.id_referencia}`;
-        window.location.hash = destino;
+          ? `/ticket?lugar=${qr.id_referencia}`
+          : `/ticket?equipo=${qr.id_referencia}`;
+        navigate(destino);
         return;
       }
 
@@ -40,7 +41,7 @@ export default function QrRedirect() {
         .limit(1);
 
       if (lugares && lugares.length > 0) {
-        window.location.hash = `#/ticket?lugar=${lugares[0].id}`;
+        navigate(`/ticket?lugar=${lugares[0].id}`);
         return;
       }
 

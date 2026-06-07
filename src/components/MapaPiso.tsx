@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, useReducer } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { LUGARES_POR_PISO, type LugarData } from '../data/lugares';
 import QRCode from 'qrcode';
@@ -114,6 +115,7 @@ interface Props {
 }
 
 export default function MapaPiso({ idEstablecimiento, piso: pisoInicial = 1 }: Props) {
+  const navigate = useNavigate();
   const zoomBtnStyle: React.CSSProperties = {
     width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
     borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', color: '#374151',
@@ -1337,7 +1339,7 @@ const [procesoModal, setProcesoModal] = useState<{ lugar: LugarRow; tickets: Req
                         {new Date(ticket.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
                       </span>
                       <div style={{ display: 'flex', gap: 4 }}>
-                        <button onClick={() => { window.location.hash = `#/ticket?ticket=${ticket.id}`; }}
+                        <button onClick={() => { navigate(`/ticket?ticket=${ticket.id}`); }}
                           style={{
                             padding: '4px 10px', borderRadius: 6, border: 'none',
                             background: '#2563eb', color: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600,

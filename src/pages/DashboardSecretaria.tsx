@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { obtenerAusenciasActivas } from '../services/funcionarioAusencias';
 import { handleError } from '../utils/errorHandler';
 
@@ -11,7 +12,6 @@ interface AusenciaRow {
 
 interface Props {
   nombre: string;
-  onNavegar: (ruta: string) => void;
 }
 
 function saludo(): string {
@@ -21,7 +21,8 @@ function saludo(): string {
   return 'Buenas noches';
 }
 
-export default function DashboardSecretaria({ nombre, onNavegar }: Props) {
+export default function DashboardSecretaria({ nombre }: Props) {
+  const navigate = useNavigate();
   const [ausencias, setAusencias] = useState<AusenciaRow[]>([]);
   const [cargando, setCargando] = useState(true);
 
@@ -95,15 +96,15 @@ export default function DashboardSecretaria({ nombre, onNavegar }: Props) {
           Acciones rápidas
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
-          <button type="button" onClick={() => onNavegar('/secretaria/enviar-correo')} style={estiloBotonAccion('#EFF6FF', '#1E40AF')}>
+          <button type="button" onClick={() => navigate('/secretaria/enviar-correo')} style={estiloBotonAccion('#EFF6FF', '#1E40AF')}>
             <span style={{ fontSize: '24px' }}>✉️</span>
             <span>Enviar correo</span>
           </button>
-          <button type="button" onClick={() => onNavegar('/mantenedor-funcionarios')} style={estiloBotonAccion('#F0FDF4', '#166534')}>
+          <button type="button" onClick={() => navigate('/mantenedor-funcionarios')} style={estiloBotonAccion('#F0FDF4', '#166534')}>
             <span style={{ fontSize: '24px' }}>👤</span>
             <span>Personal nuevo / Modificar</span>
           </button>
-          <button type="button" onClick={() => onNavegar('/secretaria/ausentes')} style={estiloBotonAccion('#FFF7ED', '#9A3412')}>
+          <button type="button" onClick={() => navigate('/secretaria/ausentes')} style={estiloBotonAccion('#FFF7ED', '#9A3412')}>
             <span style={{ fontSize: '24px' }}>📋</span>
             <span>Registrar ausente</span>
           </button>
