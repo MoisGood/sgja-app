@@ -9,17 +9,25 @@ interface Props { idEstablecimiento: string }
 const ESTADOS = ['Operativo', 'Con Fallas', 'En Reparación', 'Baja'];
 
 export default function Equipos({ idEstablecimiento }: Props) {
-  const [equipos, setEquipos] = useState<(Equipo & { lugar_nombre?: string })[]>([]);
+  const [equipos, setEquipos] = useState<(Equipo & { lugar_nombre?: string; usuario_nombre?: string })[]>([]);
   const [lugares, setLugares] = useState<Lugar[]>([]);
+  const [usuarios, setUsuarios] = useState<{ id: string; nombre: string; email: string }[]>([]);
   const [cargando, setCargando] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({
     nombre: '', marca: '', modelo: '', tipo_equipo: '', numero_serie: '',
-    cod_inventario: '', estado: 'Operativo' as Equipo['estado'], id_lugar: '',
+    cod_inventario: '', estado: 'Operativo' as Equipo['estado'], id_lugar: '', id_usuario: '',
   });
   const [qrUrl, setQrUrl] = useState('');
   const [qrCargando, setQrCargando] = useState(false);
+  const [busquedaUsuario, setBusquedaUsuario] = useState('');
+  const [usuarioSelNombre, setUsuarioSelNombre] = useState('');
+  const [sugerenciasUsuario, setSugerenciasUsuario] = useState<{ id: string; nombre: string; email: string }[]>([]);
+  const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+  const [modalCrearUsuario, setModalCrearUsuario] = useState(false);
+  const [nuevoUsuarioEmail, setNuevoUsuarioEmail] = useState('');
+  const [creandoUsuario, setCreandoUsuario] = useState(false);
 
   // Scanner
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -27,12 +35,14 @@ export default function Equipos({ idEstablecimiento }: Props) {
   const [scannerError, setScannerError] = useState('');
 
   async function load() {
-    const [eqRes, lugRes] = await Promise.all([
+    const [eqRes, lugRes, usrRes] = await Promise.all([
       supabase.from('equipos').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
       supabase.from('lugares').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
+      supabase.from('usuarios').select('id,nombre,email').eq('id_establecimiento', idEstablecimiento).not('email', 'like', 'eliminado_%@sgja.cl').order('nombre'),
     ]);
     if (eqRes.data) setEquipos(eqRes.data);
     if (lugRes.data) setLugares(lugRes.data);
+    if (usrRes.data) setUsuarios(usrRes.data);
     setCargando(false);
   }
 
@@ -103,6 +113,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
       numero_serie: form.numero_serie || null,
       cod_inventario: form.cod_inventario || null,
       estado: form.estado,
+      id_usuario: form.id_usuario || null,
     };
     if (editId) {
       const oldEquipo = equipos.find(e => e.id === editId);
@@ -145,7 +156,8 @@ export default function Equipos({ idEstablecimiento }: Props) {
     } catch { /* ignore */ }
     setQrCargando(false);
     setShowForm(false); setEditId(null);
-    setForm({ nombre: '', marca: '', modelo: '', tipo_equipo: '', numero_serie: '', cod_inventario: '', estado: 'Operativo', id_lugar: '' });
+    setForm({ nombre: '', marca: '', modelo: '', tipo_equipo: '', numero_serie: '', cod_inventario: '', estado: 'Operativo', id_lugar: '', id_usuario: '' });
+    setBusquedaUsuario(''); setUsuarioSelNombre(''); setMostrarSugerencias(false);
     load();
   }
 
@@ -160,8 +172,11 @@ export default function Equipos({ idEstablecimiento }: Props) {
       nombre: e.nombre, marca: e.marca || '', modelo: e.modelo || '',
       tipo_equipo: e.tipo_equipo || '', numero_serie: e.numero_serie || '',
       cod_inventario: e.cod_inventario || '', estado: e.estado,
-      id_lugar: e.id_lugar || '',
+      id_lugar: e.id_lugar || '', id_usuario: e.id_usuario || '',
     });
+    const usr = usuarios.find(u => u.id === e.id_usuario);
+    setBusquedaUsuario(usr ? usr.nombre : '');
+    setUsuarioSelNombre(usr ? usr.nombre : '');
     setEditId(e.id);
     setQrUrl('');
     setShowForm(true);
@@ -184,8 +199,9 @@ export default function Equipos({ idEstablecimiento }: Props) {
         <h1 style={{ fontSize: 22, fontWeight: 600, color: '#1A3C6B', margin: 0 }}>🖥️ Equipos</h1>
         <button onClick={() => {
           setEditId(null);
-          setForm({ nombre: '', marca: '', modelo: '', tipo_equipo: '', numero_serie: '', cod_inventario: '', estado: 'Operativo', id_lugar: '' });
+          setForm({ nombre: '', marca: '', modelo: '', tipo_equipo: '', numero_serie: '', cod_inventario: '', estado: 'Operativo', id_lugar: '', id_usuario: '' });
           setQrUrl('');
+          setBusquedaUsuario(''); setUsuarioSelNombre(''); setMostrarSugerencias(false);
           setShowForm(true);
         }} style={sBtn}>➕ Nuevo</button>
       </div>
@@ -237,6 +253,54 @@ export default function Equipos({ idEstablecimiento }: Props) {
                 {lugares.map(l => <option key={l.id} value={l.id} disabled={l.soporte === false} style={{ opacity: l.soporte === false ? 0.5 : 1 }}>{l.nombre} (Piso {l.piso}){l.soporte === false ? ' 🔒' : ''}</option>)}
               </select>
             </div>
+            {/* Usuario asignado */}
+            <div style={{ position: 'relative' }}>
+              <label style={sLab}>Usuario asignado</label>
+              <input value={busquedaUsuario}
+                onChange={e => {
+                  setBusquedaUsuario(e.target.value);
+                  setForm({ ...form, id_usuario: '' });
+                  setUsuarioSelNombre('');
+                  if (e.target.value.length >= 1) {
+                    const filtrados = usuarios.filter(u =>
+                      u.nombre.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                      u.email.toLowerCase().includes(e.target.value.toLowerCase())
+                    ).slice(0, 8);
+                    setSugerenciasUsuario(filtrados);
+                    setMostrarSugerencias(true);
+                  } else {
+                    setSugerenciasUsuario([]);
+                    setMostrarSugerencias(false);
+                  }
+                }}
+                onFocus={() => { if (busquedaUsuario.length >= 1 && sugerenciasUsuario.length > 0) setMostrarSugerencias(true); }}
+                onBlur={() => setTimeout(() => setMostrarSugerencias(false), 200)}
+                placeholder="Buscar por nombre o email…"
+                style={{ ...sInp, boxSizing: 'border-box' }} />
+              {mostrarSugerencias && sugerenciasUsuario.length > 0 && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid #475569', borderRadius: 4, zIndex: 10, maxHeight: 200, overflowY: 'auto' }}>
+                  {sugerenciasUsuario.map(u => (
+                    <div key={u.id} onMouseDown={() => { setForm({ ...form, id_usuario: u.id }); setBusquedaUsuario(u.nombre); setUsuarioSelNombre(u.nombre); setMostrarSugerencias(false); }}
+                      style={{ padding: '6px 10px', cursor: 'pointer', fontSize: 13, color: '#f1f5f9', borderBottom: '1px solid #334155' }}>
+                      <div>{u.nombre}</div>
+                      <div style={{ fontSize: 11, color: '#64748b' }}>{u.email}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {mostrarSugerencias && busquedaUsuario.length >= 1 && sugerenciasUsuario.length === 0 && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid #475569', borderRadius: 4, zIndex: 10, padding: 8 }}>
+                  <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 6px' }}>No se encontró el usuario.</p>
+                  <button onMouseDown={() => { setMostrarSugerencias(false); setModalCrearUsuario(true); }}
+                    style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>
+                    + Crear usuario
+                  </button>
+                </div>
+              )}
+              {usuarioSelNombre && !mostrarSugerencias && form.id_usuario && (
+                <p style={{ fontSize: 11, color: '#4ade80', margin: '2px 0 0' }}>✓ {usuarioSelNombre}</p>
+              )}
+            </div>
           </div>
 
           {/* Scanner inline */}
@@ -275,6 +339,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
           <thead>
             <tr style={{ background: '#0f172a', color: '#94a3b8' }}>
               <th style={thS}>Nombre</th>
+              <th style={thS}>Usuario</th>
               <th style={thS}>Cod. Inventario</th>
               <th style={thS}>Marca</th>
               <th style={thS}>Modelo</th>
@@ -289,6 +354,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
             {equipos.map(e => (
               <tr key={e.id} style={{ borderBottom: '1px solid #1e293b' }}>
                 <td style={tdS}>{e.nombre}</td>
+                <td style={{ ...tdS, fontSize: 12 }}>{e.id_usuario ? (usuarios.find(u => u.id === e.id_usuario)?.nombre || '—') : '—'}</td>
                 <td style={tdS}>{e.cod_inventario || '—'}</td>
                 <td style={tdS}>{e.marca || '—'}</td>
                 <td style={tdS}>{e.modelo || '—'}</td>
@@ -302,10 +368,62 @@ export default function Equipos({ idEstablecimiento }: Props) {
                 </td>
               </tr>
             ))}
-            {equipos.length === 0 && <tr><td colSpan={9} style={{ textAlign: 'center', padding: 24, color: '#64748b' }}>Sin equipos registrados</td></tr>}
+            {equipos.length === 0 && <tr><td colSpan={10} style={{ textAlign: 'center', padding: 24, color: '#64748b' }}>Sin equipos registrados</td></tr>}
           </tbody>
         </table>
       </div>
+
+      {/* Modal Crear Usuario */}
+      {modalCrearUsuario && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 12, padding: 24, maxWidth: 400, width: '90%' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600, color: '#f1f5f9' }}>➕ Crear Usuario</h3>
+            <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12 }}>El usuario recibirá un correo para completar su registro.</p>
+            <label style={{ fontSize: 12, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Correo electrónico *</label>
+            <input value={nuevoUsuarioEmail} onChange={e => setNuevoUsuarioEmail(e.target.value)} placeholder="correo@ejemplo.cl"
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#f1f5f9', fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={async () => {
+                if (!nuevoUsuarioEmail.trim()) return;
+                setCreandoUsuario(true);
+                // Guardar sesión actual del admin antes de crear usuario
+                const { data: { session } } = await supabase.auth.getSession();
+                const { data, error } = await supabase.auth.signUp({ email: nuevoUsuarioEmail.trim(), password: Math.random().toString(36).slice(-8) });
+                // Restaurar sesión del admin inmediatamente
+                if (session) {
+                  await supabase.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
+                }
+                if (error) { alert('Error: ' + error.message); setCreandoUsuario(false); return; }
+                const uid = data.user?.id;
+                if (!uid) { alert('Error: no se pudo crear el usuario'); setCreandoUsuario(false); return; }
+                const { error: insertError } = await supabase.from('usuarios').insert({
+                  id: uid, uid, email: nuevoUsuarioEmail.trim(), nombre: nuevoUsuarioEmail.trim().split('@')[0],
+                  id_establecimiento: idEstablecimiento, rol: 'TECNICO', activo: true,
+                });
+                if (insertError) { alert('Error al guardar: ' + insertError.message); setCreandoUsuario(false); return; }
+                setUsuarios(prev => [...prev, { id: uid, nombre: nuevoUsuarioEmail.trim().split('@')[0], email: nuevoUsuarioEmail.trim() }]);
+                setForm({ ...form, id_usuario: uid });
+                setBusquedaUsuario(nuevoUsuarioEmail.trim().split('@')[0]);
+                setUsuarioSelNombre(nuevoUsuarioEmail.trim().split('@')[0]);
+                setModalCrearUsuario(false);
+                setNuevoUsuarioEmail('');
+                setCreandoUsuario(false);
+              }} disabled={creandoUsuario || !nuevoUsuarioEmail.trim()}
+                style={{
+                  flex: 1, padding: '10px', borderRadius: 8, border: 'none',
+                  background: creandoUsuario || !nuevoUsuarioEmail.trim() ? '#334155' : '#2563eb',
+                  color: '#fff', fontSize: 13, fontWeight: 600, cursor: creandoUsuario || !nuevoUsuarioEmail.trim() ? 'not-allowed' : 'pointer',
+                }}>
+                {creandoUsuario ? '⏳ Creando…' : 'Crear usuario'}
+              </button>
+              <button onClick={() => { setModalCrearUsuario(false); setNuevoUsuarioEmail(''); }}
+                style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: 13, cursor: 'pointer' }}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

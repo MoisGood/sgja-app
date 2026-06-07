@@ -69,7 +69,7 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
   const [equiposMap, setEquiposMap] = useState<Record<string, string>>({});
   const [qrModalId, setQrModalId] = useState<string | null>(null);
   const POR_PAGINA = 10;
-  const [paginaDisp, setPaginaDisp] = useState(0);
+  const [letraDisp, setLetraDisp] = useState('');
   const [paginaFallas, setPaginaFallas] = useState(0);
   const [paginaDiag, setPaginaDiag] = useState(0);
   const [paginaSol, setPaginaSol] = useState(0);
@@ -447,34 +447,58 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
               {dispositivos.length === 0 ? (
                 <p style={{ color: '#9CA3AF', fontSize: 13, fontStyle: 'italic', margin: 0 }}>Sin dispositivos registrados.</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {dispositivos.slice(paginaDisp * POR_PAGINA, (paginaDisp + 1) * POR_PAGINA).map(d => (
-                    <div key={d.id} style={itemRowStyle}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <button
-                          onClick={() => toggleInventariable(d)}
-                          title={d.inventariable ? 'Inventariable — clic para cambiar' : 'No inventariable — clic para cambiar'}
-                          style={{
-                            background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: 0, lineHeight: 1,
-                            opacity: d.inventariable ? 1 : 0.5,
-                          }}
-                        >{d.inventariable ? '📦' : '🔌'}</button>
-                        <span style={{ color: '#1F2937', fontSize: 14 }}>{d.nombre}</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <Button tamaño="pequeño" tipo="secundario" onClick={() => { setNombreDisp(d.nombre); setEditId(d.id); }}>
-                          ✏️
-                        </Button>
-                        <Button tamaño="pequeño" tipo="peligro" onClick={() => eliminarDispositivo(d.id)}>
-                          🚫
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <>
+                  {(() => {
+                    const letras = [...new Set(dispositivos.map(d => d.nombre.charAt(0).toUpperCase()))].sort();
+                    const filtrados = letraDisp ? dispositivos.filter(d => d.nombre.toUpperCase().startsWith(letraDisp)) : dispositivos;
+                    return (
+                      <>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+                          <button onClick={() => setLetraDisp('')} style={{
+                            padding: '4px 8px', borderRadius: 6, border: '1px solid #475569', fontSize: 12,
+                            background: !letraDisp ? '#2563eb' : '#1e293b', color: !letraDisp ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 600,
+                          }}>Todas</button>
+                          {letras.map(l => (
+                            <button key={l} onClick={() => setLetraDisp(l)} style={{
+                              padding: '4px 8px', borderRadius: 6, border: '1px solid #475569', fontSize: 12,
+                              background: letraDisp === l ? '#2563eb' : '#1e293b', color: letraDisp === l ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 600,
+                            }}>{l}</button>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {filtrados.map(d => (
+                            <div key={d.id} style={itemRowStyle}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <button
+                                  onClick={() => toggleInventariable(d)}
+                                  title={d.inventariable ? 'Inventariable — clic para cambiar' : 'No inventariable — clic para cambiar'}
+                                  style={{
+                                    background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: 0, lineHeight: 1,
+                                    opacity: d.inventariable ? 1 : 0.5,
+                                  }}
+                                >{d.inventariable ? '📦' : '🔌'}</button>
+                                <span style={{ color: '#1F2937', fontSize: 14 }}>{d.nombre}</span>
+                              </div>
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                <Button tamaño="pequeño" tipo="secundario" onClick={() => { setNombreDisp(d.nombre); setEditId(d.id); }}>
+                                  ✏️
+                                </Button>
+                                <Button tamaño="pequeño" tipo="peligro" onClick={() => eliminarDispositivo(d.id)}>
+                                  🚫
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                          {filtrados.length === 0 && (
+                            <p style={{ color: '#9CA3AF', fontSize: 13, fontStyle: 'italic', margin: 0 }}>Sin dispositivos para la letra {letraDisp}.</p>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </>
               )}
             </div>
-            <Paginador total={dispositivos.length} pagina={paginaDisp} setPagina={setPaginaDisp} />
           </Card>
         )}
 

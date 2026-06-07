@@ -16,13 +16,12 @@ import { usePermisosUsuario } from '../hooks/usePermisosUsuario';
 import DatosPersonalesModal from './DatosPersonalesModal';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { Wrench, UserX, Map, Monitor, Building2, ExternalLink } from 'lucide-react';
+import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen } from 'lucide-react';
 import {
   LayoutDashboard,
   ClipboardList,
   Users,
   BookOpen,
-  Calendar,
   Settings,
   Shield,
   Mail,
@@ -117,18 +116,11 @@ const MENU_ITEMS: MenuItem[] = [
     roles: [Rol.ADMIN, Rol.PROFESOR],
     submenu: [
       { icono: <Users size={20}/>, etiqueta: 'En línea', ruta: '/en-linea', roles: [Rol.ADMIN] },
-      { icono: <Users size={20}/>, etiqueta: 'Gestión Usuarios', ruta: '/gestion-usuarios', roles: [Rol.ADMIN, Rol.PROFESOR] },
-      { icono: <Users size={20}/>, etiqueta: 'Mantenedor Estudiantes', ruta: '/mantenedor-estudiantes', roles: [Rol.ADMIN] },
-      { icono: <Users size={20}/>, etiqueta: 'Mantenedor de Roles', ruta: '/mantenedor-roles', roles: [Rol.ADMIN] },
-      { icono: <ClipboardList size={20}/>, etiqueta: 'Motivos de Justificación', ruta: '/mantenedor-motivos', roles: [Rol.ADMIN] },
-      { icono: <Building2 size={20}/>, etiqueta: 'Mantenedor Establecimiento', ruta: '/mantenedor-establecimiento', roles: [Rol.ADMIN] },
-      { icono: <Settings size={20}/>, etiqueta: 'Sistema', ruta: '/sistema', roles: [Rol.ADMIN] },
+      { icono: <Users size={20}/>, etiqueta: 'Usuarios', ruta: '/gestion', roles: [Rol.ADMIN, Rol.PROFESOR] },
+      { icono: <FolderOpen size={20}/>, etiqueta: 'Mantenedores', ruta: '/mantenedores', roles: [Rol.ADMIN] },
       { icono: <Settings size={20}/>, etiqueta: 'Parámetros',    ruta: '/parametros',       roles: [Rol.ADMIN] },
       { icono: <Shield size={20}/>, etiqueta: 'Asignar Accesos', ruta: '/asignar-permisos', roles: [Rol.ADMIN] },
-      { icono: <Calendar size={20}/>, etiqueta: 'Bloques Horarios', ruta: '/bloque-horario', roles: [Rol.ADMIN] },
-      { icono: <Users size={20}/>, etiqueta: 'Solicitudes de Registro', ruta: '/solicitudes-registro', roles: [Rol.ADMIN] },
       { icono: <Mail size={20}/>, etiqueta: 'Correos', ruta: '/correos', roles: [Rol.ADMIN] },
-      { icono: <Settings size={20}/>, etiqueta: 'Sistema', ruta: '/config-sistema', roles: [Rol.ADMIN] },
     ]
   } 
 ];

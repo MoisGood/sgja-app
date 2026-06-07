@@ -4,6 +4,7 @@ import {
   crearUsuarioConAutenticacion,
   actualizarUsuario,
   eliminarUsuario,
+  eliminarUsuarioPermanente,
   obtenerDatosPersonalesPorUid,
   guardarDatosPersonales,
   obtenerTodosLosEstablecimientos,
@@ -64,6 +65,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
   // Modal de Eliminar
   const [modalEliminar, setModalEliminar] = useState(false);
   const [usuarioEliminar, setUsuarioEliminar] = useState<Usuario | null>(null);
+  const [motivoEliminar, setMotivoEliminar] = useState('');
 
   // Modal de Datos Personales
   const [modalDatosPersonales, setModalDatosPersonales] = useState(false);
@@ -276,12 +278,14 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
 
   const abrirModalEliminar = (usuario: Usuario) => {
     setUsuarioEliminar(usuario);
+    setMotivoEliminar('');
     setModalEliminar(true);
   };
 
   const cerrarModalEliminar = () => {
     setModalEliminar(false);
     setUsuarioEliminar(null);
+    setMotivoEliminar('');
   };
 
   const confirmarEliminar = async () => {
@@ -291,7 +295,12 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       setGuardando(true);
       setError(null);
 
-      await eliminarUsuario(usuarioEliminar.id_usuario);
+      if (!usuarioEliminar.activo) {
+        if (!motivoEliminar.trim()) { setError('Debes ingresar un motivo para la eliminación permanente.'); setGuardando(false); return; }
+        await eliminarUsuarioPermanente(usuarioEliminar.id_usuario, motivoEliminar.trim());
+      } else {
+        await eliminarUsuario(usuarioEliminar.id_usuario);
+      }
       await cargarUsuarios();
       cerrarModalEliminar();
     } catch (err) {
@@ -736,17 +745,44 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       {/* MODAL: Eliminar Usuario */}
       <Modal
         abierto={modalEliminar}
-        titulo="⚠️ Eliminar Usuario"
+        titulo={usuarioEliminar?.activo === false ? '⚠️ Eliminar Permanentemente' : '⚠️ Desactivar Usuario'}
         onCerrar={cerrarModalEliminar}
       >
         <div style={styles.formulario}>
-          <p style={styles.advertenciaTexto}>
-            ¿Estás seguro de que deseas eliminar a{' '}
-            <strong>{usuarioEliminar?.nombre_completo}</strong>?
-          </p>
-          <p style={styles.advertenciaSubtexto}>
-            Esta acción desactivará la cuenta del usuario.
-          </p>
+          {usuarioEliminar?.activo === false ? (
+            <>
+              <p style={styles.advertenciaTexto}>
+                ¿Eliminar permanentemente a <strong>{usuarioEliminar?.nombre_completo}</strong>?
+              </p>
+              <p style={styles.advertenciaSubtexto}>
+                Se borrarán todos sus registros (usuarios, funcionarios, datos personales). No se podrá recuperar.
+              </p>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 6 }}>Motivo de eliminación *</label>
+                <textarea
+                  value={motivoEliminar}
+                  onChange={e => setMotivoEliminar(e.target.value)}
+                  placeholder="Indica el motivo por el que se elimina este usuario…"
+                  rows={3}
+                  style={{
+                    width: '100%', padding: '10px 12px', border: '1px solid #D1D5DB',
+                    borderRadius: 6, fontSize: 14, boxSizing: 'border-box', resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <p style={styles.advertenciaTexto}>
+                ¿Estás seguro de que deseas desactivar a{' '}
+                <strong>{usuarioEliminar?.nombre_completo}</strong>?
+              </p>
+              <p style={styles.advertenciaSubtexto}>
+                El usuario quedará inactivo y no podrá acceder al sistema.
+              </p>
+            </>
+          )}
 
           {error && <p style={styles.errorTextoModal}>{error}</p>}
 
@@ -761,10 +797,10 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
             <Button
               onClick={confirmarEliminar}
               tipo="peligro"
-              deshabilitado={guardando}
+              deshabilitado={guardando || (usuarioEliminar?.activo === false && !motivoEliminar.trim())}
               cargando={guardando}
             >
-              {guardando ? '⏳ Eliminando...' : '🗑️ Eliminar'}
+              {guardando ? '⏳ Eliminando...' : usuarioEliminar?.activo === false ? '🗑️ Eliminar Permanentemente' : '🗑️ Desactivar'}
             </Button>
           </div>
         </div>

@@ -51,7 +51,7 @@ const JERARQUIA: GrupoPaginas[] = [
   },
   {
     titulo: 'Configuración',
-    rutas: ['/configuracion', '/en-linea', '/gestion-usuarios', '/mantenedor-estudiantes', '/mantenedor-roles', '/mantenedor-motivos', '/solicitudes-registro', '/parametros', '/asignar-permisos', '/bloque-horario', '/reportes', '/mantenedor-cursos', '/correos', '/sistema'],
+    rutas: ['/configuracion', '/en-linea', '/gestion-usuarios', '/mantenedor-estudiantes', '/mantenedor-roles', '/mantenedor-motivos', '/solicitudes-registro', '/parametros', '/asignar-permisos', '/bloque-horario', '/reportes', '/mantenedor-cursos', '/correos', '/mantenedor-establecimiento'],
   },
 ];
 

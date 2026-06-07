@@ -371,6 +371,7 @@ export interface Equipo {
   id: string;
   id_establecimiento: string;
   id_lugar?: string;
+  id_usuario?: string;
   nombre: string;
   marca?: string;
   modelo?: string;

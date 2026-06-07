@@ -12,10 +12,12 @@ interface Props {
 }
 
 const OPCIONES_ROL = [
+  { valor: Rol.ADMIN, etiqueta: 'Administrador' },
   { valor: Rol.INSPECTOR, etiqueta: 'Inspector' },
   { valor: Rol.PROFESOR, etiqueta: 'Profesor' },
   { valor: Rol.ESTUDIANTE, etiqueta: 'Estudiante' },
   { valor: Rol.APODERADO, etiqueta: 'Apoderado' },
+  { valor: 'TECNICO', etiqueta: 'Técnico' },
 ];
 
 const ESTADO_COLOR: Record<string, string> = {

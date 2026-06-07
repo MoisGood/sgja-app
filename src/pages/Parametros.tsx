@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import { obtenerParametrosDelEstablecimiento, actualizarParametros, crearParametros } from '../services/database';
 import type { Parametros as ParametrosType } from '../services/database';
+import MantenimientoConfig from './MantenimientoConfig';
+import MantenedorSistema from './MantenedorSistema';
 
 interface Props {
   idEstablecimiento: string;
@@ -20,7 +22,7 @@ export default function Parametros({ idEstablecimiento }: Props) {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [exito, setExito] = useState(false);
-  const [tabActivo, setTabActivo] = useState<'tiempo' | 'tema'>('tiempo');
+  const [tabActivo, setTabActivo] = useState<'tiempo' | 'tema' | 'mantenimiento' | 'sistema'>('tiempo');
 
   useEffect(() => {
     cargarParametros();
@@ -234,14 +236,30 @@ export default function Parametros({ idEstablecimiento }: Props) {
           <button type="button" 
             onClick={() => setTabActivo('tiempo')}
             style={estilo.tab(tabActivo === 'tiempo')}
+            title="Tiempo de Inactividad"
           >
-            <span>🕐</span> Tiempo
+            <span>🕐</span>
           </button>
           <button type="button" 
             onClick={() => setTabActivo('tema')}
             style={estilo.tab(tabActivo === 'tema')}
+            title="Tema"
           >
-            <span>☀️</span> Tema
+            <span>☀️</span>
+          </button>
+          <button type="button" 
+            onClick={() => setTabActivo('mantenimiento')}
+            style={estilo.tab(tabActivo === 'mantenimiento')}
+            title="Mantenimiento"
+          >
+            <span>🔧</span>
+          </button>
+          <button type="button" 
+            onClick={() => setTabActivo('sistema')}
+            style={estilo.tab(tabActivo === 'sistema')}
+            title="Datos del Sistema"
+          >
+            <span>⚙️</span>
           </button>
         </div>
 
@@ -433,6 +451,16 @@ export default function Parametros({ idEstablecimiento }: Props) {
               </ul>
             </div>
           </div>
+        )}
+
+        {/* Tab Mantenimiento */}
+        {tabActivo === 'mantenimiento' && (
+          <MantenimientoConfig idEstablecimiento={idEstablecimiento} />
+        )}
+
+        {/* Tab Datos del Sistema */}
+        {tabActivo === 'sistema' && (
+          <MantenedorSistema />
         )}
 
         {/* Información de debug */}

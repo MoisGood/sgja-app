@@ -133,6 +133,8 @@ export function useAuth(): AuthState {
         }
 
         if (!userData.activo) {
+          // Verificar si ya existe una solicitud de registro pendiente
+          const solicitudExistente = await obtenerSolicitudPorUid(user.id);
           
           setState({
             uid: user.id,
@@ -140,10 +142,10 @@ export function useAuth(): AuthState {
             idEstablecimiento: userData.id_establecimiento,
             nombre: userData.nombre,
             apellidos: userData.apellidos,
-            email: userData.email || userEmail,
+            email: userEmail || userData.email || '',
             cargando: false,
             autorizado: false,
-            documentoExiste: true,
+            documentoExiste: !!solicitudExistente,
             usuarioInactivo: true,
             datosPendientes: false,
             mantenimientoBloqueo: false,
@@ -161,7 +163,7 @@ export function useAuth(): AuthState {
               idEstablecimiento: userData.id_establecimiento,
               nombre: userData.nombre,
               apellidos: userData.apellidos,
-              email: userData.email || userEmail,
+            email: userEmail || userData.email || '',
               cargando: false,
               autorizado: false,
               documentoExiste: true,

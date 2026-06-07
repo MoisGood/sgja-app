@@ -6,8 +6,7 @@
 import { useAuth } from './hooks/useAuth';
 import { useInactivityWarning } from './hooks/useInactivityWarning';
 import { usePermisosUsuario } from './hooks/usePermisosUsuario';
-import { useState, lazy, Suspense, useEffect, useRef, useCallback } from 'react';
-import ChunkErrorBoundary from './components/ChunkErrorBoundary';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from './lib/supabase';
 import { Rol } from './types';
 import Login from './pages/Login';
@@ -17,34 +16,28 @@ import DashboardInspector from './pages/DashboardInspector';
 import DashboardProfesor from './pages/DashboardProfesor';
 import DashboardEstudiante from './pages/DashboardEstudiante';
 import DashboardApoderado from './pages/DashboardApoderado';
-import GestionUsuarios from './pages/GestionUsuarios';
+import GestionUsuariosPage from './pages/GestionUsuariosPage';
+import Mantenedores from './pages/Mantenedores';
 import RegistrarJustificacion from './pages/RegistrarJustificacion';
 import VerJustificaciones from './pages/VerJustificaciones';
-import MantenedorMotivos from './pages/MantenedorMotivos';
 import GestionPases from './pages/GestionPases';
 import JustificacionesAtrasos from './pages/JustificacionesAtrasos';
 import Parametros from './pages/Parametros';
 import EnLinea from './pages/EnLinea';
 import Seguridad from './pages/Seguridad';
-import BloqueHorario from './pages/BloqueHorario';
 import AsignarPermisos from './pages/AsignarPermisos';
-import MantenedorRolesPage from './pages/MantenedorRolesPage';
-import Reportes from './pages/Reportes';
-import MantenedorCursos from './pages/MantenedorCursos';
-import MantenedorFuncionarios from './pages/MantenedorFuncionarios';
-import SecretariaAusentes from './pages/SecretariaAusentes';
 import DashboardSecretaria from './pages/DashboardSecretaria';
+import SecretariaAusentes from './pages/SecretariaAusentes';
 import EnviarCorreo from './pages/EnviarCorreo';
+import MantenedorFuncionarios from './pages/MantenedorFuncionarios';
 import FormularioRegistroInicial from './pages/FormularioRegistroInicial';
 import FormularioDatosPersonales from './pages/FormularioDatosPersonales';
-import SolicitudesRegistro from './pages/SolicitudesRegistro';
 import MantenedorLibros from './pages/MantenedorLibros';
 import Catalogo from './pages/Catalogo';
 import Circulacion from './pages/Circulacion';
-import Inventario from './pages/Inventario';
-import HistorialBiblioteca from './pages/HistorialBiblioteca';
 import ConfigBiblioteca from './pages/ConfigBiblioteca';
-import Correos from './pages/Correos';
+import HistorialBiblioteca from './pages/HistorialBiblioteca';
+import Inventario from './pages/Inventario';
 import MonitoreoCorreos from './pages/MonitoreoCorreos';
 import MonitoreoFallos from './pages/MonitoreoFallos';
 import MantenimientoConfig from './pages/MantenimientoConfig';
@@ -65,10 +58,6 @@ import MobileQrScanner from './pages/MobileQrScanner';
 import MobileNavBar from './components/MobileNavBar';
 import QrRedirect from './pages/QrRedirect';
 import Configurar2FA from './pages/Configurar2FA';
-import MantenedorEstablecimiento from './pages/MantenedorEstablecimiento';
-import MantenedorSistema from './pages/MantenedorSistema';
-
-const MantenedorEstudiantes = lazy(() => import('./pages/MantenedorEstudiantes'));
 
 export default function AppContent() {
   const { uid, rol, idEstablecimiento, cargando, autorizado, usuarioInactivo, documentoExiste, nombre, apellidos, email, datosPendientes, mantenimientoBloqueo, mttoHorario } = useAuth();
@@ -94,6 +83,13 @@ export default function AppContent() {
   const [cargandoMfa, setCargandoMfa] = useState(true);
   const [otraPestanaAbierta, setOtraPestanaAbierta] = useState(false);
   const [kickedByAdmin, setKickedByAdmin] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const s = document.createElement('style');
@@ -433,14 +429,22 @@ export default function AppContent() {
     switch (rutaActiva) {
       case '/secretaria':
         return <DashboardSecretaria nombre={nombre || 'Usuario'} onNavegar={setRutaActiva} />;
+      case '/secretaria/ausentes':
+        return puedeVer('/secretaria', 'ADMIN') ? <SecretariaAusentes /> : null;
+      case '/secretaria/enviar-correo':
+        return puedeVer('/secretaria', 'ADMIN') ? <EnviarCorreo idEstablecimiento={estab} /> : null;
+      case '/mantenedor-funcionarios':
+        return puedeVer('/mantenedor-funcionarios', 'ADMIN') ? <MantenedorFuncionarios /> : null;
       case '/gestion-usuarios':
-        return puedeVer('/gestion-usuarios', 'ADMIN') ? <GestionUsuarios idEstablecimiento={estab} /> : null;
+        return puedeVer('/gestion-usuarios', 'ADMIN') ? <GestionUsuariosPage idEstablecimiento={estab} /> : null;
+      case '/gestion':
+        return puedeVer('/gestion', 'ADMIN') ? <GestionUsuariosPage idEstablecimiento={estab} /> : null;
+      case '/mantenedores':
+        return puedeVer('/mantenedores', 'ADMIN') ? <Mantenedores idEstablecimiento={estab} /> : null;
       case '/registrar':
         return (rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <RegistrarJustificacion idEstablecimiento={estab} idUsuario={user} /> : null;
       case '/ver-justificaciones':
         return (rol === 'ADMIN' || rol === 'INSPECTOR') ? <VerJustificaciones idEstablecimiento={estab} rol={rol} idUsuario={user} /> : null;
-      case '/mantenedor-motivos':
-        return puedeVer('/mantenedor-motivos', 'ADMIN') ? <MantenedorMotivos idEstablecimiento={estab} /> : null;
       case '/gestion-pases':
         return (rol === 'ADMIN' || rol === 'PROFESOR' || rol === 'INSPECTOR') ? <GestionPases idEstablecimiento={estab} rol={rol} idUsuarioActual={user} /> : null;
       case '/justificaciones':
@@ -453,45 +457,8 @@ export default function AppContent() {
         return puedeVer('/seguridad', 'ADMIN') ? <Seguridad /> : null;
       case '/configurar-2fa':
         return <Configurar2FA />;
-      case '/bloque-horario':
-        return puedeVer('/bloque-horario', 'ADMIN') ? <BloqueHorario idEstablecimiento={estab} /> : null;
       case '/asignar-permisos':
         return puedeVer('/asignar-permisos', 'ADMIN') ? <AsignarPermisos idEstablecimiento={estab} /> : null;
-      case '/mantenedor-roles':
-        return puedeVer('/mantenedor-roles', 'ADMIN') ? <MantenedorRolesPage idEstablecimiento={estab} /> : null;
-      case '/mantenedor-establecimiento':
-        return puedeVer('/mantenedor-establecimiento', 'ADMIN') ? <MantenedorEstablecimiento idEstablecimiento={estab} /> : null;
-      case '/reportes':
-        return puedeVer('/reportes', 'ADMIN') ? <Reportes idEstablecimiento={estab} /> : null;
-      case '/mantenedor-estudiantes':
-        return puedeVer('/mantenedor-estudiantes', 'ADMIN') ? (
-          <ChunkErrorBoundary>
-            <Suspense fallback={<div style={styles.textoCarga}>Cargando mantenedor...</div>}>
-              <MantenedorEstudiantes idEstablecimiento={estab} />
-            </Suspense>
-          </ChunkErrorBoundary>
-        ) : null;
-      case '/mantenedor-cursos':
-        return puedeVer('/mantenedor-cursos', 'ADMIN') ? <MantenedorCursos /> : null;
-      case '/mantenedor-funcionarios':
-        return puedeVer('/mantenedor-funcionarios', 'ADMIN') ? <MantenedorFuncionarios /> : null;
-      case '/secretaria/ausentes':
-        return puedeVer('/secretaria/ausentes', 'ADMIN') ? <SecretariaAusentes /> : null;
-      case '/secretaria/enviar-correo':
-        return puedeVer('/secretaria/enviar-correo', 'ADMIN') ? <EnviarCorreo idEstablecimiento={estab} /> : null;
-
-      case '/solicitudes-registro':
-        return puedeVer('/solicitudes-registro', 'ADMIN') ? <SolicitudesRegistro idEstablecimiento={estab} /> : null;
-      case '/prestamos':
-        return puedeVer('/prestamos', 'ADMIN') ? <Circulacion idEstablecimiento={estab} usuarioId={uid || ''} /> : null;
-      case '/historial-biblioteca':
-        return puedeVer('/historial-biblioteca', 'ADMIN') ? <HistorialBiblioteca idEstablecimiento={estab} /> : null;
-      case '/config-biblioteca':
-        return puedeVer('/config-biblioteca', 'ADMIN') ? <ConfigBiblioteca idEstablecimiento={estab} /> : null;
-      case '/correos':
-        return puedeVer('/correos', 'ADMIN') ? <Correos idEstablecimiento={estab} /> : null;
-      case '/config-sistema':
-        return puedeVer('/config-sistema', 'ADMIN') ? <MantenedorSistema /> : null;
       case '/sistema':
         return puedeVer('/sistema', 'ADMIN') ? <MantenimientoConfig idEstablecimiento={estab} /> : null;
       case '/monitoreo-correos':
@@ -502,6 +469,14 @@ export default function AppContent() {
         return puedeVer('/libros', 'ADMIN') ? <MantenedorLibros idEstablecimiento={estab} /> : null;
       case '/catalogo':
         return puedeVer('/catalogo', 'ADMIN') ? <Catalogo idEstablecimiento={estab} /> : null;
+      case '/biblioteca':
+        return puedeVer('/biblioteca', 'ADMIN') ? <Catalogo idEstablecimiento={estab} /> : null;
+      case '/prestamos':
+        return puedeVer('/prestamos', 'ADMIN') ? <Circulacion idEstablecimiento={estab} usuarioId={uid || ''} /> : null;
+      case '/historial-biblioteca':
+        return puedeVer('/historial-biblioteca', 'ADMIN') ? <HistorialBiblioteca idEstablecimiento={estab} /> : null;
+      case '/config-biblioteca':
+        return puedeVer('/config-biblioteca', 'ADMIN') ? <ConfigBiblioteca idEstablecimiento={estab} /> : null;
       case '/inventario':
         return puedeVer('/inventario', 'ADMIN') ? <Inventario idEstablecimiento={estab} /> : null;
       case '/tecnico/qr':
@@ -707,7 +682,7 @@ export default function AppContent() {
         idEstablecimiento={idEstablecimiento}
       >
         {renderizarDashboard()}
-        {rutaActiva.startsWith('/tecnico/m/') && <MobileNavBar />}
+        {isMobile && rutaActiva.startsWith('/tecnico/m/') && <MobileNavBar />}
       </Layout>
     </>
   );

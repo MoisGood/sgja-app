@@ -56,78 +56,17 @@ export async function obtenerUsuario(uid: string): Promise<Usuario | null> {
       .eq('id', uid)
       .single();
 
-    if (error && error.code === 'PGRST116') return null;
     if (error) throw error;
-    return data ? { ...data, id_usuario: data.id, uid: data.uid, nombre_completo: data.nombre || '', apellidos: data.apellidos || '' } : null;
+    if (!data) return null;
+    return {
+      ...data,
+      id_usuario: data.id,
+      uid: data.uid,
+      nombre_completo: data.nombre || '',
+      apellidos: data.apellidos || '',
+    };
   } catch (error) {
     console.error('Error al obtener usuario:', error);
-    throw error;
-  }
-}
-
-export async function obtenerUsuariosDelEstablecimiento(
-  idEstablecimiento: string
-): Promise<Usuario[]> {
-  try {
-    const { data, error } = await supabase
-      .from('usuarios')
-      .select('*')
-      .eq('id_establecimiento', idEstablecimiento)
-      .eq('activo', true);
-
-    if (error) throw error;
-    return (data || []).map(u => ({ ...u, id_usuario: u.id, uid: u.uid, nombre_completo: u.nombre || '', apellidos: u.apellidos || '' }));
-  } catch (error) {
-    console.error('Error al obtener usuarios del establecimiento:', error);
-    throw error;
-  }
-}
-
-export async function obtenerTodosLosUsuarios(): Promise<Usuario[]> {
-  const cacheKey = 'todos_usuarios';
-  const cached = getCache<Usuario[]>(cacheKey);
-  if (cached) return cached;
-  try {
-    const { data, error } = await supabase
-      .from('usuarios')
-      .select('*')
-      .order('nombre');
-
-    if (error) throw error;
-    const result = (data || []).map(u => ({
-      ...u,
-      id_usuario: u.id,
-      uid: u.uid,
-      nombre_completo: u.nombre || '',
-      apellidos: u.apellidos || '',
-    }));
-    setCache(cacheKey, result);
-    return result;
-  } catch (error) {
-    console.error('Error al obtener todos los usuarios:', error);
-    throw error;
-  }
-}
-
-export async function obtenerUsuariosDelEstablecimientoTodos(
-  idEstablecimiento: string
-): Promise<Usuario[]> {
-  try {
-    const { data, error } = await supabase
-      .from('usuarios')
-      .select('*')
-      .eq('id_establecimiento', idEstablecimiento);
-
-    if (error) throw error;
-    return (data || []).map(u => ({
-      ...u,
-      id_usuario: u.id,
-      uid: u.uid,
-      nombre_completo: u.nombre || '',
-      apellidos: u.apellidos || '',
-    }));
-  } catch (error) {
-    console.error('Error al obtener todos los usuarios del establecimiento:', error);
     throw error;
   }
 }
@@ -147,6 +86,33 @@ export async function obtenerProfesoresDelEstablecimiento(
     return (data || []).map(u => ({ ...u, id_usuario: u.id, uid: u.uid, nombre_completo: u.nombre || '', apellidos: u.apellidos || '' }));
   } catch (error) {
     console.error('Error al obtener profesores:', error);
+    throw error;
+  }
+}
+
+export async function obtenerTodosLosUsuarios(): Promise<Usuario[]> {
+  const cacheKey = 'todos_usuarios';
+  const cached = getCache<Usuario[]>(cacheKey);
+  if (cached) return cached;
+  try {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .not('email', 'like', 'eliminado_%@sgja.cl')
+      .order('nombre');
+
+    if (error) throw error;
+    const result = (data || []).map(u => ({
+      ...u,
+      id_usuario: u.id,
+      uid: u.uid,
+      nombre_completo: u.nombre || '',
+      apellidos: u.apellidos || '',
+    }));
+    setCache(cacheKey, result);
+    return result;
+  } catch (error) {
+    console.error('Error al obtener todos los usuarios:', error);
     throw error;
   }
 }
@@ -250,7 +216,74 @@ export async function eliminarUsuario(uid: string): Promise<void> {
 
     if (error) throw error;
   } catch (error) {
-    console.error('Error al eliminar usuario:', error);
+    console.error('Error al desactivar usuario:', error);
+    throw error;
+  }
+}
+
+export async function eliminarUsuarioPermanente(
+  idUsuario: string,
+  motivo: string
+): Promise<void> {
+  try {
+    // Obtener datos del usuario
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('*')
+      .eq('id', idUsuario)
+      .single();
+    if (!usuario) throw new Error('Usuario no encontrado');
+
+    // Obtener datos del funcionario (si existe)
+    const { data: funcionario } = await supabase
+      .from('funcionarios')
+      .select('*')
+      .eq('id_usuario', idUsuario)
+      .maybeSingle();
+
+    // Obtener datos personales (si existe)
+    const { data: datosPersonales } = await supabase
+      .from('datospersonalesusuarios')
+      .select('*')
+      .eq('uid', usuario.uid || idUsuario)
+      .maybeSingle();
+
+    // Insertar en usuarios_eliminados
+    const { error: insertError } = await supabase
+      .from('usuarios_eliminados')
+      .insert({
+        id_usuario: idUsuario,
+        uid: usuario.uid,
+        email: usuario.email,
+        nombre: usuario.nombre,
+        rut: funcionario?.rut || null,
+        motivo,
+        respaldo_usuarios: usuario,
+        respaldo_funcionarios: funcionario,
+        respaldo_datospersonales: datosPersonales,
+      });
+
+    if (insertError) throw insertError;
+
+    // Eliminar de funcionarios y datos personales (no tienen FKs que apunten a ellos)
+    if (funcionario) {
+      await supabase.from('funcionarios').delete().eq('id_usuario', idUsuario);
+    }
+    if (datosPersonales) {
+      await supabase.from('datospersonalesusuarios').delete().eq('uid', usuario.uid || idUsuario);
+    }
+
+    // Desactivar y limpiar datos sensibles en usuarios (no se elimina por FKs)
+    const { error: updateError } = await supabase
+      .from('usuarios')
+      .update({
+        activo: false,
+      })
+      .eq('id', idUsuario);
+
+    if (updateError) throw updateError;
+  } catch (error) {
+    console.error('Error al eliminar usuario permanentemente:', error);
     throw error;
   }
 }
@@ -262,7 +295,8 @@ export async function obtenerUsuariosPorEstablecimientoTodos(
     const { data, error } = await supabase
       .from('usuarios')
       .select('*')
-      .eq('id_establecimiento', idEstablecimiento);
+      .eq('id_establecimiento', idEstablecimiento)
+      .not('email', 'like', 'eliminado_%@sgja.cl');
 
     if (error) throw error;
     return (data || []).map(u => ({ ...u, id_usuario: u.id, uid: u.uid, nombre_completo: u.nombre || '', apellidos: u.apellidos || '' }));
@@ -1660,12 +1694,13 @@ export async function obtenerSolicitudPorUid(uid: string): Promise<SolicitudRegi
       .from('solicitudes_registro')
       .select('*')
       .eq('uid', uid)
+      .eq('estado', 'pendiente')
       .order('id_solicitud', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error) return null;
-    return data as SolicitudRegistro;
+    return data as SolicitudRegistro | null;
   } catch (error) {
     return null;
   }
@@ -1700,19 +1735,74 @@ export async function aprobarSolicitud(
 
     if (errSolicitud || !solicitud) return { error: 'Solicitud no encontrada' };
 
-    const { error: errInsert } = await supabase
-      .from('usuarios')
-      .insert([{
-        id: uid,
-        uid: uid,
-        email: solicitud.correo,
-        nombre: solicitud.nombre,
-        apellidos: solicitud.apellidos,
-        rol,
-        activo: true,
-      }]);
+    // Obtener respaldo de eliminación si existe
+    const { data: respaldo } = await supabase
+      .from('usuarios_eliminados')
+      .select('*')
+      .eq('id_usuario', uid)
+      .maybeSingle();
 
-    if (errInsert) return { error: errInsert.message };
+    const emailOriginal = (respaldo?.respaldo_usuarios as any)?.email || solicitud.correo;
+    const nombreOriginal = (respaldo?.respaldo_usuarios as any)?.nombre || solicitud.nombre;
+
+    // Verificar si el usuario ya existe (re-registro)
+    const { data: existente } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('id', uid)
+      .maybeSingle();
+
+    if (existente) {
+      const { error: errUpdateUser } = await supabase
+        .from('usuarios')
+        .update({
+          email: emailOriginal,
+          nombre: nombreOriginal,
+          apellidos: solicitud.apellidos,
+          rol,
+          activo: true,
+        })
+        .eq('id', uid);
+
+      if (errUpdateUser) return { error: errUpdateUser.message };
+    } else {
+      // Nuevo usuario
+      const { error: errInsert } = await supabase
+        .from('usuarios')
+        .insert([{
+          id: uid,
+          uid,
+          email: solicitud.correo,
+          nombre: solicitud.nombre,
+          apellidos: solicitud.apellidos,
+          rol,
+          activo: true,
+        }]);
+
+      if (errInsert) return { error: errInsert.message };
+    }
+
+    // Restaurar datos personales desde usuarios_eliminados si existe respaldo
+    if (respaldo?.respaldo_funcionarios) {
+      const funcData = respaldo.respaldo_funcionarios as any;
+      const { data: usuario } = await supabase.from('usuarios').select('id').eq('id', uid).single();
+      if (usuario) {
+        await supabase.from('funcionarios').upsert({
+          id_usuario: usuario.id,
+          rut: funcData.rut,
+          nombre_completo: funcData.nombre_completo,
+          celular: funcData.celular,
+          comuna: funcData.comuna,
+          domicilio: funcData.domicilio,
+          emergencia_nombre: funcData.emergencia_nombre,
+          emergencia_telefono: funcData.emergencia_telefono,
+          emergencia_parentesco: funcData.emergencia_parentesco,
+          correo_personal: funcData.correo_personal,
+          vigente: true,
+          actualizado_en: new Date().toISOString(),
+        }).eq('id_usuario', usuario.id);
+      }
+    }
 
     const { error: errUpdate } = await supabase
       .from('solicitudes_registro')
@@ -1922,6 +2012,12 @@ export async function guardarDatosPersonales(
           .insert({ ...funcData, creado_en: new Date().toISOString() });
         if (error) return { error: error.message };
       }
+
+      // Sincronizar nombre/apellidos en la tabla usuarios
+      await supabase.from('usuarios').update({
+        nombre: datos.nombres,
+        apellidos: datos.apellidos,
+      }).eq('uid', datos.uid);
 
       return { error: null };
     }

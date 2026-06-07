@@ -56,6 +56,7 @@ export default function MantenedorEstablecimiento({ idEstablecimiento }: Props) 
   }
 
   async function guardar() {
+    if (!idEstablecimiento) { setMensaje('⚠️ ID de establecimiento no disponible.'); return; }
     setGuardando(true);
     setMensaje('');
     const { error } = await supabase.from('establecimientos').update({
@@ -66,6 +67,12 @@ export default function MantenedorEstablecimiento({ idEstablecimiento }: Props) 
       setMensaje('⚠️ Error al guardar: ' + error.message);
     } else {
       setMensaje('✅ Datos guardados correctamente.');
+      // Forzar recarga para verificar que persiste
+      const { data } = await supabase.from('establecimientos').select('nombre,logo_url').eq('id', idEstablecimiento).single();
+      if (data) {
+        setNombre(data.nombre || '');
+        setLogoUrl(data.logo_url || '');
+      }
     }
     setGuardando(false);
   }
@@ -112,7 +119,7 @@ export default function MantenedorEstablecimiento({ idEstablecimiento }: Props) 
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={subirLogo} style={{ display: 'none' }} />
           {logoUrl && (
-            <img src={logoUrl} alt="logo" style={{ height: 56, marginTop: 10, borderRadius: 8, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={logoUrl} alt="logo" style={{ height: 56, marginTop: 10, borderRadius: 8, objectFit: 'contain' }} />
           )}
         </div>
 

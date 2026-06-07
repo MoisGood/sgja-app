@@ -62,7 +62,7 @@ export default function Sidebar({
           const submenuExpanded = submenuAbierto === item.ruta;
           return (
             <div key={item.ruta}>
-              <button type="button"                 onClick={() => { if (tieneSubmenu) { setSubmenuAbierto(submenuExpanded ? null : item.ruta); } else { onRutaChange(item.ruta); } }}
+              <button type="button"                 onClick={() => { if (!sidebarAbierto) { setSidebarAbierto(true); if (tieneSubmenu) setSubmenuAbierto(item.ruta); } else { if (tieneSubmenu) { setSubmenuAbierto(submenuExpanded ? null : item.ruta); } else { onRutaChange(item.ruta); } } }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '8px',
                   border: 'none', cursor: 'pointer', width: '100%', transition: 'background-color 0.15s',
