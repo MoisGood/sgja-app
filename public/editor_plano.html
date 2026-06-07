@@ -512,7 +512,8 @@ function pasteCopies(eje, cantidad) {
 
   for (let i = 0; i < n; i++) {
     const copyNum = existing + i + 1;
-    const offset = (i + 1) * (clipboard.h + 12);
+    const paso = alinearX ? clipboard.h : clipboard.w;
+    const offset = (i + 1) * paso;
     rooms.push({
       id: nextId++,
       l: alinearX ? clipboard.l : clipboard.l + offset,
