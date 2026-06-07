@@ -489,37 +489,45 @@ function copySelected() {
   toast(`📋 Copiada: "${src.txt}"`);
 }
 
-function pasteCopies() {
+function pasteCopies(eje, cantidad) {
   if (!clipboard) { toast('No hay sala copiada'); return; }
-  const cantidad = prompt('¿Cuántas copias pegar?', '1');
-  if (!cantidad) return;
+
+  if (!cantidad) {
+    cantidad = prompt('¿Cuántas copias pegar?', '1');
+    if (!cantidad) return;
+  }
   const n = parseInt(cantidad);
   if (isNaN(n) || n < 1) { toast('Número inválido'); return; }
+
+  if (!eje) {
+    eje = prompt('¿Qué eje alinea? (X = vertical / Y = horizontal):', 'Y');
+    if (!eje || !['X','x','Y','y'].includes(eje)) { toast('Eje inválido, usa X o Y'); return; }
+  }
+  const alinearX = (eje.toUpperCase() === 'X');
+
   saveState();
 
-  // extract base name and number
   const baseName = clipboard.txt.replace(/\s*\(\d+\)\s*$/g, '').trim();
   const existing = rooms.filter(r => r.txt.startsWith(baseName)).length;
 
   for (let i = 0; i < n; i++) {
-    const offset = (i + 1) * 25;
     const copyNum = existing + i + 1;
+    const offset = (i + 1) * (clipboard.h + 12);
     rooms.push({
       id: nextId++,
-      l: clipboard.l + offset,
-      t: clipboard.t + offset,
+      l: alinearX ? clipboard.l : clipboard.l + offset,
+      t: alinearX ? clipboard.t + offset : clipboard.t,
       w: clipboard.w,
       h: clipboard.h,
       txt: `${baseName} (${copyNum})`,
       cls: clipboard.cls,
     });
-    // copy color
     if (roomColors[clipboard.id]) {
       roomColors[nextId - 1] = roomColors[clipboard.id];
     }
   }
   render();
-  toast(`📋 Pegadas ${n} copias de "${baseName}"`);
+  toast(`📋 Pegadas ${n} copias en eje ${eje.toUpperCase()}`);
 }
 
 // ===== ROOM COLOR =====
@@ -683,9 +691,9 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedId && editing) {
     e.preventDefault();
     copySelected();
-    // auto-paste 1 copy
+    // Ctrl+D: duplicado rápido, 1 copia horizontal sin prompts
     clipboard = rooms.find(r => r.id === selectedId);
-    if (clipboard) pasteCopies();
+    if (clipboard) pasteCopies('Y', '1');
   }
   if ((e.ctrlKey || e.metaKey) && e.key === 'c' && selectedId) {
     e.preventDefault();
