@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Plano Edificio — Editor</title>
+<title>Plano Edificio — Editor v2</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: system-ui, sans-serif; background: #1e293b; color: #f1f5f9; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; }
@@ -18,8 +18,10 @@
     background: #0f172a; color: #f1f5f9; font-size: .75rem; cursor: pointer;
   }
   .toolbar button:hover { background: #1e293b; border-color: #3b82f6; }
-  .toolbar label { font-size: .75rem; color: #94a3b8; }
-  .toolbar input[type="color"] { width: 30px; height: 26px; border: none; border-radius: 4px; cursor: pointer; background: none; }
+  .toolbar label { font-size: .75rem; color: #94a3b8; display: flex; align-items: center; gap: .3rem; }
+  .toolbar input[type="color"] { width: 30px; height: 26px; border: none; border-radius: 4px; cursor: pointer; background: none; padding: 0; }
+  .toolbar input[type="number"] { width: 55px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; padding: 2px 4px; color: #f1f5f9; font-size: .75rem; }
+  .toolbar .sep { width: 1px; height: 24px; background: #475569; margin: 0 .2rem; }
 
   .mapa {
     position: relative;
@@ -62,6 +64,11 @@
   .room.editing { cursor: move; border-color: #fbbf24 !important; box-shadow: 0 0 0 2px #fbbf24; z-index: 20; }
   .room.editing .resize-handle { display: block; }
   .room.dragging { opacity: .8; z-index: 100; }
+  .room.selected { outline: 2px solid #fbbf24; }
+  .room .color-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    transition: background .2s;
+  }
 
   .resize-handle {
     display: none;
@@ -75,7 +82,7 @@
   .rh-nw { top: -4px; left: -4px; cursor: nw-resize; }
   .rh-ne { top: -4px; right: -4px; cursor: ne-resize; }
   .rh-sw { bottom: -4px; left: -4px; cursor: sw-resize; }
-  .rh-se { bottom: -4px; right: -4px; cursor: se-resize; }
+  .rh-se { bottom: -4px; left: -4px; cursor: se-resize; }
   .rh-n  { top: -4px; left: 50%; margin-left: -5px; cursor: n-resize; }
   .rh-s  { bottom: -4px; left: 50%; margin-left: -5px; cursor: s-resize; }
   .rh-e  { top: 50%; right: -4px; margin-top: -5px; cursor: e-resize; }
@@ -87,6 +94,8 @@
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    position: relative;
+    z-index: 1;
   }
 
   .xy-info {
@@ -96,26 +105,12 @@
     color: rgba(255,255,255,.35);
     pointer-events: none;
   }
-
-  /* Zones */
-  .z-lab    { background: #0891b2; }
-  .z-patio  { background: #4ade80; color: #14532d; }
-  .z-pasillo { background: #64748b; }
-  .z-admin  { background: #3b82f6; }
-  .z-sala   { background: #8b5cf6; }
-  .z-com    { background: #d97706; }
-  .z-acceso { background: #22c55e; color: #052e16; }
-  .z-park   { background: #78716c; }
-  .z-internado { background: #f43f5e; }
-  .z-pie    { background: #a21caf; }
-  .z-bib    { background: #0ea5e9; }
-  .z-other  { background: #6366f1; }
-  .z-empty  { background: #334155; color: #64748b; }
+  .xy-info.hidden { display: none; }
 
   .legend {
     display: flex; gap: 1rem; margin-top: .8rem; flex-wrap: wrap; justify-content: center; font-size: .7rem;
   }
-  .legend-item { display: flex; align-items: center; gap: .35rem; }
+  .legend-item { display: flex; align-items: center; gap: .35rem; cursor: pointer; }
   .ldot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
   .toast {
@@ -129,47 +124,71 @@
 </head>
 <body>
 
-<h1>🏢 Plano Edificio — Editor</h1>
-<p class="sub">8 filas × 9 columnas · Arrastra para mover · Esquinas para redimensionar</p>
+<h1>🏢 Plano Edificio — Editor v2</h1>
+<p class="sub">Arrastra · Esquinas redimensionan · Ctrl+C / Ctrl+V · Ctrl+D duplicar · Supr eliminar</p>
 
 <div class="toolbar">
   <button onclick="toggleEdit()" id="btnEdit">✏️ Editar</button>
-  <button onclick="addRoom()">➕ Añadir sala</button>
+  <button onclick="addRoom()">➕ Añadir</button>
   <button onclick="deleteRoom()" id="btnDelete" style="opacity:.4">🗑️ Eliminar</button>
-  <button onclick="copyRoom()" id="btnCopy" style="opacity:.4">📋 Copiar</button>
-  <button onclick="exportJSON()">💾 Exportar JSON</button>
-  <button onclick="document.getElementById('fileInput').click()">📂 Cargar JSON</button>
+  <span class="sep"></span>
+  <button onclick="copySelected()" id="btnCopy" style="opacity:.4">📋 Copiar</button>
+  <button onclick="pasteCopies()" id="btnPaste" style="opacity:.4">📋 Pegar</button>
+  <span class="sep"></span>
+  <button onclick="exportJSON()">💾 JSON</button>
+  <button onclick="document.getElementById('fileInput').click()">📂 Cargar</button>
   <input type="file" id="fileInput" accept=".json" style="display:none" onchange="loadJSONFile(event)">
-  <button onclick="exportHTML()">📄 Exportar HTML</button>
+  <button onclick="exportHTML()">📄 HTML</button>
   <button onclick="toggleGrid()">🔲 Cuadrícula</button>
-  <label>Ancho: <input type="number" id="mapW" value="1300" min="400" max="2000" style="width:55px;background:#0f172a;border:1px solid #475569;border-radius:4px;padding:2px 4px;color:#f1f5f9;font-size:.75rem"></label>
-  <label>Alto: <input type="number" id="mapH" value="880" min="400" max="2000" style="width:55px;background:#0f172a;border:1px solid #475569;border-radius:4px;padding:2px 4px;color:#f1f5f9;font-size:.75rem"></label>
+  <button onclick="toggleMedidas()" id="btnMedidas">📏 Medidas</button>
+  <span class="sep"></span>
+  <label>Plantilla:
+    <select onchange="setPreset(this.value)" style="width:100px">
+      <option value="web">Web 1300×880</option>
+      <option value="desktop">Desktop 1920×1080</option>
+      <option value="tablet">Tablet 1024×768</option>
+      <option value="movil">Móvil 375×812</option>
+    </select>
+  </label>
+  <label>Ancho: <input type="number" id="mapW" value="1300" min="200" max="3000"></label>
+  <label>Alto: <input type="number" id="mapH" value="880" min="200" max="3000"></label>
   <button onclick="resizeMap()">Aplicar</button>
+  <span class="sep"></span>
+  <label>Color sala: <input type="color" id="roomColorPicker" value="#6366f1" onchange="changeRoomColor(this.value)"></label>
 </div>
 
-<div class="mapa" id="mapa">
-  <!-- Las salas se generan desde JS -->
-</div>
+<div class="mapa" id="mapa"></div>
 
-<div class="legend" id="legend"></div>
+<div class="legend" id="legend">
+  <span class="legend-item" style="cursor:default">Da clic en una sala y elige su color arriba ↑</span>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
 // ===== DATA =====
-// Estado inicial vacío; se carga desde JSON con el botón "Cargar JSON"
-const zoneLabels = {
-  'z-lab':'Laboratorios','z-bib':'Biblioteca','z-sala':'Salas','z-admin':'Administración',
-  'z-com':'Comedor / Fitness','z-patio':'Patio','z-pasillo':'Pasillo','z-acceso':'Acceso',
-  'z-park':'Estacionamiento','z-internado':'Internado','z-pie':'PIE','z-other':'Equipo Mult.','z-empty':'Sin uso'
-};
-
+const zoneLabels = {};
 let rooms = [];
 let editing = false;
 let gridOn = false;
 let nextId = 1;
 let selectedId = null;
+let clipboard = null;
+let medidasVisibles = true;
+let roomColors = {};  // keyed by room id (number) → hex color string
 
-// ===== CARGAR JSON =====
+// ===== COLOR PRESETS =====
+const zoneColors = {
+  'z-lab':'#0891b2','z-bib':'#0ea5e9','z-sala':'#8b5cf6','z-admin':'#3b82f6',
+  'z-com':'#d97706','z-patio':'#4ade80','z-pasillo':'#64748b','z-acceso':'#22c55e',
+  'z-park':'#78716c','z-internado':'#f43f5e','z-pie':'#a21caf','z-other':'#6366f1','z-empty':'#334155'
+};
+const zoneNameMap = {
+  'z-lab':'Laboratorio','z-bib':'Biblioteca','z-sala':'Sala','z-admin':'Administración',
+  'z-com':'Comedor','z-patio':'Patio','z-pasillo':'Pasillo','z-acceso':'Acceso',
+  'z-park':'Estacionamiento','z-internado':'Internado','z-pie':'PIE','z-other':'Equipo','z-empty':'Sin uso'
+};
+
+// ===== LOAD JSON =====
 function loadJSONFile(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -177,22 +196,42 @@ function loadJSONFile(event) {
   reader.onload = (e) => {
     try {
       const json = JSON.parse(e.target.result);
-      if (!Array.isArray(json) || !json.length) throw new Error('JSON inválido');
-      rooms = json.map((r,i) => ({ id: nextId++, l:r.left, t:r.top, w:r.width, h:r.height, txt:r.text, cls:r.zone || 'z-other' }));
+      if (!Array.isArray(json) || !json.length) throw new Error('JSON vacío o inválido');
+      rooms = json.map((r,i) => ({
+        id: nextId++, l:r.left, t:r.top, w:r.width, h:r.height, txt:r.text, cls:r.zone||'z-other'
+      }));
+      if (json[0].color !== undefined) {
+        json.forEach((r,i) => { if (r.color) roomColors[rooms[i].id] = r.color; });
+      }
       render();
       renderLegend();
       toast(`✅ Cargadas ${rooms.length} salas`);
     } catch(err) {
-      toast('❌ Error al cargar JSON: ' + err.message);
+      toast('❌ Error: ' + err.message);
     }
   };
   reader.readAsText(file);
   event.target.value = '';
 }
 
+// ===== PRESETS =====
+const presets = {
+  web:     { w:1300, h:880 },
+  desktop: { w:1920, h:1080 },
+  tablet:  { w:1024, h:768 },
+  movil:   { w:375,  h:812 },
+};
+function setPreset(val) {
+  const p = presets[val];
+  if (!p) return;
+  document.getElementById('mapW').value = p.w;
+  document.getElementById('mapH').value = p.h;
+  resizeMap();
+  toast(`📐 Plantilla ${val}: ${p.w}×${p.h}`);
+}
+
 // ===== INIT =====
 function init() {
-  // Sin datos iniciales — el usuario carga su JSON
   render();
   renderLegend();
   document.getElementById('btnEdit').textContent = editing ? '🔒 Vista' : '✏️ Editar';
@@ -205,18 +244,22 @@ function render() {
   rooms.forEach(r => {
     const el = document.createElement('div');
     el.className = `room ${r.cls}`;
+    if (selectedId === r.id) el.classList.add('selected');
     el.dataset.id = r.id;
     el.style.left = r.l + 'px';
     el.style.top = r.t + 'px';
     el.style.width = r.w + 'px';
     el.style.height = r.h + 'px';
 
+    const bgColor = roomColors[r.id] || zoneColors[r.cls] || '#6366f1';
+    el.style.background = bgColor;
+
     const label = document.createElement('span');
     label.className = 'room-label';
     label.textContent = r.txt;
     el.appendChild(label);
 
-    // Resize handles
+    // resize handles
     ['nw','n','ne','e','se','s','sw','w'].forEach(dir => {
       const h = document.createElement('div');
       h.className = `resize-handle rh-${dir}`;
@@ -224,20 +267,20 @@ function render() {
       el.appendChild(h);
     });
 
-    // Double click to rename
+    // dblclick rename
     el.addEventListener('dblclick', () => {
-      const name = prompt('Nombre de la sala:', r.txt);
+      const name = prompt('Nombre:', r.txt);
       if (name && name.trim()) { r.txt = name.trim(); render(); }
     });
 
-    // Click to select + zone change
+    // click select
     el.addEventListener('click', (e) => {
       if (!editing) return;
       if (e.target.classList.contains('resize-handle')) return;
       selectRoom(el);
     });
 
-    // Drag
+    // drag
     el.addEventListener('mousedown', (e) => {
       if (!editing) return;
       if (e.target.classList.contains('resize-handle')) return;
@@ -245,7 +288,7 @@ function render() {
       startDrag(e, el);
     });
 
-    // Resize
+    // resize
     el.querySelectorAll('.resize-handle').forEach(h => {
       h.addEventListener('mousedown', (e) => {
         e.stopPropagation();
@@ -254,28 +297,32 @@ function render() {
       });
     });
 
-    // XY info
+    // xy info
     const info = document.createElement('div');
-    info.className = 'xy-info';
+    info.className = 'xy-info' + (medidasVisibles ? '' : ' hidden');
     info.textContent = `${r.l},${r.t} ${r.w}×${r.h}`;
     el.appendChild(info);
 
     m.appendChild(el);
   });
 
-  // Click en fondo → deseleccionar
+  // click fondo → deselect
   m.addEventListener('click', (e) => {
-    if (e.target === m) {
-      document.querySelectorAll('.room.editing').forEach(x => { x.style.outline = ''; });
-      selectedId = null;
-      document.getElementById('btnDelete').style.opacity = '.4';
-      document.getElementById('btnCopy').style.opacity = '.4';
-    }
+    if (e.target === m) clearSelection();
   });
 
   updateEditing();
 }
 
+function clearSelection() {
+  document.querySelectorAll('.room.selected').forEach(x => x.classList.remove('selected'));
+  selectedId = null;
+  document.getElementById('btnDelete').style.opacity = '.4';
+  document.getElementById('btnCopy').style.opacity = '.4';
+  document.getElementById('btnPaste').style.opacity = clipboard ? '1' : '.4';
+}
+
+// ===== UPDATE EDITING STATE =====
 function updateEditing() {
   document.querySelectorAll('.room').forEach(el => {
     el.classList.toggle('editing', editing);
@@ -303,7 +350,8 @@ function onDrag(e) {
   r.t = Math.max(0, e.clientY - rect.top - dragData.oy);
   dragData.el.style.left = r.l + 'px';
   dragData.el.style.top = r.t + 'px';
-  dragData.el.querySelector('.xy-info').textContent = `${Math.round(r.l)},${Math.round(r.t)} ${r.w}×${r.h}`;
+  const info = dragData.el.querySelector('.xy-info');
+  if (info) info.textContent = `${Math.round(r.l)},${Math.round(r.t)} ${r.w}×${r.h}`;
 }
 function endDrag() {
   if (dragData) { dragData.el.classList.remove('dragging'); dragData = null; }
@@ -332,15 +380,16 @@ function onResize(e) {
   if (d.includes('e')) { r.w = resizeData.w + dx; }
   if (d.includes('n')) { r.t = resizeData.t + dy; r.h = resizeData.h - dy; }
   if (d.includes('s')) { r.h = resizeData.h + dy; }
-  if (r.w < 20) { r.w = 20; }
-  if (r.h < 20) { r.h = 20; }
+  if (r.w < 20) r.w = 20;
+  if (r.h < 20) r.h = 20;
   if (r.l < 0) r.l = 0;
   if (r.t < 0) r.t = 0;
   resizeData.el.style.left = r.l + 'px';
   resizeData.el.style.top = r.t + 'px';
   resizeData.el.style.width = r.w + 'px';
   resizeData.el.style.height = r.h + 'px';
-  resizeData.el.querySelector('.xy-info').textContent = `${Math.round(r.l)},${Math.round(r.t)} ${Math.round(r.w)}×${Math.round(r.h)}`;
+  const info = resizeData.el.querySelector('.xy-info');
+  if (info) info.textContent = `${Math.round(r.l)},${Math.round(r.t)} ${Math.round(r.w)}×${Math.round(r.h)}`;
 }
 function endResize() {
   resizeData = null;
@@ -350,40 +399,82 @@ function endResize() {
 
 // ===== SELECT =====
 function selectRoom(el) {
-  document.querySelectorAll('.room.editing').forEach(x => { x.style.outline = ''; });
-  el.style.outline = '2px solid #fbbf24';
+  document.querySelectorAll('.room.selected').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
   selectedId = parseInt(el.dataset.id);
   document.getElementById('btnDelete').style.opacity = '1';
   document.getElementById('btnCopy').style.opacity = '1';
+
+  const r = rooms.find(x => x.id === selectedId);
+  if (r && roomColors[r.id]) {
+    document.getElementById('roomColorPicker').value = roomColors[r.id];
+  } else if (r) {
+    document.getElementById('roomColorPicker').value = zoneColors[r.cls] || '#6366f1';
+  }
 }
 
-// ===== DELETE ROOM =====
+// ===== DELETE =====
 function deleteRoom() {
   if (!selectedId) { toast('Selecciona una sala primero'); return; }
   if (!confirm('¿Eliminar esta sala?')) return;
+  delete roomColors[selectedId];
   rooms = rooms.filter(r => r.id !== selectedId);
   selectedId = null;
   document.getElementById('btnDelete').style.opacity = '.4';
   document.getElementById('btnCopy').style.opacity = '.4';
   render();
-  toast('🗑️ Sala eliminada');
+  renderLegend();
+  toast('🗑️ Eliminada');
 }
 
-// ===== COPY ROOM =====
-function copyRoom() {
+// ===== COPY / PASTE =====
+function copySelected() {
   if (!selectedId) { toast('Selecciona una sala primero'); return; }
   const src = rooms.find(r => r.id === selectedId);
   if (!src) return;
-  const copy = {
-    id: nextId++,
-    l: src.l + 20, t: src.t + 20,
-    w: src.w, h: src.h,
-    txt: src.txt + ' (copia)',
-    cls: src.cls
-  };
-  rooms.push(copy);
+  clipboard = { ...src };
+  document.getElementById('btnPaste').style.opacity = '1';
+  toast(`📋 Copiada: "${src.txt}"`);
+}
+
+function pasteCopies() {
+  if (!clipboard) { toast('No hay sala copiada'); return; }
+  const cantidad = prompt('¿Cuántas copias pegar?', '1');
+  if (!cantidad) return;
+  const n = parseInt(cantidad);
+  if (isNaN(n) || n < 1) { toast('Número inválido'); return; }
+
+  // extract base name and number
+  const baseName = clipboard.txt.replace(/\s*\(\d+\)\s*$/g, '').trim();
+  const existing = rooms.filter(r => r.txt.startsWith(baseName)).length;
+
+  for (let i = 0; i < n; i++) {
+    const offset = (i + 1) * 25;
+    const copyNum = existing + i + 1;
+    rooms.push({
+      id: nextId++,
+      l: clipboard.l + offset,
+      t: clipboard.t + offset,
+      w: clipboard.w,
+      h: clipboard.h,
+      txt: `${baseName} (${copyNum})`,
+      cls: clipboard.cls,
+    });
+    // copy color
+    if (roomColors[clipboard.id]) {
+      roomColors[nextId - 1] = roomColors[clipboard.id];
+    }
+  }
   render();
-  toast('📋 Sala copiada');
+  toast(`📋 Pegadas ${n} copias de "${baseName}"`);
+}
+
+// ===== ROOM COLOR =====
+function changeRoomColor(hex) {
+  if (!selectedId) { toast('Selecciona una sala primero'); return; }
+  roomColors[selectedId] = hex;
+  const el = document.querySelector(`.room[data-id="${selectedId}"]`);
+  if (el) el.style.background = hex;
 }
 
 // ===== TOGGLE EDIT =====
@@ -397,6 +488,7 @@ function toggleEdit() {
 function addRoom() {
   const name = prompt('Nombre de la nueva sala:') || 'Nueva sala';
   rooms.push({ id: nextId++, l: 100, t: 100, w: 140, h: 105, txt: name, cls: 'z-other' });
+  roomColors[nextId - 1] = '#6366f1';
   render();
   if (!editing) toggleEdit();
 }
@@ -407,20 +499,29 @@ function toggleGrid() {
   document.getElementById('mapa').classList.toggle('grid-on', gridOn);
 }
 
+// ===== MEDIDAS =====
+function toggleMedidas() {
+  medidasVisibles = !medidasVisibles;
+  document.querySelectorAll('.xy-info').forEach(el => el.classList.toggle('hidden', !medidasVisibles));
+  document.getElementById('btnMedidas').textContent = medidasVisibles ? '📏 Medidas' : '📏 Ocultas';
+}
+
 // ===== RESIZE MAP =====
 function resizeMap() {
   const w = parseInt(document.getElementById('mapW').value) || 1300;
   const h = parseInt(document.getElementById('mapH').value) || 880;
   document.getElementById('mapa').style.width = w + 'px';
   document.getElementById('mapa').style.height = h + 'px';
+  toast(`📐 Mapa: ${w}×${h}`);
 }
 
-// ===== EXPORT JSON =====
+// ===== EXPORT JSON (with colors) =====
 function exportJSON() {
   const data = rooms.map(r => ({
     left: Math.round(r.l), top: Math.round(r.t),
     width: Math.round(r.w), height: Math.round(r.h),
-    text: r.txt, zone: r.cls
+    text: r.txt, zone: r.cls,
+    color: roomColors[r.id] || zoneColors[r.cls] || null,
   }));
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], {type:'application/json'});
@@ -438,28 +539,31 @@ function exportHTML() {
   const mh = document.getElementById('mapa').offsetHeight;
   let roomsHTML = '';
   rooms.forEach(r => {
-    roomsHTML += `  <div class="room ${r.cls}" style="left:${Math.round(r.l)}px;top:${Math.round(r.t)}px;width:${Math.round(r.w)}px;height:${Math.round(r.h)}px">${r.txt}</div>\n`;
+    const bg = roomColors[r.id] || zoneColors[r.cls] || '#6366f1';
+    roomsHTML += `  <div class="room" style="left:${Math.round(r.l)}px;top:${Math.round(r.t)}px;width:${Math.round(r.w)}px;height:${Math.round(r.h)}px;background:${bg}">${r.txt}</div>\n`;
   });
+  // collect used zones for legend
+  const usedZones = new Set(rooms.map(r => r.cls));
   let legendHTML = '';
-  Object.entries(zoneLabels).forEach(([k,v]) => {
-    if (rooms.some(r => r.cls === k)) legendHTML += `  <span class="legend-item"><span class="ldot ${k}"></span> ${v}</span>\n`;
+  usedZones.forEach(k => {
+    const bg = zoneColors[k] || '#6366f1';
+    const name = zoneNameMap[k] || k;
+    legendHTML += `  <span class="legend-item"><span class="ldot" style="background:${bg}"></span> ${name}</span>\n`;
   });
   const html = `<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Plano Edificio</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plano Edificio</title>
 <style>
 body{font-family:system-ui,sans-serif;background:#1e293b;color:#f1f5f9;padding:1.5rem;display:flex;flex-direction:column;align-items:center}
 .mapa{position:relative;width:${mw}px;height:${mh}px;background:#2d3a4f;border-radius:10px;border:2px solid #475569}
-.room{position:absolute;border-radius:4px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:500;text-align:center;padding:2px;line-height:1.15;overflow:hidden}
-.z-lab{background:#0891b2}.z-patio{background:#4ade80;color:#14532d}.z-pasillo{background:#64748b}.z-admin{background:#3b82f6}
-.z-sala{background:#8b5cf6}.z-com{background:#d97706}.z-acceso{background:#22c55e;color:#052e16}.z-park{background:#78716c}
-.z-internado{background:#f43f5e}.z-pie{background:#a21caf}.z-bib{background:#0ea5e9}.z-other{background:#6366f1}.z-empty{background:#334155;color:#64748b}
+.room{position:absolute;border-radius:4px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:500;text-align:center;padding:2px;line-height:1.15;overflow:hidden;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 .legend{display:flex;gap:1rem;margin-top:.8rem;flex-wrap:wrap;justify-content:center;font-size:.7rem}
-.legend-item{display:flex;align-items:center;gap:.35rem}.ldot{width:12px;height:12px;border-radius:3px;display:inline-block}
+.legend-item{display:flex;align-items:center;gap:.35rem}
+.ldot{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
 <body>
-<h1>🏢 Plano Edificio — Primer Piso</h1>
+<h1>🏢 Plano Edificio</h1>
 <div class="mapa">
 ${roomsHTML}</div>
 <div class="legend">\n${legendHTML}</div>
@@ -474,18 +578,26 @@ ${roomsHTML}</div>
   toast('✅ HTML exportado');
 }
 
-// ===== RENDER LEGEND =====
+// ===== LEGEND =====
 function renderLegend() {
   const used = new Set(rooms.map(r => r.cls));
   const l = document.getElementById('legend');
   l.innerHTML = '';
-  Object.entries(zoneLabels).forEach(([k,v]) => {
-    if (used.has(k)) {
-      const item = document.createElement('span');
-      item.className = 'legend-item';
-      item.innerHTML = `<span class="ldot ${k}"></span> ${v}`;
-      l.appendChild(item);
-    }
+  used.forEach(k => {
+    const bg = zoneColors[k] || '#6366f1';
+    const name = zoneNameMap[k] || k;
+    const item = document.createElement('span');
+    item.className = 'legend-item';
+    item.innerHTML = `<span class="ldot" style="background:${bg}"></span> ${name}`;
+    // click on legend → add room of that type
+    item.addEventListener('click', () => {
+      if (!editing) toggleEdit();
+      rooms.push({ id: nextId++, l: 60 + rooms.length * 15, t: 60 + rooms.length * 15, w: 140, h: 105, txt: `${name} ${rooms.filter(r=>r.cls===k).length+1}`, cls: k });
+      roomColors[nextId - 1] = bg;
+      render();
+      toast(`➕ Añadida ${name}`);
+    });
+    l.appendChild(item);
   });
 }
 
@@ -497,16 +609,28 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-// ===== START =====
+// ===== KEYBOARD =====
 document.addEventListener('keydown', (e) => {
   if ((e.key === 'Delete' || e.key === 'Supr') && selectedId && editing) {
     deleteRoom();
   }
   if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedId && editing) {
     e.preventDefault();
-    copyRoom();
+    copySelected();
+    // auto-paste 1 copy
+    clipboard = rooms.find(r => r.id === selectedId);
+    if (clipboard) pasteCopies();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'c' && selectedId) {
+    e.preventDefault();
+    copySelected();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'v' && clipboard) {
+    e.preventDefault();
+    pasteCopies();
   }
 });
+
 init();
 </script>
 </body>
