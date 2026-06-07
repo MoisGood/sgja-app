@@ -5,6 +5,7 @@ import {
   registrarAusencia,
   eliminarAusencia,
 } from '../services/funcionarioAusencias';
+import { logError } from '../utils/errorHandler';
 import { supabase } from '../lib/supabase';
 import type { Funcionario } from '../types';
 
@@ -24,12 +25,12 @@ async function limpiarVencidas(aus: AusenciaRow[]) {
     if (a.fecha_termino && a.fecha_termino < hoy) {
       const esVirtual = a.id.startsWith('virtual-');
       if (!esVirtual) {
-        await eliminarAusencia(a.id).catch(() => {});
+        await eliminarAusencia(a.id).catch(e => logError(e, 'Error al eliminar ausencia'));
       }
       if (!(a.tipo === 'otro' && a.motivo === 'Día compensado')) {
         await actualizarFuncionario(a.rut_funcionario, {
           [a.tipo === 'licencia' ? 'tiene_licencia' : 'tiene_permiso_admin']: false,
-        }).catch(() => {});
+        }).catch(e => logError(e, 'Error al actualizar funcionario en limpieza'));
       }
     }
   }));
@@ -207,12 +208,12 @@ export default function SecretariaAusentes() {
       }
       // Limpiar ausencias activas al inactivar
       const ausActivas = ausencias.filter(a => a.rut_funcionario === f.rut);
-      await Promise.all(ausActivas.map(a => eliminarAusencia(a.id).catch(() => {})));
+      await Promise.all(ausActivas.map(a => eliminarAusencia(a.id).catch(e => logError(e, 'Error al eliminar ausencia en inactivación'))));
       if (ausActivas.some(a => a.tipo === 'licencia')) {
-        await actualizarFuncionario(f.rut, { tiene_licencia: false }).catch(() => {});
+        await actualizarFuncionario(f.rut, { tiene_licencia: false }).catch(e => logError(e, 'Error al limpiar licencia en inactivación'));
       }
       if (ausActivas.some(a => a.tipo === 'permiso_admin')) {
-        await actualizarFuncionario(f.rut, { tiene_permiso_admin: false }).catch(() => {});
+        await actualizarFuncionario(f.rut, { tiene_permiso_admin: false }).catch(e => logError(e, 'Error al limpiar permiso admin en inactivación'));
       }
       setExito(`${f.nombre_completo} marcado como inactivo (ausencias limpiadas)`);
       await cargarDatos();

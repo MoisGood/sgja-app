@@ -10,6 +10,7 @@ import { obtenerUsuarioPorUid } from '../services/supabaseDB';
 import { obtenerSolicitudPorUid, obtenerDatosPersonales } from '../services/database';
 import { obtenerEstadoMantenimiento, debeBloquear } from '../services/mantenimientoService';
 import { marcarCuentaActiva } from '../services/funcionarios';
+import { handleError } from '../utils/errorHandler';
 import type { Session, User } from '@supabase/supabase-js';
 
 interface AuthState {
@@ -200,9 +201,9 @@ export function useAuth(): AuthState {
 
         sessionStorage.setItem('id_usuario_actual', user.id);
 
-        marcarCuentaActiva(user.id).catch(() => {});
+        marcarCuentaActiva(user.id).catch(e => handleError(e, 'Error al marcar cuenta activa'));
       } catch (error) {
-        console.error('Error al obtener datos del usuario:', error);
+        handleError(error, 'Error al obtener datos del usuario');
 
         if (!mounted) return;
 

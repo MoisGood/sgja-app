@@ -11,6 +11,7 @@ import {
   obtenerRolesPersonalizados,
   type DatosPersonales,
 } from '../services/database';
+import { handleError, showSuccess } from '../utils/errorHandler';
 import { Card, Button, Modal } from '../components/Common';
 import { Rol } from '../types';
 import type { Usuario } from '../types';
@@ -113,8 +114,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       setUsuarios(data || []);
       setPaginaActual(1);
     } catch (err) {
-      console.error('Error al cargar usuarios:', err);
-      setError(`Error al cargar usuarios: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+      handleError(err, 'Error al cargar usuarios');
       setUsuarios([]);
     } finally {
       setCargando(false);
@@ -207,27 +207,16 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       );
 
       if (tempPassword) {
-        alert(`Usuario creado exitosamente!\n\nEmail: ${formCrear.email}\nContraseña temporal: ${tempPassword}\n\nComparte esta información con el usuario para que inicie sesión.`);
+        showSuccess(`Usuario creado exitosamente. Email: ${formCrear.email} — Contraseña temporal: ${tempPassword}`);
       } else {
-        alert(`Usuario actualizado exitosamente!\n\nEmail: ${formCrear.email}\n\nEl usuario puede iniciar sesión con su contraseña actual.`);
+        showSuccess(`Usuario actualizado exitosamente. Email: ${formCrear.email}`);
       }
 
       await cargarUsuarios();
       cerrarModalCrear();
     } catch (err) {
-      let mensajeError = 'Error desconocido';
-      
-      if (err instanceof Error) {
-        if (err.message.includes('email-already-in-use')) {
-          mensajeError = `El email ${formCrear.email} ya está registrado en Firebase Auth`;
-        } else if (err.message.includes('weak-password')) {
-          mensajeError = 'La contraseña es muy débil';
-        } else {
-          mensajeError = err.message;
-        }
-      }
-      
-      setError(`Error al crear usuario: ${mensajeError}`);
+      handleError(err, 'Error al crear usuario');
+      setError(`Error al crear usuario`);
     } finally {
       setGuardando(false);
     }
@@ -266,6 +255,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       await cargarUsuarios();
       cerrarModalEditar();
     } catch (err) {
+      handleError(err, 'Error al actualizar usuario');
       setError('Error al actualizar usuario');
     } finally {
       setGuardando(false);
@@ -304,6 +294,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       await cargarUsuarios();
       cerrarModalEliminar();
     } catch (err) {
+      handleError(err, 'Error al eliminar usuario');
       setError('Error al eliminar usuario');
     } finally {
       setGuardando(false);
@@ -377,9 +368,10 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
         id_establecimiento: idEstablecimientoSel || null,
       } as Partial<Usuario>);
       setUsuarioDatos(prev => prev ? { ...prev, datos: formDatos } : null);
-      alert('Datos personales guardados exitosamente.');
+      showSuccess('Datos personales guardados exitosamente.');
     } catch (e) {
-      setError(`Datos personales guardados, pero error al asignar establecimiento: ${e instanceof Error ? e.message : 'Error desconocido'}`);
+      handleError(e, 'Error al asignar establecimiento');
+      setError('Datos guardados, pero error al asignar establecimiento');
     }
     setGuardandoDatos(false);
   };

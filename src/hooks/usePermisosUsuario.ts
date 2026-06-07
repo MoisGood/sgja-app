@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { handleError } from '../utils/errorHandler';
 import { Rol } from '../types';
 
 interface UsePermisosUsuarioReturn {
@@ -54,8 +55,7 @@ export function usePermisosUsuario(
           setPermisos([]);
         }
       } catch (err) {
-        console.error('[PermisosHook] Error:', err);
-        setError('Error al cargar permisos');
+        handleError(err, 'Error al cargar permisos');
         setPermisos([]);
       } finally {
         setCargando(false);

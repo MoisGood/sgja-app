@@ -4,6 +4,7 @@
 // ============================================================
 
 import { RouterProvider } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { router } from './router';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { MonitorLecturas } from './components/MonitorLecturas';
@@ -32,6 +33,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <RouterProvider router={router} />
+      <Toaster richColors position="top-right" />
       {mostrarMonitor && <MonitorLecturas />}
       {mostrarMonitor && <TestMonitor />}
     </ThemeProvider>

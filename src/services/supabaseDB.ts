@@ -5,6 +5,7 @@
 
 import { supabase } from '../lib/supabase';
 import { cacheService } from './cacheService';
+import { handleError } from '../utils/errorHandler';
 
 // ─────────────────────────────────────────────────────────────
 // TIPOS
@@ -123,7 +124,7 @@ export async function obtenerEstablecimientos(): Promise<EstablecimientoDB[]> {
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error al obtener establecimientos:', error);
+    handleError(error, 'Error al obtener establecimientos');
     return [];
   }
 }
@@ -142,7 +143,7 @@ export async function obtenerEstablecimiento(id: string): Promise<Establecimient
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error al obtener establecimiento:', error);
+    handleError(error, 'Error al obtener establecimiento');
     return null;
   }
 }
@@ -163,7 +164,7 @@ export async function crearEstablecimiento(
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error al crear establecimiento:', error);
+    handleError(error, 'Error al crear establecimiento');
     return null;
   }
 }
@@ -215,7 +216,7 @@ export async function obtenerUsuarioPorUid(uid: string): Promise<UsuarioDB | nul
 
     return await Promise.race([queryPromise, timeoutPromise]);
   } catch (error) {
-    console.error('Error al obtener usuario:', error);
+    handleError(error, 'Error al obtener usuario');
     return null;
   }
 }
@@ -236,7 +237,7 @@ export async function obtenerUsuariosDelEstablecimiento(
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error al obtener usuarios:', error);
+    handleError(error, 'Error al obtener usuarios');
     return [];
   }
 }
@@ -258,7 +259,7 @@ export async function obtenerProfesoresDelEstablecimiento(
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error al obtener profesores:', error);
+    handleError(error, 'Error al obtener profesores');
     return [];
   }
 }
@@ -284,7 +285,7 @@ export async function crearUsuario(
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error al crear usuario:', error);
+    handleError(error, 'Error al crear usuario');
     return null;
   }
 }
@@ -308,7 +309,7 @@ export async function actualizarUsuario(
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error al actualizar usuario:', error);
+    handleError(error, 'Error al actualizar usuario');
     return false;
   }
 }
@@ -326,7 +327,7 @@ export async function eliminarUsuario(uid: string): Promise<boolean> {
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error al eliminar usuario:', error);
+    handleError(error, 'Error al eliminar usuario');
     return false;
   }
 }
@@ -357,8 +358,8 @@ export async function obtenerEstudiantesPorCurso(
         if (error) throw error;
         return data || [];
       } catch (error) {
-        console.error('Error al obtener estudiantes del curso:', error);
-        return [];
+    handleError(error, 'Error al obtener estudiantes del curso');
+    return [];
       }
     }
   );
@@ -380,7 +381,7 @@ export async function obtenerEstudiantesDelEstablecimiento(
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error al obtener estudiantes:', error);
+    handleError(error, 'Error al obtener estudiantes');
     return [];
   }
 }
@@ -402,7 +403,7 @@ export async function obtenerEstudiantePorId(idEstudiante: string): Promise<Estu
     }
     return data;
   } catch (error) {
-    console.error('Error al obtener estudiante:', error);
+    handleError(error, 'Error al obtener estudiante');
     return null;
   }
 }
@@ -423,7 +424,7 @@ export async function crearEstudiante(
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error al crear estudiante:', error);
+    handleError(error, 'Error al crear estudiante');
     return null;
   }
 }
@@ -444,7 +445,7 @@ export async function actualizarEstudiante(
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error al actualizar estudiante:', error);
+    handleError(error, 'Error al actualizar estudiante');
     return false;
   }
 }
@@ -475,7 +476,7 @@ export async function obtenerSolicitudesDelEstablecimiento(
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error al obtener solicitudes:', error);
+    handleError(error, 'Error al obtener solicitudes');
     return [];
   }
 }
@@ -496,7 +497,7 @@ export async function obtenerSolicitudesPorEstudiante(
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error al obtener solicitudes:', error);
+    handleError(error, 'Error al obtener solicitudes del estudiante');
     return [];
   }
 }
@@ -520,7 +521,7 @@ export async function crearSolicitud(
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error al crear solicitud:', error);
+    handleError(error, 'Error al crear solicitud');
     return null;
   }
 }
@@ -541,7 +542,7 @@ export async function actualizarSolicitud(
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error al actualizar solicitud:', error);
+    handleError(error, 'Error al actualizar solicitud');
     return false;
   }
 }
@@ -559,14 +560,10 @@ export async function eliminarSolicitud(idSolicitud: string): Promise<boolean> {
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error al eliminar solicitud:', error);
+    handleError(error, 'Error al eliminar solicitud');
     return false;
   }
 }
-
-// ─────────────────────────────────────────────────────────────
-// MOTIVOS DE JUSTIFICACIÓN
-// ─────────────────────────────────────────────────────────────
 
 /**
  * Obtener motivos de justificación
@@ -582,7 +579,7 @@ export async function obtenerMotivos(): Promise<MotivoJustificacionDB[]> {
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error al obtener motivos:', error);
+    handleError(error, 'Error al obtener motivos');
     return [];
   }
 }
@@ -603,7 +600,7 @@ export async function crearMotivo(
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error al crear motivo:', error);
+    handleError(error, 'Error al crear motivo');
     return null;
   }
 }
@@ -631,11 +628,11 @@ export async function obtenerBloquesHorarios(
           .order('orden');
 
         if (error) throw error;
-        return data || [];
-      } catch (error) {
-        console.error('Error al obtener bloques:', error);
-        return [];
-      }
+      return data || [];
+    } catch (error) {
+      handleError(error, 'Error al obtener bloques');
+      return [];
+    }
     }
   );
 }
@@ -658,7 +655,7 @@ export async function crearBloqueHorario(
     await cacheService.invalidate(`bloques_${datos.id_establecimiento}`);
     return data;
   } catch (error) {
-    console.error('Error al crear bloque:', error);
+    handleError(error, 'Error al crear bloque');
     return null;
   }
 }
@@ -701,7 +698,7 @@ export async function obtenerCursosDelEstablecimiento(
       return matchA[2].localeCompare(matchB[2]);
     });
   } catch (error) {
-    console.error('Error al obtener cursos:', error);
+    handleError(error, 'Error al obtener cursos');
     return [];
   }
 }

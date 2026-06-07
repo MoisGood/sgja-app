@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { obtenerAusenciasActivas } from '../services/funcionarioAusencias';
+import { handleError } from '../utils/errorHandler';
 
 interface AusenciaRow {
   id: string;
@@ -27,7 +28,7 @@ export default function DashboardSecretaria({ nombre, onNavegar }: Props) {
   useEffect(() => {
     obtenerAusenciasActivas()
       .then(data => setAusencias(data as AusenciaRow[]))
-      .catch(() => {})
+      .catch(e => handleError(e, 'Error al cargar ausencias activas'))
       .finally(() => setCargando(false));
   }, []);
 

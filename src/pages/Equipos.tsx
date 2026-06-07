@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
+import { handleError, showError } from '../utils/errorHandler';
 import type { Equipo, Lugar } from '../types';
 
 interface Props { idEstablecimiento: string }
@@ -119,7 +120,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
       const oldEquipo = equipos.find(e => e.id === editId);
       const oldNombre = oldEquipo?.nombre;
       const { error } = await supabase.from('equipos').update(payload).eq('id', editId);
-      if (error) { alert('Error al actualizar: ' + error.message); return; }
+      if (error) { showError('Error al actualizar: ' + error.message); return; }
       if (oldNombre && oldNombre !== payload.nombre && payload.id_lugar) {
         await supabase.from('ubicaciones').update({ dispositivo_nombre: payload.nombre })
           .eq('dispositivo_nombre', oldNombre).eq('id_lugar', payload.id_lugar);
@@ -138,7 +139,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
       });
       if (rpcErr) {
         const { error: insertErr } = await supabase.from('equipos').insert(payload);
-        if (insertErr) { alert('Error al crear equipo: ' + insertErr.message); return; }
+        if (insertErr) { showError('Error al crear equipo: ' + insertErr.message); return; }
       }
     }
     // Generar QR con datos del equipo
@@ -153,7 +154,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
       ].filter(Boolean).join('\n');
       const svg = await QRCode.toString(qrText, { type: 'svg', width: 200, margin: 1 });
       setQrUrl(`data:image/svg+xml,${encodeURIComponent(svg)}`);
-    } catch { /* ignore */ }
+    } catch { showError('Error al generar código QR'); }
     setQrCargando(false);
     setShowForm(false); setEditId(null);
     setForm({ nombre: '', marca: '', modelo: '', tipo_equipo: '', numero_serie: '', cod_inventario: '', estado: 'Operativo', id_lugar: '', id_usuario: '' });
@@ -393,14 +394,14 @@ export default function Equipos({ idEstablecimiento }: Props) {
                 if (session) {
                   await supabase.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
                 }
-                if (error) { alert('Error: ' + error.message); setCreandoUsuario(false); return; }
+                if (error) { handleError(error, 'Error al crear usuario'); setCreandoUsuario(false); return; }
                 const uid = data.user?.id;
-                if (!uid) { alert('Error: no se pudo crear el usuario'); setCreandoUsuario(false); return; }
+                if (!uid) { showError('Error: no se pudo crear el usuario'); setCreandoUsuario(false); return; }
                 const { error: insertError } = await supabase.from('usuarios').insert({
                   id: uid, uid, email: nuevoUsuarioEmail.trim(), nombre: nuevoUsuarioEmail.trim().split('@')[0],
                   id_establecimiento: idEstablecimiento, rol: 'TECNICO', activo: true,
                 });
-                if (insertError) { alert('Error al guardar: ' + insertError.message); setCreandoUsuario(false); return; }
+                if (insertError) { handleError(insertError, 'Error al guardar usuario'); setCreandoUsuario(false); return; }
                 setUsuarios(prev => [...prev, { id: uid, nombre: nuevoUsuarioEmail.trim().split('@')[0], email: nuevoUsuarioEmail.trim() }]);
                 setForm({ ...form, id_usuario: uid });
                 setBusquedaUsuario(nuevoUsuarioEmail.trim().split('@')[0]);

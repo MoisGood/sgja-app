@@ -16,6 +16,7 @@ import { usePermisosUsuario } from '../hooks/usePermisosUsuario';
 import DatosPersonalesModal from './DatosPersonalesModal';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { handleError } from '../utils/errorHandler';
 import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen } from 'lucide-react';
 import {
   LayoutDashboard,
@@ -141,15 +142,20 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
     if (idEstablecimiento) {
       obtenerEstablecimiento(idEstablecimiento)
         .then(e => { if (e) setEstablecimientoNombre(e.nombre || ''); })
-        .catch(() => {});
+        .catch(e => handleError(e, 'Error al cargar establecimiento'));
     }
-    supabase.from('config_sistema').select('nombre_sistema,subtitulo,favicon_url').eq('id', 1).single().then(({ data }) => {
-      if (data) {
-        if (data.nombre_sistema) setSistemaNombre(data.nombre_sistema);
-        if (data.subtitulo) setSistemaSubtitulo(data.subtitulo);
-        if (data.favicon_url) setSistemaLogoUrl(data.favicon_url);
+    (async () => {
+      try {
+        const { data } = await supabase.from('config_sistema').select('nombre_sistema,subtitulo,favicon_url').eq('id', 1).single();
+        if (data) {
+          if (data.nombre_sistema) setSistemaNombre(data.nombre_sistema);
+          if (data.subtitulo) setSistemaSubtitulo(data.subtitulo);
+          if (data.favicon_url) setSistemaLogoUrl(data.favicon_url);
+        }
+      } catch (e) {
+        handleError(e, 'Error al cargar configuración del sistema');
       }
-    });
+    })();
   }, [idEstablecimiento]);
 
   React.useEffect(() => {
@@ -171,7 +177,7 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
         setMinutosInactividad(config.minutosInactividad);
         cerrarAutomaticoRef.current = config.cerrarAutomatico;
       }
-    }).catch(() => {});
+    }).catch(e => handleError(e, 'Error al cargar configuración de inactividad'));
   }, [usuarioId]);
 
   function reiniciarTimerInactividad() {
@@ -242,12 +248,11 @@ export default function Layout({ children, rol, nombre, email, rutaActiva, onRut
       await supabase.auth.signOut();
       console.log(`✅ Sesión cerrada exitosamente`);
     } catch (error) {
-      console.error('❌ Error al cerrar sesión:', error);
-      // Intentar cerrar sesión de todas formas
+      handleError(error, 'Error al cerrar sesión');
       try {
         await supabase.auth.signOut();
       } catch (signOutError) {
-        console.error('❌ Error al cerrar sesión en Supabase:', signOutError);
+        handleError(signOutError, 'Error al cerrar sesión en Supabase');
       }
     }
   };
