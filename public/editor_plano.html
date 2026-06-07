@@ -65,6 +65,10 @@
   .room.editing .resize-handle { display: block; }
   .room.dragging { opacity: .8; z-index: 100; }
   .room.selected { outline: 2px solid #fbbf24; }
+  .room.no-border { border-color: transparent !important; }
+  .room.no-border:hover { border-color: transparent !important; }
+  .room.no-border.editing { border-color: transparent !important; box-shadow: 0 0 0 2px #fbbf24; }
+  .room.no-border.selected { outline: 2px solid #fbbf24; }
   .room .color-bar {
     position: absolute; top: 0; left: 0; right: 0; height: 3px;
     transition: background .2s;
@@ -141,6 +145,7 @@
   <button onclick="exportHTML()">📄 HTML</button>
   <button onclick="toggleGrid()">🔲 Cuadrícula</button>
   <button onclick="toggleMedidas()" id="btnMedidas">📏 Medidas</button>
+  <button onclick="toggleBordes()" id="btnBordes">🧱 Bordes</button>
   <span class="sep"></span>
   <button onclick="undo()" title="Ctrl+Z">↩️ Deshacer</button>
   <button onclick="redo()" title="Ctrl+Y">↪️ Rehacer</button>
@@ -300,6 +305,7 @@ function render() {
     el.style.top = r.t + 'px';
     el.style.width = r.w + 'px';
     el.style.height = r.h + 'px';
+    if (!bordesVisibles) el.classList.add('no-border');
 
     const bgColor = roomColors[r.id] || zoneColors[r.cls] || '#6366f1';
     el.style.background = bgColor;
@@ -568,6 +574,14 @@ function toggleMedidas() {
   medidasVisibles = !medidasVisibles;
   document.querySelectorAll('.xy-info').forEach(el => el.classList.toggle('hidden', !medidasVisibles));
   document.getElementById('btnMedidas').textContent = medidasVisibles ? '📏 Medidas' : '📏 Ocultas';
+}
+
+// ===== BORDES =====
+let bordesVisibles = true;
+function toggleBordes() {
+  bordesVisibles = !bordesVisibles;
+  document.querySelectorAll('.room').forEach(el => el.classList.toggle('no-border', !bordesVisibles));
+  document.getElementById('btnBordes').textContent = bordesVisibles ? '🧱 Bordes' : '🧱 Sin bordes';
 }
 
 // ===== RESIZE MAP =====
