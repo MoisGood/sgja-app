@@ -142,6 +142,9 @@
   <button onclick="toggleGrid()">🔲 Cuadrícula</button>
   <button onclick="toggleMedidas()" id="btnMedidas">📏 Medidas</button>
   <span class="sep"></span>
+  <button onclick="undo()" title="Ctrl+Z">↩️ Deshacer</button>
+  <button onclick="redo()" title="Ctrl+Y">↪️ Rehacer</button>
+  <span class="sep"></span>
   <label>Plantilla:
     <select onchange="setPreset(this.value)" style="width:100px">
       <option value="web">Web 1300×880</option>
@@ -176,6 +179,51 @@ let clipboard = null;
 let medidasVisibles = true;
 let roomColors = {};  // keyed by room id (number) → hex color string
 
+// ===== UNDO / REDO =====
+const MAX_HISTORY = 50;
+let historyStack = [];
+let historyIdx = -1;
+
+function snapshot() {
+  return {
+    rooms: rooms.map(r => ({ ...r })),
+    roomColors: { ...roomColors },
+    nextId,
+  };
+}
+
+function applySnapshot(snap) {
+  rooms = snap.rooms;
+  roomColors = snap.roomColors;
+  nextId = snap.nextId;
+  selectedId = null;
+  clearSelection();
+  render();
+  renderLegend();
+}
+
+function saveState() {
+  // discard any future states beyond current index
+  historyStack = historyStack.slice(0, historyIdx + 1);
+  historyStack.push(snapshot());
+  if (historyStack.length > MAX_HISTORY) historyStack.shift();
+  historyIdx = historyStack.length - 1;
+}
+
+function undo() {
+  if (historyIdx <= 0) { toast('↩️ No hay más acciones para deshacer'); return; }
+  historyIdx--;
+  applySnapshot(historyStack[historyIdx]);
+  toast('↩️ Deshecho');
+}
+
+function redo() {
+  if (historyIdx >= historyStack.length - 1) { toast('↪️ No hay más acciones para rehacer'); return; }
+  historyIdx++;
+  applySnapshot(historyStack[historyIdx]);
+  toast('↪️ Rehecho');
+}
+
 // ===== COLOR PRESETS =====
 const zoneColors = {
   'z-lab':'#0891b2','z-bib':'#0ea5e9','z-sala':'#8b5cf6','z-admin':'#3b82f6',
@@ -203,6 +251,7 @@ function loadJSONFile(event) {
       if (json[0].color !== undefined) {
         json.forEach((r,i) => { if (r.color) roomColors[rooms[i].id] = r.color; });
       }
+      saveState();
       render();
       renderLegend();
       toast(`✅ Cargadas ${rooms.length} salas`);
@@ -235,6 +284,7 @@ function init() {
   render();
   renderLegend();
   document.getElementById('btnEdit').textContent = editing ? '🔒 Vista' : '✏️ Editar';
+  saveState();
 }
 
 // ===== RENDER =====
@@ -270,7 +320,7 @@ function render() {
     // dblclick rename
     el.addEventListener('dblclick', () => {
       const name = prompt('Nombre:', r.txt);
-      if (name && name.trim()) { r.txt = name.trim(); render(); }
+      if (name && name.trim()) { saveState(); r.txt = name.trim(); render(); }
     });
 
     // click select
@@ -354,7 +404,7 @@ function onDrag(e) {
   if (info) info.textContent = `${Math.round(r.l)},${Math.round(r.t)} ${r.w}×${r.h}`;
 }
 function endDrag() {
-  if (dragData) { dragData.el.classList.remove('dragging'); dragData = null; }
+  if (dragData) { dragData.el.classList.remove('dragging'); saveState(); dragData = null; }
   document.removeEventListener('mousemove', onDrag);
   document.removeEventListener('mouseup', endDrag);
 }
@@ -392,6 +442,7 @@ function onResize(e) {
   if (info) info.textContent = `${Math.round(r.l)},${Math.round(r.t)} ${Math.round(r.w)}×${Math.round(r.h)}`;
 }
 function endResize() {
+  if (resizeData) saveState();
   resizeData = null;
   document.removeEventListener('mousemove', onResize);
   document.removeEventListener('mouseup', endResize);
@@ -417,6 +468,7 @@ function selectRoom(el) {
 function deleteRoom() {
   if (!selectedId) { toast('Selecciona una sala primero'); return; }
   if (!confirm('¿Eliminar esta sala?')) return;
+  saveState();
   delete roomColors[selectedId];
   rooms = rooms.filter(r => r.id !== selectedId);
   selectedId = null;
@@ -443,6 +495,7 @@ function pasteCopies() {
   if (!cantidad) return;
   const n = parseInt(cantidad);
   if (isNaN(n) || n < 1) { toast('Número inválido'); return; }
+  saveState();
 
   // extract base name and number
   const baseName = clipboard.txt.replace(/\s*\(\d+\)\s*$/g, '').trim();
@@ -472,6 +525,7 @@ function pasteCopies() {
 // ===== ROOM COLOR =====
 function changeRoomColor(hex) {
   if (!selectedId) { toast('Selecciona una sala primero'); return; }
+  saveState();
   roomColors[selectedId] = hex;
   const el = document.querySelector(`.room[data-id="${selectedId}"]`);
   if (el) el.style.background = hex;
@@ -487,6 +541,7 @@ function toggleEdit() {
 // ===== ADD ROOM =====
 function addRoom() {
   const name = prompt('Nombre de la nueva sala:') || 'Nueva sala';
+  saveState();
   rooms.push({ id: nextId++, l: 100, t: 100, w: 140, h: 105, txt: name, cls: 'z-other' });
   roomColors[nextId - 1] = '#6366f1';
   render();
@@ -592,6 +647,7 @@ function renderLegend() {
     // click on legend → add room of that type
     item.addEventListener('click', () => {
       if (!editing) toggleEdit();
+      saveState();
       rooms.push({ id: nextId++, l: 60 + rooms.length * 15, t: 60 + rooms.length * 15, w: 140, h: 105, txt: `${name} ${rooms.filter(r=>r.cls===k).length+1}`, cls: k });
       roomColors[nextId - 1] = bg;
       render();
@@ -611,6 +667,16 @@ function toast(msg) {
 
 // ===== KEYBOARD =====
 document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    e.preventDefault();
+    undo();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+    e.preventDefault();
+    redo();
+    return;
+  }
   if ((e.key === 'Delete' || e.key === 'Supr') && selectedId && editing) {
     deleteRoom();
   }
