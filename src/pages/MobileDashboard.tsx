@@ -126,6 +126,19 @@ export default function MobileDashboard({ idEstablecimiento }: Props) {
 
       <motion.button
         whileTap={{ scale: 0.95 }}
+        onClick={() => navigate('/tecnico/m/grid')}
+        style={{
+          width: '100%', padding: '12px', borderRadius: 10, border: 'none',
+          background: '#1e293b', color: '#f1f5f9', fontSize: 14, fontWeight: 600,
+          cursor: 'pointer', marginBottom: 8, display: 'flex', alignItems: 'center',
+          justifyContent: 'center', gap: 8,
+        }}
+      >
+        <Ticket size={18} />
+        Mapa de lugares
+      </motion.button>
+      <motion.button
+        whileTap={{ scale: 0.95 }}
         onClick={() => navigate('/tecnico/m/mapa')}
         style={{
           width: '100%', padding: '12px', borderRadius: 10, border: 'none',

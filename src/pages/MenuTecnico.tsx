@@ -29,6 +29,7 @@ export default function MenuTecnico({ idEstablecimiento: _idEst }: Props) {
     { icono: '📷', label: 'Accesos Rápidos', ruta: '/tecnico/accesos', desc: 'Escanear QR, tickets rápidos' },
   ] : [
     { icono: '🗺️', label: 'Mapa', ruta: '/tecnico/m/mapa', desc: 'Mapa y lugares del establecimiento' },
+    { icono: '📊', label: 'Grid', ruta: '/tecnico/m/grid', desc: 'Vista rápida de lugares' },
     { icono: '🔧', label: 'Equipos', ruta: '/tecnico/m/equipos', desc: 'Administrar equipos' },
     { icono: '📍', label: 'Ubicaciones', ruta: '/tecnico/m/ubicaciones', desc: 'Gestionar ubicaciones' },
     { icono: '⚙️', label: 'Configuración', ruta: '/tecnico/m/config', desc: 'Catálogos técnicos' },

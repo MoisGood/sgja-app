@@ -55,6 +55,7 @@ import MobileEquipos from './pages/MobileEquipos';
 import MobileUbicaciones from './pages/MobileUbicaciones';
 import MobileConfigTecnico from './pages/MobileConfigTecnico';
 import MobileDashboard from './pages/MobileDashboard';
+import MobileGrid from './pages/MobileGrid';
 import MobileQrScanner from './pages/MobileQrScanner';
 import MobileNavBar from './components/MobileNavBar';
 import QrRedirect from './pages/QrRedirect';
@@ -597,6 +598,7 @@ export default function AppContent() {
           <Route path="/tecnico/menu" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MenuTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/inicio" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileDashboard idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/mapa" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileMapa idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/grid" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileGrid idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/equipos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileEquipos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/ubicaciones" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileUbicaciones idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/config" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileConfigTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
