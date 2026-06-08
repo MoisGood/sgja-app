@@ -31,5 +31,32 @@
     { "left": 134, "top": 374, "width": 131, "height": 39, "text": "Pasillo P1. Pergola", "zone": "z-pasillo", "color": "#404040" },
     { "left": 1, "top": 357, "width": 36, "height": 85, "text": "Internado", "zone": "z-internado", "color": "#6366f1" },
     { "left": 343, "top": 94, "width": 25, "height": 43, "text": "ADS", "zone": "z-other", "color": "#751200" }
+  ],
+  "Piso 2": [
+    { "left": 3, "top": 5, "width": 68, "height": 86, "text": "Lab.Comp. 1", "zone": "z-lab", "color": "#7d4a08" },
+    { "left": 73, "top": 4, "width": 70, "height": 86, "text": "Lab.Comp.2", "zone": "z-lab", "color": "#7d4a08" },
+    { "left": 144, "top": 4, "width": 86, "height": 86, "text": "Sala Profesores", "zone": "z-sala", "color": "#8e4848" },
+    { "left": 231, "top": 5, "width": 91, "height": 86, "text": "Comedores Profesores", "zone": "z-com", "color": "#33ac11" },
+    { "left": 324, "top": 7, "width": 43, "height": 85, "text": "UTP", "zone": "z-other", "color": "#5050b9" },
+    { "left": 2, "top": 90, "width": 38, "height": 48, "text": "Locker", "zone": "z-other", "color": "#6081c3" },
+    { "left": 41, "top": 91, "width": 328, "height": 43, "text": "Pasillo P2.Rengo", "zone": "z-pasillo", "color": "#404040" },
+    { "left": 266, "top": 136, "width": 60, "height": 77, "text": "Sala 201", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 325, "top": 138, "width": 44, "height": 669, "text": "Pasillo P2.Cochrane", "zone": "z-pasillo", "color": "#404040" },
+    { "left": 37, "top": 696, "width": 291, "height": 39, "text": "Pasillo P2. Lincoyan", "zone": "z-pasillo", "color": "#404040" },
+    { "left": 35, "top": 737, "width": 95, "height": 69, "text": "Sala 211", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 38, "top": 134, "width": 53, "height": 221, "text": "Salón Medina", "zone": "z-other", "color": "#325014" },
+    { "left": 39, "top": 357, "width": 51, "height": 86, "text": "Box Dental", "zone": "z-other", "color": "#4a3654" },
+    { "left": 39, "top": 446, "width": 50, "height": 247, "text": "Gimnasio", "zone": "z-other", "color": "#837320" },
+    { "left": 1, "top": 357, "width": 36, "height": 85, "text": "Sala Musica", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 213, "width": 60, "height": 77, "text": "Sala 202", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 289, "width": 60, "height": 77, "text": "Sala 203", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 367, "width": 60, "height": 91, "text": "Hall Piso 2", "zone": "z-other", "color": "#7d4a08" },
+    { "left": 266, "top": 460, "width": 60, "height": 77, "text": "Sala 204", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 536, "width": 60, "height": 77, "text": "Sala 205", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 614, "width": 60, "height": 77, "text": "Sala 206", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 132, "top": 737, "width": 48, "height": 69, "text": "Sala 210", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 181, "top": 738, "width": 48, "height": 69, "text": "Sala 209", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 231, "top": 738, "width": 48, "height": 69, "text": "Sala 208", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 279, "top": 737, "width": 48, "height": 69, "text": "Sala 207", "zone": "z-sala", "color": "#7d4a08" }
   ]
 }
