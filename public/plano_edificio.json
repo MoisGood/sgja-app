@@ -58,5 +58,22 @@
     { "left": 181, "top": 738, "width": 48, "height": 69, "text": "Sala 209", "zone": "z-sala", "color": "#7d4a08" },
     { "left": 231, "top": 738, "width": 48, "height": 69, "text": "Sala 208", "zone": "z-sala", "color": "#7d4a08" },
     { "left": 279, "top": 737, "width": 48, "height": 69, "text": "Sala 207", "zone": "z-sala", "color": "#7d4a08" }
+  ],
+  "Piso 3": [
+    { "left": 266, "top": 136, "width": 60, "height": 77, "text": "Sala 301", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 325, "top": 137, "width": 44, "height": 669, "text": "Pasillo P3.Cochrane", "zone": "z-pasillo", "color": "#404040" },
+    { "left": 34, "top": 696, "width": 294, "height": 39, "text": "Pasillo P3. Lincoyan", "zone": "z-pasillo", "color": "#404040" },
+    { "left": 33, "top": 737, "width": 97, "height": 69, "text": "Sala 311", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 1, "top": 357, "width": 36, "height": 85, "text": "Internado", "zone": "z-internado", "color": "#7d4a08" },
+    { "left": 266, "top": 213, "width": 60, "height": 77, "text": "Sala 302", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 289, "width": 60, "height": 77, "text": "Sala 303", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 366, "width": 60, "height": 91, "text": "Hall Piso 3", "zone": "z-other", "color": "#7d4a08" },
+    { "left": 266, "top": 460, "width": 60, "height": 77, "text": "Sala 304", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 536, "width": 60, "height": 77, "text": "Sala 305", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 266, "top": 614, "width": 60, "height": 77, "text": "Sala 306", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 132, "top": 737, "width": 48, "height": 69, "text": "Sala 310", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 181, "top": 737, "width": 48, "height": 69, "text": "Sala 309", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 231, "top": 737, "width": 48, "height": 69, "text": "Sala 308", "zone": "z-sala", "color": "#7d4a08" },
+    { "left": 279, "top": 737, "width": 48, "height": 69, "text": "Sala 307", "zone": "z-sala", "color": "#7d4a08" }
   ]
 }
