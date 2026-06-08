@@ -1,28 +1,52 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Ticket, MapPin, Search, Plus, QrCode } from 'lucide-react';
+import { X, Ticket, MapPin, Search, Plus, QrCode, Loader } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface SalaData {
   left: number; top: number; width: number; height: number;
   text: string; zone: string; color: string | null;
 }
 
-export default function MobileGrid({ idEstablecimiento: _idEstablecimiento }: { idEstablecimiento: string }) {
+type Planos = Record<string, SalaData[]>;
+
+export default function MobileGrid({ idEstablecimiento }: { idEstablecimiento: string }) {
   const navigate = useNavigate();
-  const [salas, setSalas] = useState<SalaData[]>([]);
+  const [planos, setPlanos] = useState<Planos>({});
+  const [pisos, setPisos] = useState<string[]>([]);
+  const [pisoActivo, setPisoActivo] = useState(0);
   const [cargando, setCargando] = useState(true);
   const [filtro, setFiltro] = useState('');
   const [seleccionada, setSeleccionada] = useState<SalaData | null>(null);
-  const [modo, setModo] = useState<'grid' | 'buscar'>('grid');
+  const [modo, setModo] = useState<'mapa' | 'buscar'>('mapa');
   const inputRef = useRef<HTMLInputElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const lugarMap = useRef<Record<string, string>>({});
 
   useEffect(() => {
     fetch('/plano_edificio.json')
       .then(r => { if (!r.ok) throw new Error('No hay plano'); return r.json(); })
-      .then((data: SalaData[]) => { setSalas(data); setCargando(false); })
-      .catch(() => { setCargando(false); });
+      .then((data: Planos | SalaData[]) => {
+        if (Array.isArray(data)) {
+          setPlanos({ 'Piso 1': data });
+          setPisos(['Piso 1']);
+        } else {
+          setPlanos(data);
+          setPisos(Object.keys(data));
+        }
+        setCargando(false);
+      })
+      .catch(() => setCargando(false));
   }, []);
+
+  useEffect(() => {
+    if (!idEstablecimiento) return;
+    supabase.from('lugares').select('id, nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true)
+      .then(({ data }) => {
+        if (data) data.forEach(l => { lugarMap.current[l.nombre.toLowerCase().trim()] = l.id; });
+      });
+  }, [idEstablecimiento]);
 
   useEffect(() => {
     if (modo === 'buscar' && inputRef.current) inputRef.current.focus();
@@ -34,41 +58,84 @@ export default function MobileGrid({ idEstablecimiento: _idEstablecimiento }: { 
     'z-park':'#78716c','z-internado':'#f43f5e','z-pie':'#a21caf','z-other':'#6366f1','z-empty':'#334155',
   };
 
-  const filtradas = filtro
-    ? salas.filter(s => s.text.toLowerCase().includes(filtro.toLowerCase()))
-    : salas;
+  const salasActuales = planos[pisos[pisoActivo]] || [];
+  const salasVisibles = modo === 'buscar' && filtro
+    ? salasActuales.filter(s => s.text.toLowerCase().includes(filtro.toLowerCase()))
+    : salasActuales;
 
-  const maxW = Math.max(...salas.map(s => s.left + s.width), 100);
-  const cols = Math.ceil(maxW / 100);
+  const maxX = salasVisibles.length > 0 ? Math.max(...salasVisibles.map(s => s.left + s.width)) : 100;
+  const maxY = salasVisibles.length > 0 ? Math.max(...salasVisibles.map(s => s.top + s.height)) : 100;
+
+  async function abrirTicket(sala: SalaData) {
+    const key = sala.text.toLowerCase().trim();
+    const foundId = lugarMap.current[key];
+    if (foundId) {
+      navigate('/ticket?lugar=' + foundId);
+      return;
+    }
+    const { data } = await supabase
+      .from('lugares').select('id').eq('id_establecimiento', idEstablecimiento)
+      .ilike('nombre', sala.text.trim()).eq('activo', true).limit(1).maybeSingle();
+    if (data) {
+      navigate('/ticket?lugar=' + data.id);
+    } else {
+      navigate('/ticket?lugar_nombre=' + encodeURIComponent(sala.text));
+    }
+  }
 
   return (
     <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#0f172a', color: '#f1f5f9', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 16px', background: '#1e293b', borderBottom: '1px solid #334155',
+        padding: '10px 16px', background: '#1e293b', borderBottom: '1px solid #334155',
         flexShrink: 0,
       }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 22, cursor: 'pointer', padding: 4 }}>←</button>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 22, cursor: 'pointer', padding: 4, lineHeight: 1 }}>←</button>
         <span style={{ fontSize: 15, fontWeight: 600 }}>Mapa</span>
-        <button onClick={() => setModo(modo === 'buscar' ? 'grid' : 'buscar')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}>
+        <button onClick={() => setModo(modo === 'buscar' ? 'mapa' : 'buscar')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4, lineHeight: 1 }}>
           {modo === 'buscar' ? <X size={20} /> : <Search size={20} />}
         </button>
       </div>
+
+      {/* Floor tabs */}
+      {pisos.length > 1 && (
+        <div ref={tabsRef} style={{
+          display: 'flex', gap: 6, overflowX: 'auto', padding: '8px 16px',
+          background: '#1e293b', borderBottom: '1px solid #334155', flexShrink: 0,
+          scrollbarWidth: 'none',
+        }}>
+          {pisos.map((piso, i) => (
+            <button
+              key={piso}
+              onClick={() => { setPisoActivo(i); setFiltro(''); }}
+              style={{
+                padding: '5px 14px', borderRadius: 16, border: 'none', whiteSpace: 'nowrap',
+                background: i === pisoActivo ? '#3b82f6' : '#0f172a',
+                color: i === pisoActivo ? '#fff' : '#94a3b8',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+                transition: 'background .15s',
+              }}
+            >
+              {piso}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Search bar */}
       <AnimatePresence>
         {modo === 'buscar' && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', flexShrink: 0 }}>
-            <div style={{ padding: '8px 16px', background: '#1e293b' }}>
+            <div style={{ padding: '6px 16px', background: '#1e293b' }}>
               <input
                 ref={inputRef}
                 value={filtro}
                 onChange={e => setFiltro(e.target.value)}
                 placeholder="Buscar lugar..."
                 style={{
-                  width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #475569',
-                  background: '#0f172a', color: '#f1f5f9', fontSize: 14, outline: 'none',
+                  width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #475569',
+                  background: '#0f172a', color: '#f1f5f9', fontSize: 14, outline: 'none', boxSizing: 'border-box',
                 }}
               />
             </div>
@@ -76,53 +143,85 @@ export default function MobileGrid({ idEstablecimiento: _idEstablecimiento }: { 
         )}
       </AnimatePresence>
 
-      {/* Grid */}
-      <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
-        {cargando ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>Cargando...</div>
-        ) : filtradas.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
-            {filtro ? 'Sin resultados' : 'Carga un JSON desde el editor'}
-          </div>
-        ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${Math.min(cols, 4)}, 1fr)`,
-            gap: 8,
-          }}>
-            {filtradas.map((s, i) => {
+      {/* Content */}
+      {cargando ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Loader size={24} className="animate-spin" style={{ color: '#64748b' }} />
+        </div>
+      ) : salasVisibles.length === 0 ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 14 }}>
+          {filtro ? 'Sin resultados' : (pisos.length === 0 ? 'Carga un JSON desde el editor' : 'Este piso no tiene salas')}
+        </div>
+      ) : modo === 'buscar' && filtro ? (
+        /* Search results as list */
+        <div style={{ flex: 1, overflow: 'auto', padding: '8px 16px 80px' }}>
+          {salasVisibles.map((s, i) => (
+            <motion.div
+              key={i}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => { setSeleccionada(s); setFiltro(''); setModo('mapa'); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 8, marginBottom: 6,
+                background: s.color || zoneBg[s.zone] || '#334155', cursor: 'pointer',
+              }}
+            >
+              <MapPin size={16} color="#fff" />
+              <span style={{ fontSize: 13, fontWeight: 500 }}>{s.text}</span>
+              <span style={{ marginLeft: 'auto', color: 'rgba(255,255,255,.5)', fontSize: 10 }}>{pisos[pisoActivo]}</span>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        /* Map view */
+        <div style={{ flex: 1, overflow: 'auto', padding: '8px 8px 80px' }}>
+          <div style={{ position: 'relative', width: '100%', aspectRatio: `${maxX}/${maxY}`, minHeight: 200 }}>
+            {salasVisibles.map((s, i) => {
               const bg = s.color || zoneBg[s.zone] || '#6366f1';
-              const spanCol = Math.max(1, Math.round(s.width / 100));
-              const spanRow = Math.max(1, Math.round(s.height / 100));
+              const fontSize = Math.max(8, Math.min(11, s.width / s.text.length * 1.2));
+              const showText = s.width > 20 && s.height > 16;
               return (
                 <motion.div
                   key={i}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.92 }}
                   onClick={() => setSeleccionada(s)}
                   style={{
-                    background: bg, borderRadius: 10, padding: '16px 10px',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    justifyContent: 'center', cursor: 'pointer', minHeight: 80,
-                    gridColumn: `span ${Math.min(spanCol, 4)}`,
-                    gridRow: `span ${Math.min(spanRow, 2)}`,
-                    position: 'relative', overflow: 'hidden',
+                    position: 'absolute',
+                    left: `${(s.left / maxX) * 100}%`,
+                    top: `${(s.top / maxY) * 100}%`,
+                    width: `${(s.width / maxX) * 100}%`,
+                    height: `${(s.height / maxY) * 100}%`,
+                    background: bg,
+                    borderRadius: 4,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,.08)',
+                    boxSizing: 'border-box',
                   }}
                 >
+                  {showText && (
+                    <span style={{
+                      fontSize, fontWeight: 600, textAlign: 'center',
+                      color: '#fff', lineHeight: 1.2, padding: 2,
+                      textShadow: '0 1px 3px rgba(0,0,0,.6)',
+                      wordBreak: 'break-word',
+                    }}>
+                      {s.text}
+                    </span>
+                  )}
+                  {/* Status dot */}
                   <span style={{
-                    fontSize: 12, fontWeight: 600, textAlign: 'center',
-                    textShadow: '0 1px 3px rgba(0,0,0,.5)', wordBreak: 'break-word',
-                  }}>{s.text}</span>
-                  <span style={{
-                    position: 'absolute', top: 6, right: 6,
-                    width: 10, height: 10, borderRadius: '50%',
-                    background: '#22c55e', boxShadow: '0 0 6px rgba(34,197,94,.5)',
+                    position: 'absolute', top: 2, right: 2,
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: '#22c55e',
+                    boxShadow: '0 0 4px rgba(34,197,94,.6)',
                   }} />
                 </motion.div>
               );
             })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* FAB */}
       <div style={{ position: 'fixed', bottom: 24, right: 20, display: 'flex', gap: 12, zIndex: 50 }}>
@@ -179,11 +278,14 @@ export default function MobileGrid({ idEstablecimiento: _idEstablecimiento }: { 
                 </div>
                 <div>
                   <div style={{ fontSize: 18, fontWeight: 700 }}>{seleccionada.text}</div>
-                  <div style={{ fontSize: 13, color: '#94a3b8' }}>{seleccionada.zone}</div>
+                  <div style={{ fontSize: 13, color: '#94a3b8' }}>
+                    {seleccionada.zone.replace('z-', '')} · {pisos[pisoActivo]}
+                  </div>
                 </div>
               </div>
 
-              <button onClick={() => { setSeleccionada(null); navigate('/tecnico/m/equipos?lugar=' + encodeURIComponent(seleccionada.text)); }}
+              <button
+                onClick={() => { const s = seleccionada; setSeleccionada(null); abrirTicket(s); }}
                 style={{
                   width: '100%', padding: '14px', borderRadius: 10, border: 'none',
                   background: '#3b82f6', color: '#fff', fontSize: 15, fontWeight: 600,

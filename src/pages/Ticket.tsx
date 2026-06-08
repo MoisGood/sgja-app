@@ -86,6 +86,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
     const ticketId = searchParams.get('ticket');
     const lugarId = searchParams.get('lugar');
     const equipoId = searchParams.get('equipo');
+    const lugarNombre = searchParams.get('lugar_nombre');
 
     if (ticketId) {
       loadTicket(ticketId);
@@ -115,6 +116,10 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         }
       } else if (lugarId) {
         lugarSel = todosLugares.find(l => l.id === lugarId) || null;
+      }
+
+      if (!lugarSel && lugarNombre) {
+        lugarSel = todosLugares.find(l => l.nombre.toLowerCase() === lugarNombre.toLowerCase()) || null;
       }
 
       if (!lugarSel) {
