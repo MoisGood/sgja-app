@@ -2,9 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Ticket, MapPin, Search, Plus, QrCode, Loader, CheckCircle, AlertTriangle } from 'lucide-react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import type { SwiperClass } from 'swiper/react';
-import 'swiper/css';
 import { supabase } from '../lib/supabase';
 
 interface SalaData {
@@ -18,7 +15,6 @@ type Planos = Record<string, SalaData[]>;
 
 export default function MobileGrid({ idEstablecimiento }: { idEstablecimiento: string }) {
   const navigate = useNavigate();
-  const swiperRef = useRef<SwiperClass | null>(null);
   const [planos, setPlanos] = useState<Planos>({});
   const [pisos, setPisos] = useState<string[]>([]);
   const [pisoActivo, setPisoActivo] = useState(0);
@@ -105,22 +101,22 @@ export default function MobileGrid({ idEstablecimiento }: { idEstablecimiento: s
         </button>
       </div>
 
-      {/* Floor slider */}
+      {/* Floor tabs */}
       {pisos.length > 1 && (
         <div ref={tabsRef} style={{
-          display: 'flex', gap: 4, overflowX: 'auto', padding: '6px 12px',
+          display: 'flex', gap: 4, padding: '6px 12px',
           background: '#1e293b', borderBottom: '1px solid #334155', flexShrink: 0,
-          scrollbarWidth: 'none', justifyContent: 'center',
+          justifyContent: 'center',
         }}>
           {pisos.map((piso, i) => (
             <button
               key={piso}
-              onClick={() => { swiperRef.current?.slideTo(i); setFiltro(''); }}
+              onClick={() => { setPisoActivo(i); setFiltro(''); }}
               style={{
-                padding: '5px 10px', borderRadius: 12, border: 'none', whiteSpace: 'nowrap',
+                padding: '6px 14px', borderRadius: 14, border: 'none', whiteSpace: 'nowrap',
                 background: i === pisoActivo ? '#3b82f6' : '#0f172a',
                 color: i === pisoActivo ? '#fff' : '#94a3b8',
-                fontSize: 11, fontWeight: 600, cursor: 'pointer', flex: '1 0 auto', maxWidth: 100,
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', flex: 1,
                 transition: 'background .15s', opacity: i === pisoActivo ? 1 : 0.6,
               }}
             >
@@ -180,71 +176,61 @@ export default function MobileGrid({ idEstablecimiento }: { idEstablecimiento: s
           ))}
         </div>
       ) : (
-        /* Map view with Swiper */
-        <Swiper
-          onSwiper={(s) => { swiperRef.current = s; }}
-          onSlideChange={(s) => { setPisoActivo(s.activeIndex); setFiltro(''); }}
-          initialSlide={pisoActivo}
-          spaceBetween={0}
-          slidesPerView={1}
-          style={{ flex: 1, overflow: 'hidden' }}
-        >
-          {pisos.map(piso => {
-            const salas = planos[piso] || [];
-            const mX = salas.length > 0 ? Math.max(...salas.map(s => s.left + s.width)) : 100;
-            const mY = salas.length > 0 ? Math.max(...salas.map(s => s.top + s.height)) : 100;
+        /* Map view */
+        <div style={{ flex: 1, overflow: 'auto', padding: `6px 6px calc(72px + env(safe-area-inset-bottom, 0px))` }}>
+          {(() => {
+            const salas = planos[pisos[pisoActivo]] || [];
+            if (salas.length === 0) return <div style={{ padding: 40, textAlign: 'center', color: '#64748b', fontSize: 14 }}>Este piso no tiene salas</div>;
+            const mX = Math.max(...salas.map(s => s.left + s.width), 100);
+            const mY = Math.max(...salas.map(s => s.top + s.height), 100);
             return (
-              <SwiperSlide key={piso}>
-                <div style={{ height: '100%', overflow: 'auto', padding: '6px 6px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
-                  <div style={{ position: 'relative', width: '100%', aspectRatio: `${mX}/${mY}`, minHeight: 180 }}>
-                    {salas.map((s, i) => {
-                      const bg = s.color || zoneBg[s.zone] || '#6366f1';
-                      const fontSize = Math.max(7, Math.min(10, s.width / s.text.length * 1.1));
-                      const showText = s.width > 18 && s.height > 14;
-                      return (
-                        <motion.div
-                          key={i}
-                          whileTap={{ scale: 0.92 }}
-                          onClick={() => setSeleccionada(s)}
-                          style={{
-                            position: 'absolute',
-                            left: `${(s.left / mX) * 100}%`,
-                            top: `${(s.top / mY) * 100}%`,
-                            width: `${(s.width / mX) * 100}%`,
-                            height: `${(s.height / mY) * 100}%`,
-                            background: bg,
-                            borderRadius: 3,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer', overflow: 'hidden',
-                            border: '1px solid rgba(255,255,255,.08)',
-                            boxSizing: 'border-box',
-                          }}
-                        >
-                          {showText && (
-                            <span style={{
-                              fontSize, fontWeight: 600, textAlign: 'center',
-                              color: '#fff', lineHeight: 1.15, padding: 1,
-                              textShadow: '0 1px 3px rgba(0,0,0,.6)',
-                              wordBreak: 'break-word',
-                            }}>
-                              {s.text}
-                            </span>
-                          )}
-                          <span style={{
-                            position: 'absolute', top: 1, right: 1,
-                            width: 5, height: 5, borderRadius: '50%',
-                            background: '#22c55e',
-                            boxShadow: '0 0 3px rgba(34,197,94,.6)',
-                          }} />
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </SwiperSlide>
+              <div style={{ position: 'relative', width: '100%', aspectRatio: `${mX}/${mY}`, minHeight: 180 }}>
+                {salas.map((s, i) => {
+                  const bg = s.color || zoneBg[s.zone] || '#6366f1';
+                  const fontSize = Math.max(7, Math.min(10, s.width / Math.max(s.text.length, 1) * 1.1));
+                  const showText = s.width > 18 && s.height > 14;
+                  return (
+                    <motion.div
+                      key={i}
+                      whileTap={{ scale: 0.92 }}
+                      onClick={() => setSeleccionada(s)}
+                      style={{
+                        position: 'absolute',
+                        left: `${(s.left / mX) * 100}%`,
+                        top: `${(s.top / mY) * 100}%`,
+                        width: `${(s.width / mX) * 100}%`,
+                        height: `${(s.height / mY) * 100}%`,
+                        background: bg,
+                        borderRadius: 3,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', overflow: 'hidden',
+                        border: '1px solid rgba(255,255,255,.08)',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {showText && (
+                        <span style={{
+                          fontSize, fontWeight: 600, textAlign: 'center',
+                          color: '#fff', lineHeight: 1.15, padding: 1,
+                          textShadow: '0 1px 3px rgba(0,0,0,.6)',
+                          wordBreak: 'break-word',
+                        }}>
+                          {s.text}
+                        </span>
+                      )}
+                      <span style={{
+                        position: 'absolute', top: 1, right: 1,
+                        width: 5, height: 5, borderRadius: '50%',
+                        background: '#22c55e',
+                        boxShadow: '0 0 3px rgba(34,197,94,.6)',
+                      }} />
+                    </motion.div>
+                  );
+                })}
+              </div>
             );
-          })}
-        </Swiper>
+          })()}
+        </div>
       )}
 
       {/* FAB */}

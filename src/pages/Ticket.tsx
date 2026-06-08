@@ -93,7 +93,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
       return;
     }
 
-    if (!lugarId && !equipoId) {
+    if (!lugarId && !equipoId && !lugarNombre) {
       setMensaje('⚠️ Falta parámetro ?lugar=ID o ?equipo=ID en la URL.');
       setPaso('done');
       return;
