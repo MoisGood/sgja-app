@@ -1,4 +1,16 @@
 {
+  "Subterráneo": [
+    { "left": 3, "top": 5, "width": 88, "height": 86, "text": "Sala Reunión", "zone": "z-other", "color": "#7d4a08" },
+    { "left": 94, "top": 7, "width": 44, "height": 86, "text": "Bodega UTP", "zone": "z-other", "color": "#6366f1" },
+    { "left": 138, "top": 7, "width": 44, "height": 86, "text": "Centro Estudiantes", "zone": "z-other", "color": "#8e4848" },
+    { "left": 182, "top": 7, "width": 44, "height": 86, "text": "Centro Padres", "zone": "z-other", "color": "#33ac11" },
+    { "left": 226, "top": 6, "width": 49, "height": 88, "text": "Fotocopiados", "zone": "z-other", "color": "#02a2ca" },
+    { "left": 275, "top": 7, "width": 49, "height": 86, "text": "Auxiliares", "zone": "z-other", "color": "#00012e" },
+    { "left": 324, "top": 7, "width": 43, "height": 85, "text": "Bodega 3", "zone": "z-other", "color": "#bdbdc7" },
+    { "left": 2, "top": 90, "width": 91, "height": 47, "text": "Biblioteca", "zone": "z-bib", "color": "#6081c3" },
+    { "left": 94, "top": 95, "width": 277, "height": 39, "text": "Pasillo P0.Rengo", "zone": "z-pasillo", "color": "#404040" },
+    { "left": 1, "top": 357, "width": 89, "height": 85, "text": "Internado", "zone": "z-internado", "color": "#6366f1" }
+  ],
   "Piso 1": [
     { "left": 3, "top": 5, "width": 47, "height": 86, "text": "Sala 2", "zone": "z-other", "color": "#7d4a08" },
     { "left": 50, "top": 6, "width": 44, "height": 86, "text": "Sala 1", "zone": "z-other", "color": "#7d4a08" },
