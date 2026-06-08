@@ -151,9 +151,9 @@ export default function MobileGrid({ idEstablecimiento }: { idEstablecimiento: s
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Loader size={24} className="animate-spin" style={{ color: '#64748b' }} />
         </div>
-      ) : salasVisibles.length === 0 ? (
+      ) : modo === 'buscar' && filtro && salasVisibles.length === 0 ? (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 14 }}>
-          {filtro ? 'Sin resultados' : (pisos.length === 0 ? 'Carga un JSON desde el editor' : 'Este piso no tiene salas')}
+          Sin resultados
         </div>
       ) : modo === 'buscar' && filtro ? (
         /* Search results as list */
@@ -176,60 +176,69 @@ export default function MobileGrid({ idEstablecimiento }: { idEstablecimiento: s
           ))}
         </div>
       ) : (
-        /* Map view */
-        <div style={{ flex: 1, overflow: 'auto', padding: `6px 6px calc(72px + env(safe-area-inset-bottom, 0px))` }}>
-          {(() => {
-            const salas = planos[pisos[pisoActivo]] || [];
-            if (salas.length === 0) return <div style={{ padding: 40, textAlign: 'center', color: '#64748b', fontSize: 14 }}>Este piso no tiene salas</div>;
+        /* Map view — todos los pisos renderizados, solo visible el activo */
+        <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+          {pisos.map((piso, idx) => {
+            const salas = planos[piso] || [];
+            const esActivo = idx === pisoActivo;
+            if (salas.length === 0) return null;
             const mX = Math.max(...salas.map(s => s.left + s.width), 100);
             const mY = Math.max(...salas.map(s => s.top + s.height), 100);
             return (
-              <div style={{ position: 'relative', width: '100%', aspectRatio: `${mX}/${mY}`, minHeight: 180 }}>
-                {salas.map((s, i) => {
-                  const bg = s.color || zoneBg[s.zone] || '#6366f1';
-                  const fontSize = Math.max(7, Math.min(10, s.width / Math.max(s.text.length, 1) * 1.1));
-                  const showText = s.width > 18 && s.height > 14;
-                  return (
-                    <motion.div
-                      key={i}
-                      whileTap={{ scale: 0.92 }}
-                      onClick={() => setSeleccionada(s)}
-                      style={{
-                        position: 'absolute',
-                        left: `${(s.left / mX) * 100}%`,
-                        top: `${(s.top / mY) * 100}%`,
-                        width: `${(s.width / mX) * 100}%`,
-                        height: `${(s.height / mY) * 100}%`,
-                        background: bg,
-                        borderRadius: 3,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', overflow: 'hidden',
-                        border: '1px solid rgba(255,255,255,.08)',
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      {showText && (
+              <div key={piso} style={{
+                position: 'absolute', inset: 0, overflow: 'auto',
+                padding: '6px 6px calc(72px + env(safe-area-inset-bottom, 0px))',
+                opacity: esActivo ? 1 : 0,
+                pointerEvents: esActivo ? 'auto' : 'none',
+                transition: 'opacity .12s',
+              }}>
+                <div style={{ position: 'relative', width: '100%', aspectRatio: `${mX}/${mY}`, minHeight: 180 }}>
+                  {salas.map((s, i) => {
+                    const bg = s.color || zoneBg[s.zone] || '#6366f1';
+                    const fontSize = Math.max(7, Math.min(10, s.width / Math.max(s.text.length, 1) * 1.1));
+                    const showText = s.width > 18 && s.height > 14;
+                    return (
+                      <motion.div
+                        key={i}
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => setSeleccionada(s)}
+                        style={{
+                          position: 'absolute',
+                          left: `${(s.left / mX) * 100}%`,
+                          top: `${(s.top / mY) * 100}%`,
+                          width: `${(s.width / mX) * 100}%`,
+                          height: `${(s.height / mY) * 100}%`,
+                          background: bg,
+                          borderRadius: 3,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer', overflow: 'hidden',
+                          border: '1px solid rgba(255,255,255,.08)',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        {showText && (
+                          <span style={{
+                            fontSize, fontWeight: 600, textAlign: 'center',
+                            color: '#fff', lineHeight: 1.15, padding: 1,
+                            textShadow: '0 1px 3px rgba(0,0,0,.6)',
+                            wordBreak: 'break-word',
+                          }}>
+                            {s.text}
+                          </span>
+                        )}
                         <span style={{
-                          fontSize, fontWeight: 600, textAlign: 'center',
-                          color: '#fff', lineHeight: 1.15, padding: 1,
-                          textShadow: '0 1px 3px rgba(0,0,0,.6)',
-                          wordBreak: 'break-word',
-                        }}>
-                          {s.text}
-                        </span>
-                      )}
-                      <span style={{
-                        position: 'absolute', top: 1, right: 1,
-                        width: 5, height: 5, borderRadius: '50%',
-                        background: '#22c55e',
-                        boxShadow: '0 0 3px rgba(34,197,94,.6)',
-                      }} />
-                    </motion.div>
-                  );
-                })}
+                          position: 'absolute', top: 1, right: 1,
+                          width: 5, height: 5, borderRadius: '50%',
+                          background: '#22c55e',
+                          boxShadow: '0 0 3px rgba(34,197,94,.6)',
+                        }} />
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             );
-          })()}
+          })}
         </div>
       )}
 
