@@ -1,0 +1,786 @@
+[
+  {
+    "id": "5746637",
+    "rut": "5.746.637-5",
+    "nombre": "CONTRERAS BALLESTEROS AIDA VERONICA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "5822957",
+    "rut": "5.822.957-1",
+    "nombre": "LLANOS CIFUENTES IRIS AMERICA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "6013213",
+    "rut": "6.013.213-5",
+    "nombre": "BURGOS FIGUEROA LEONEL",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "6238874",
+    "rut": "6.238.874-9",
+    "nombre": "PRADO RIQUELME RICARDO HERNAN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "6468574",
+    "rut": "6.468.574-0",
+    "nombre": "SANCHEZ MERINO LUIS ALEJO",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "6476558",
+    "rut": "6.476.558-2",
+    "nombre": "PINO VALENZUELA CARLOS RENE",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "6517089",
+    "rut": "6.517.089-2",
+    "nombre": "CHAVARRIA PINTO MIRTHA ISAURA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "6883146",
+    "rut": "6.883.146-6",
+    "nombre": "ZAMBRANO FLORES NORA DEL CARMEN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "6989151",
+    "rut": "6.989.151-9",
+    "nombre": "DEL CANTO ORTIZ SANDRA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "7026191",
+    "rut": "7.026.191-K",
+    "nombre": "VARGAS MANRIQUEZ MARIA DEL CARMEN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "7330667",
+    "rut": "7.330.667-1",
+    "nombre": "JIMÉNEZ RAMÍREZ ALICIA EUGENIA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "7457465",
+    "rut": "7.457.465-3",
+    "nombre": "VELOSO FREDES OSCAR ARMANDO",
+    "email": "oscar.velosof@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "7577764",
+    "rut": "7.577.764-7",
+    "nombre": "GALLEGUILLOS VALENZUELA MARIA CRISTINA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "7703303",
+    "rut": "7.703.303-3",
+    "nombre": "URIBE URIBE LUIS ANTONIO",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "7707660",
+    "rut": "7.707.660-3",
+    "nombre": "ARAVENA ORMEÑO BERNARDO DEL TRÁNSITO",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "7874741",
+    "rut": "7.874.741-2",
+    "nombre": "ZAPATA AEDO ISABEL MAGALY",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8031702",
+    "rut": "8.031.702-6",
+    "nombre": "MELLADO HIDALGO GEMA DEL CARMEN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8066945",
+    "rut": "8.066.945-3",
+    "nombre": "RIVEROS SEPULVEDA LUISA SUSANA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8181180",
+    "rut": "8.181.180-6",
+    "nombre": "ROJAS PEREZ NANCY IRIS",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8209213",
+    "rut": "8.209.213-7",
+    "nombre": "CAUTIVO BALTIERRA ELENA DEL CARMEN",
+    "email": "elena.cautivo@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "8211498",
+    "rut": "8.211.498-K",
+    "nombre": "NAVARRETE VALENZUELA PATRICIA ESTER",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8232443",
+    "rut": "8.232.443-7",
+    "nombre": "ARIAS FRIZ BERNARDA SONIA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8262950",
+    "rut": "8.262.950-5",
+    "nombre": "GUZMAN REYES NORMA DE LAS MERCEDES",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8419936",
+    "rut": "8.419.936-2",
+    "nombre": "JUAREZ VALLADARES MYRNA LORENA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8742278",
+    "rut": "8.742.278-K",
+    "nombre": "BURGOS HERNANDEZ ADRIANA FRANCISCA",
+    "email": "adriana.burgos@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "8815081",
+    "rut": "8.815.081-3",
+    "nombre": "RAMIREZ QUINTEROS INES TERESA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8852117",
+    "rut": "8.852.117-K",
+    "nombre": "QUIÑONES MEDINA MIREYA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8874969",
+    "rut": "8.874.969-3",
+    "nombre": "CISTERNAS RIFFO MARTA ELENA",
+    "email": "marta.cisternas@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "8885852",
+    "rut": "8.885.852-2",
+    "nombre": "SOTO BANAREZ NILSA",
+    "email": "nilsa.sotob@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "8915430",
+    "rut": "8.915.430-8",
+    "nombre": "VIDAL ROMERO FRANCISCA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "8931041",
+    "rut": "8.931.041-5",
+    "nombre": "RUDOLPH SANHUEZA LISBECK CASSANDRA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9045521",
+    "rut": "9.045.521-4",
+    "nombre": "FIGUEROA GUTIERREZ MIGUEL ANGEL",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9055626",
+    "rut": "9.055.626-6",
+    "nombre": "VALLEJOS AVILA PILAR CARMEN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9168471",
+    "rut": "9.168.471-3",
+    "nombre": "AGUILERA SEGUEL PATRICIA ELENA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9184323",
+    "rut": "9.184.323-4",
+    "nombre": "VERA REICHELT SUSANA FRANCISCA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9209703",
+    "rut": "9.209.703-K",
+    "nombre": "JARA ARANCIBIA PATRICIA ROXANA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9273690",
+    "rut": "9.273.690-3",
+    "nombre": "GALLEGOS HOTT ELBA PATRICIA",
+    "email": "elba.gallegos@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "9420823",
+    "rut": "9.420.823-8",
+    "nombre": "DEL VALLE CARRASCO MARIA CECILIA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9425988",
+    "rut": "9.425.988-6",
+    "nombre": "GAVILAN SANHUEZA JESSICA ADELA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9441871",
+    "rut": "9.441.871-2",
+    "nombre": "VASQUEZ SANTIBANEZ MARIA ELENA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9451581",
+    "rut": "9.451.581-5",
+    "nombre": "PIÑEIRO JELDRES CLAUDINA ISABEL",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9459793",
+    "rut": "9.459.793-5",
+    "nombre": "HERMOSILLA SOLIS SOFIA ANGELICA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9464924",
+    "rut": "9.464.924-2",
+    "nombre": "Gómez Aedo Walter Antonio",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9531260",
+    "rut": "9.531.260-8",
+    "nombre": "CARRILLO RIVAS MARITZA IVON",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9822943",
+    "rut": "9.822.943-4",
+    "nombre": "NAVARRETE ARAYA MARIA ISABEL",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "9945178",
+    "rut": "9.945.178-5",
+    "nombre": "VILLAGRAN MOLINA JESSICA DEL CARMEN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "10013370",
+    "rut": "10.013.370-9",
+    "nombre": "RIVEROS PEREZ SANDRA PAMELA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "10308656",
+    "rut": "10.308.656-6",
+    "nombre": "PEREZ LIENCURA FRANCISCA BEATRIZ",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "10316047",
+    "rut": "10.316.047-2",
+    "nombre": "LAGOS VIVANCO SUSANA JACQUELINE",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "10332658",
+    "rut": "10.332.658-3",
+    "nombre": "PEDRERO PALMA PATRICIA XIMENA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "10717936",
+    "rut": "10.717.936-4",
+    "nombre": "ALBORNOZ NUÑEZ MARIA GABRIELA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "10950365",
+    "rut": "10.950.365-7",
+    "nombre": "FUENTES GARRIDO MARTA EMILIA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "11290932",
+    "rut": "11.290.932-K",
+    "nombre": "GALLARDO ZAPATA IRENE INGRID",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "11684715",
+    "rut": "11.684.715-9",
+    "nombre": "HERNANDEZ CARCAMO JIMENA PATRICIA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "11729321",
+    "rut": "11.729.321-1",
+    "nombre": "CONTRERAS CERON MARIO ALEXIS",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "11959953",
+    "rut": "11.959.953-9",
+    "nombre": "MENDOZA TORRES MARIA ISABEL",
+    "email": "maria.mendozat@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "12001958",
+    "rut": "12.001.958-9",
+    "nombre": "Gutiérrez Uribe Elena Gloria",
+    "email": "elena.gutierrezu@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "12020242",
+    "rut": "12.020.242-1",
+    "nombre": "PALMA TAPIA CARMEN CAROL",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "12300104",
+    "rut": "12.300.104-4",
+    "nombre": "PAREDES MONARES ALEX EDUARD",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "12553873",
+    "rut": "12.553.873-8",
+    "nombre": "HIDALGO RAIN XIMENA DEL CARMEN",
+    "email": "ximena.hidalgo@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "12919306",
+    "rut": "12.919.306-9",
+    "nombre": "BELMAR BUSTOS JESSICA ANDREA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "12971254",
+    "rut": "12.971.254-6",
+    "nombre": "CAMAÑO CISTERNA ROSSY PAMELA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "12975610",
+    "rut": "12.975.610-1",
+    "nombre": "TRONCOSO MONSALVE NERCISA DE LAS MERCEDES",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "13006417",
+    "rut": "13.006.417-5",
+    "nombre": "VALLEJOS ARAVENA JESSICA MAGALY",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "13102756",
+    "rut": "13.102.756-7",
+    "nombre": "PINCHEIRA REYES LILIANA ALEJANDRA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "13105347",
+    "rut": "13.105.347-9",
+    "nombre": "ESTRADA OBREQUE CRISTIAN RODRIGO",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "13312214",
+    "rut": "13.312.214-1",
+    "nombre": "AGUILAR SAEZ YOHANA ESTELA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "13954855",
+    "rut": "13.954.855-8",
+    "nombre": "FIGUEROA SANHUEZA ALFONSO DAVID",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "14030301",
+    "rut": "14.030.301-1",
+    "nombre": "ORTEGA BERTIN ISABEL ANDREA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "14280179",
+    "rut": "14.280.179-5",
+    "nombre": "MANRIQUEZ GARAY ANA ANGELICA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15179423",
+    "rut": "15.179.423-8",
+    "nombre": "MARDONES ABARCA OMAR ANTONIO",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15222624",
+    "rut": "15.222.624-1",
+    "nombre": "HERNANDEZ CONTRERAS ROMMY VALENTINA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15223858",
+    "rut": "15.223.858-4",
+    "nombre": "VIVEROS ITURRIA KAREN ANDREA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15551133",
+    "rut": "15.551.133-8",
+    "nombre": "FAJARDO BERNAL MARIA FERNANDA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15579739",
+    "rut": "15.579.739-8",
+    "nombre": "MOYA CACERES JUAN PABLO",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15617229",
+    "rut": "15.617.229-4",
+    "nombre": "SAN MARTIN ESPINOZA PAMELA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15659249",
+    "rut": "15.659.249-8",
+    "nombre": "REYES VELÁSQUEZ NATALIA GUISELA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15671518",
+    "rut": "15.671.518-2",
+    "nombre": "MOYA DIAZ WENDY ELIZABETH",
+    "email": "wendy.moya@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "15684482",
+    "rut": "15.684.482-9",
+    "nombre": "ZEPEDA REBOLLEDO MOISES SEBASTIAN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15855287",
+    "rut": "15.855.287-6",
+    "nombre": "Stuardo Escobedo Jocelyn Julliet",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "15945642",
+    "rut": "15.945.642-0",
+    "nombre": "Godoy Chanqueo Joan Nathalie",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "16154002",
+    "rut": "16.154.002-1",
+    "nombre": "ARRAU VALENZUELA ELVIRA ROSARIO",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "16167809",
+    "rut": "16.167.809-0",
+    "nombre": "SILVA OSORES FLOR CRISTINA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "16404511",
+    "rut": "16.404.511-0",
+    "nombre": "ROA ALARCON SUSANA ANDREA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "16513907",
+    "rut": "16.513.907-0",
+    "nombre": "Bravo Carrillo Marcelo Hernan",
+    "email": "marcelo.bravo@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "16763711",
+    "rut": "16.763.711-6",
+    "nombre": "NAVARRO HERRERA ALVARO HERNAN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "16807993",
+    "rut": "16.807.993-1",
+    "nombre": "SAEZ RIVERA YASNA VERONICA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "17320802",
+    "rut": "17.320.802-2",
+    "nombre": "OPORTUS CUEVAS ANA PAULINA",
+    "email": "ana.oportus@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "17349115",
+    "rut": "17.349.115-8",
+    "nombre": "GAMONAL JARA CARLOS HERNAN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "17349749",
+    "rut": "17.349.749-0",
+    "nombre": "LAGOS RIFFO VIVIANA BELEN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "17571181",
+    "rut": "17.571.181-3",
+    "nombre": "Fernandez Hormazabal Hernan Benito",
+    "email": "hernan.fernandezh@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "17573711",
+    "rut": "17.573.711-1",
+    "nombre": "CORDOVA ACOSTA VALESKA MARIA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "17574529",
+    "rut": "17.574.529-7",
+    "nombre": "SEPULVEDA QUIJADA CAMILA CONSTANZA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "17614158",
+    "rut": "17.614.158-1",
+    "nombre": "Orozco Vilugrón Victor Ignacio",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "17841707",
+    "rut": "17.841.707-K",
+    "nombre": "DEDIAZY CARTES MICHEL ALEXANDRA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "17850484",
+    "rut": "17.850.484-3",
+    "nombre": "CARRILLO POLANCO MONICA BELEN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "17900874",
+    "rut": "17.900.874-2",
+    "nombre": "INOSTROZA ACUÑA BARBARA BELEN",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "18068513",
+    "rut": "18.068.513-8",
+    "nombre": "FONSECA FERREIRA MARTA ELISA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "18197364",
+    "rut": "18.197.364-1",
+    "nombre": "JARA RUIZ BASTHIAN ABELARDO",
+    "email": "basthian.jara@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "18808535",
+    "rut": "18.808.535-0",
+    "nombre": "VASQUEZ NORIEGA CAMILA FERNANDA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "18845952",
+    "rut": "18.845.952-8",
+    "nombre": "VALLEJOS RIQUELME VICTOR MANUEL",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "18962272",
+    "rut": "18.962.272-4",
+    "nombre": "Lira Bustos Valentina Alicia",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "18978726",
+    "rut": "18.978.726-K",
+    "nombre": "CASTILLO PRADENA MATIAS EXEQUIEL",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "19108848",
+    "rut": "19.108.848-4",
+    "nombre": "SOTO DROGUETT CAMILA PAZ",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "19109580",
+    "rut": "19.109.580-4",
+    "nombre": "Poblete Castillo Victoria Scarlett",
+    "email": "victoria.poblete@andaliensur.cl",
+    "lugar": ""
+  },
+  {
+    "id": "19599559",
+    "rut": "19.599.559-1",
+    "nombre": "Jofré Mendoza Victoria Belén",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "19686066",
+    "rut": "19.686.066-5",
+    "nombre": "VEGA OJEDA BENJAMIN MATIAS",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "19907415",
+    "rut": "19.907.415-6",
+    "nombre": "DIAZ REYEZ BARBARA IGNACIA",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "20022919",
+    "rut": "20.022.919-3",
+    "nombre": "Bon Pérez Viviana Anastassia",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "20149325",
+    "rut": "20.149.325-0",
+    "nombre": "Domínguez Varela Jonathan Alejandro",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "20687636",
+    "rut": "20.687.636-0",
+    "nombre": "Dinamarca Godoy Kathalina Inacia",
+    "email": "",
+    "lugar": ""
+  },
+  {
+    "id": "20910418",
+    "rut": "20.910.418-0",
+    "nombre": "Carrasco Garcia Catalina Almendra",
+    "email": "catalina.carrasco@andaliensur.cl",
+    "lugar": ""
+  }
+]
