@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { Map, Ticket, ClipboardList, ChevronRight, Loader } from 'lucide-react';
+import { Map, ChevronRight, Loader, ArrowLeft } from 'lucide-react';
 import MobileSwipeWrapper from '../components/MobileSwipeWrapper';
 import { supabase } from '../lib/supabase';
 import { tecnicoCache } from '../services/tecnicoCache';
@@ -46,7 +46,6 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
   const [lugares, setLugares] = useState<Lugar[]>([]);
   const [cargando, setCargando] = useState(true);
   const [reqsPorLugar, setReqsPorLugar] = useState<Record<string, ReqPendiente[]>>({});
-  const [expanded, setExpanded] = useState<string | null>(null);
   const [pisoActivo, setPisoActivo] = useState(0);
 
   useEffect(() => {
@@ -93,9 +92,19 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
   return (
     <MobileSwipeWrapper>
     <div style={{ padding: '16px 0', maxWidth: 500, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1A3C6B', margin: '0 0 4px 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <Map size={20} /> Lugares
-      </h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px', marginBottom: 8 }}>
+        <motion.button whileTap={{ scale: 0.9 }}
+          onClick={() => navigate('/tecnico/m/inicio')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            color: '#1A3C6B', display: 'flex', alignItems: 'center',
+          }}>
+          <ArrowLeft size={22} />
+        </motion.button>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1A3C6B', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Map size={20} /> Lugares
+        </h1>
+      </div>
 
       <Swiper
         modules={[Pagination]}
@@ -146,7 +155,7 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
                         }}
                       >
                         <div
-                          onClick={() => { if (sinSoporte) return; setExpanded(expanded === l.id ? null : l.id); }}
+                          onClick={() => { if (sinSoporte) return; navigate(`/ticket?lugar=${l.id}`); }}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
                             cursor: sinSoporte ? 'default' : 'pointer',
@@ -163,71 +172,8 @@ export default function MobileMapa({ idEstablecimiento }: Props) {
                               {sinSoporte ? ' · 🔒 Sin soporte' : pends.length > 0 && ` · ${pends.length} pendiente${pends.length > 1 ? 's' : ''}`}
                             </div>
                           </div>
-                          <motion.span
-                            animate={{ rotate: expanded === l.id ? 90 : 0 }}
-                            transition={{ duration: 0.15 }}
-                            style={{ color: '#D1D5DB', flexShrink: 0, display: 'flex' }}
-                          ><ChevronRight size={16} /></motion.span>
+                          <span style={{ color: '#D1D5DB', flexShrink: 0 }}><ChevronRight size={16} /></span>
                         </div>
-
-                        {expanded === l.id && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            transition={{ duration: 0.2, ease: 'easeOut' }}
-                            style={{ padding: '0 14px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}
-                          >
-                            {sinSoporte ? (
-                              <div style={{ padding: '10px', fontSize: 12, color: '#ef4444', textAlign: 'center', fontWeight: 500 }}>🔒 Lugar sin soporte activo</div>
-                            ) : (<>
-                            <motion.button
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => navigate(`/ticket?lugar=${l.id}`)}
-                              style={{
-                                width: '100%', padding: '10px', borderRadius: 8, border: 'none',
-                                background: '#1e40af', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                              }}
-                            >
-                              <Ticket size={16} /> Hacer ticket
-                            </motion.button>
-                            {pends.length > 0 && (
-                              <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate(`/tecnico/requerimientos?lugar=${l.id}`)}
-                                style={{
-                                  width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #D1D5DB',
-                                  background: '#fff', color: '#374151', fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                }}
-                              >
-                                <ClipboardList size={16} /> Ver {pends.length} ticket{pends.length > 1 ? 's' : ''} pendiente{pends.length > 1 ? 's' : ''}
-                              </motion.button>
-                            )}
-                            {pends.length > 0 && (
-                              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                {pends.slice(0, 3).map(r => (
-                                  <div key={r.id} style={{
-                                    padding: '6px 10px', background: '#F9FAFB', borderRadius: 6,
-                                    border: '1px solid #F3F4F6', fontSize: 12,
-                                  }}>
-                                    <div style={{ fontWeight: 500, color: '#1F2937' }}>{r.tipo_requerimiento}</div>
-                                    <div style={{ display: 'flex', gap: 6, color: '#9CA3AF', fontSize: 10, marginTop: 1 }}>
-                                      <span>{r.prioridad}</span>
-                                      <span>{new Date(r.created_at).toLocaleDateString('es-CL')}</span>
-                                    </div>
-                                  </div>
-                                ))}
-                                {pends.length > 3 && (
-                                  <span style={{ fontSize: 11, color: '#3B82F6', textAlign: 'center' }}>
-                                    +{pends.length - 3} más
-                                  </span>
-                                )}
-                              </div>
-                              )}
-                            </>)}
-                          </motion.div>
-                        )}
                       </motion.div>
                     );
                   })}

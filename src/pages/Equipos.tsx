@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
-import { handleError, showError } from '../utils/errorHandler';
+import { handleError, showError, showSuccess } from '../utils/errorHandler';
 import type { Equipo, Lugar } from '../types';
 
 interface Props { idEstablecimiento: string }
@@ -29,6 +29,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
   const [modalCrearUsuario, setModalCrearUsuario] = useState(false);
   const [nuevoUsuarioEmail, setNuevoUsuarioEmail] = useState('');
   const [creandoUsuario, setCreandoUsuario] = useState(false);
+  const [tabEquipos, setTabEquipos] = useState<'equipos' | 'usuarios'>('equipos');
 
   // Scanner
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -206,6 +207,60 @@ export default function Equipos({ idEstablecimiento }: Props) {
           setShowForm(true);
         }} style={sBtn}>➕ Nuevo</button>
       </div>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        {(['equipos', 'usuarios'] as const).map(t => (
+          <button key={t} onClick={() => setTabEquipos(t)}
+            style={{
+              padding: '8px 16px', borderRadius: 8, border: 'none',
+              background: tabEquipos === t ? '#1A3C6B' : '#F3F4F6',
+              color: tabEquipos === t ? '#fff' : '#374151',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}>
+            {t === 'equipos' ? '🔧 Equipos' : '👤 Usuarios'}
+          </button>
+        ))}
+      </div>
+
+      {tabEquipos === 'usuarios' ? (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: '#0f172a', color: '#94a3b8' }}>
+                <th style={thS}>Usuario</th><th style={thS}>Correo</th><th style={thS}>Lugar</th><th style={thS}>Equipo</th><th style={thS}>Cód. Inventario</th><th style={thS}>Estado</th><th style={thS}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                const rows = usuarios
+                  .filter(u => equipos.some(e => e.id_usuario === u.id))
+                  .flatMap(u => equipos.filter(e => e.id_usuario === u.id).map(eq => ({ u, eq })));
+                return rows.length === 0 ? (
+                  <tr><td colSpan={7} style={{ textAlign: 'center', padding: 24, color: '#64748b' }}>Sin usuarios con equipos asignados</td></tr>
+                ) : rows.map(({ u, eq }) => (
+                  <tr key={eq.id} style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={tdS}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span>👤</span> {u.nombre}
+                      </span>
+                    </td>
+                    <td style={{ ...tdS, color: '#94a3b8', fontSize: 12 }}>{u.email}</td>
+                    <td style={tdS}>{lugares.find(l => l.id === eq.id_lugar)?.nombre || '—'}</td>
+                    <td style={tdS}>{eq.nombre}</td>
+                    <td style={{ ...tdS, color: '#94a3b8' }}>{eq.cod_inventario || '—'}</td>
+                    <td style={tdS}><EstadoBadge estado={eq.estado} /></td>
+                    <td style={tdS}>
+                      <button onClick={() => editar(eq)} style={{ ...sBtn, padding: '3px 8px', fontSize: 11, marginRight: 4 }}>✏️</button>
+                      <button onClick={() => eliminar(eq.id)} style={{ ...sBtn, padding: '3px 8px', fontSize: 11 }}>🗑️</button>
+                    </td>
+                  </tr>
+                ));
+              })()}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <>
 
       {showForm && (
         <div style={{ background: '#0f172a', border: '1px solid #475569', borderRadius: 8, padding: 16, marginBottom: 16 }}>
@@ -397,18 +452,18 @@ export default function Equipos({ idEstablecimiento }: Props) {
                 if (error) { handleError(error, 'Error al crear usuario'); setCreandoUsuario(false); return; }
                 const uid = data.user?.id;
                 if (!uid) { showError('Error: no se pudo crear el usuario'); setCreandoUsuario(false); return; }
-                const { error: insertError } = await supabase.from('usuarios').insert({
-                  id: uid, uid, email: nuevoUsuarioEmail.trim(), nombre: nuevoUsuarioEmail.trim().split('@')[0],
-                  id_establecimiento: idEstablecimiento, rol: 'TECNICO', activo: true,
+                const { error: insertError } = await supabase.from('solicitudes_registro').insert({
+                  uid,
+                  nombre: nuevoUsuarioEmail.trim().split('@')[0],
+                  apellidos: '',
+                  correo: nuevoUsuarioEmail.trim(),
+                  estado: 'pendiente',
                 });
-                if (insertError) { handleError(insertError, 'Error al guardar usuario'); setCreandoUsuario(false); return; }
-                setUsuarios(prev => [...prev, { id: uid, nombre: nuevoUsuarioEmail.trim().split('@')[0], email: nuevoUsuarioEmail.trim() }]);
-                setForm({ ...form, id_usuario: uid });
-                setBusquedaUsuario(nuevoUsuarioEmail.trim().split('@')[0]);
-                setUsuarioSelNombre(nuevoUsuarioEmail.trim().split('@')[0]);
+                if (insertError) { handleError(insertError, 'Error al crear solicitud'); setCreandoUsuario(false); return; }
                 setModalCrearUsuario(false);
                 setNuevoUsuarioEmail('');
                 setCreandoUsuario(false);
+                showSuccess('Solicitud de registro enviada');
               }} disabled={creandoUsuario || !nuevoUsuarioEmail.trim()}
                 style={{
                   flex: 1, padding: '10px', borderRadius: 8, border: 'none',
@@ -424,6 +479,8 @@ export default function Equipos({ idEstablecimiento }: Props) {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );

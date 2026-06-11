@@ -113,6 +113,11 @@ export {
 } from './paginas.service';
 
 export {
+  validarTicket,
+  crearRequerimiento,
+} from './requerimiento.service';
+
+export {
   escucharSolicitudesInjustificadas,
   escucharSolicitudesJustificadas,
 } from './realtime.service';

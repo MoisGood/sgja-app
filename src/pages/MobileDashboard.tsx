@@ -7,7 +7,7 @@ import { RefreshCw, Clock, AlertCircle, ClipboardList, Ticket, List, Loader } fr
 import { supabase } from '../lib/supabase';
 import { tecnicoCache } from '../services/tecnicoCache';
 
-interface Props { idEstablecimiento: string }
+interface Props { idEstablecimiento: string; rol: string }
 
 const ESTILOS_CARRUSEL: Record<string, { bg: string; icono: JSX.Element; label: string }> = {
   'En Proceso': { bg: '#dbeafe', icono: <RefreshCw size={28} />, label: 'En Proceso' },
@@ -20,7 +20,7 @@ interface HistoryItem {
   estado: string; descripcion: string; created_at: string; lugar_nombre?: string;
 }
 
-export default function MobileDashboard({ idEstablecimiento }: Props) {
+export default function MobileDashboard({ idEstablecimiento, rol }: Props) {
   const navigate = useNavigate();
   const [resumen, setResumen] = useState<{ estado: string; count: number }[]>([]);
   const [hoy, setHoy] = useState<HistoryItem[]>([]);
@@ -107,8 +107,9 @@ export default function MobileDashboard({ idEstablecimiento }: Props) {
               <motion.div
                 whileTap={{ scale: 0.97 }}
                   onClick={() => {
-                    if (r.estado === 'Urgente') navigate('/tecnico/requerimientos?prioridad=Urgente');
-                    else navigate(`/tecnico/requerimientos?estado=${r.estado}`);
+                    if (r.count === 0) return;
+                    if (r.estado === 'Urgente') navigate('/tecnico/m/historial?prioridad=Urgente');
+                    else navigate(`/tecnico/m/historial?estado=${r.estado}`);
                   }}
                 style={{
                   background: estilo.bg, borderRadius: 12, padding: '12px 20px',
@@ -137,19 +138,7 @@ export default function MobileDashboard({ idEstablecimiento }: Props) {
         <Ticket size={18} />
         Mapa de lugares
       </motion.button>
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={() => navigate('/tecnico/m/mapa')}
-        style={{
-          width: '100%', padding: '12px', borderRadius: 10, border: 'none',
-          background: '#1e40af', color: '#fff', fontSize: 14, fontWeight: 600,
-          cursor: 'pointer', marginBottom: 16, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', gap: 8,
-        }}
-      >
-        <Ticket size={18} />
-        Crear Ticket
-      </motion.button>
+
 
       <div>
         <h2 style={{ fontSize: 14, fontWeight: 600, color: '#374151', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -172,10 +161,10 @@ export default function MobileDashboard({ idEstablecimiento }: Props) {
                 <motion.div
                   key={r.id}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    if (r.estado === 'Completada' || r.estado === 'Cancelada') return;
-                    navigate(`/tecnico/requerimientos`);
-                  }}
+            onClick={() => {
+              if (r.estado === 'Completada' || r.estado === 'Cancelada') return;
+              navigate(`/ticket?ticket=${r.id}`);
+            }}
                   style={{
                     padding: '10px 12px', background: '#fff', borderRadius: 8,
                     border: '1px solid #E5E7EB', cursor: 'pointer',
@@ -217,6 +206,34 @@ export default function MobileDashboard({ idEstablecimiento }: Props) {
           </div>
         )}
       </div>
+
+      {rol === 'ADMIN' && (
+      <div style={{ marginTop: 16 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: '#374151', margin: '0 0 8px' }}>Administración</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {[
+            { ruta: '/en-linea', label: 'En línea', icono: '🟢' },
+            { ruta: '/gestion', label: 'Usuarios', icono: '👥' },
+            { ruta: '/mantenedores', label: 'Mantenedores', icono: '📂' },
+            { ruta: '/parametros', label: 'Parámetros', icono: '⚙️' },
+            { ruta: '/asignar-permisos', label: 'Accesos', icono: '🔐' },
+            { ruta: '/correos', label: 'Correos', icono: '📧' },
+          ].map(item => (
+            <motion.button key={item.ruta} whileTap={{ scale: 0.95 }}
+              onClick={() => navigate(item.ruta)}
+              style={{
+                padding: '12px', borderRadius: 10, border: '1px solid #E5E7EB',
+                background: '#fff', color: '#1F2937', fontSize: 13, fontWeight: 500,
+                cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                alignItems: 'center', gap: 4,
+              }}>
+              <span style={{ fontSize: 20 }}>{item.icono}</span>
+              <span>{item.label}</span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+      )}
     </div>
   );
 }

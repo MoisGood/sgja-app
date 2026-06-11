@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import MapaPiso from '../components/MapaPiso';
 import ConfigurarMapa from '../components/ConfigurarMapa';
 import EditorMapa from '../components/EditorMapa';
+import SyncMapa from '../components/SyncMapa';
 
 interface Props {
   idEstablecimiento: string;
@@ -11,6 +12,7 @@ interface Props {
 
 const TABS = [
   { id: 'mapa', etiqueta: 'Mapa' },
+  { id: 'sync', etiqueta: 'Sincronizar' },
   { id: 'configurar', etiqueta: 'Configurar Mapa' },
   { id: 'editor', etiqueta: 'Editor mapa' },
 ];
@@ -55,6 +57,7 @@ export default function Tecnico({ idEstablecimiento, tabInicial = 'mapa' }: Prop
       </div>
 
       {tab === 'mapa' && <MapaPiso idEstablecimiento={idEstablecimiento} />}
+      {tab === 'sync' && <SyncMapa idEstablecimiento={idEstablecimiento} />}
       {tab === 'configurar' && <ConfigurarMapa idEstablecimiento={idEstablecimiento} />}
       {tab === 'editor' && <EditorMapa />}
     </div>

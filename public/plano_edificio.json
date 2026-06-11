@@ -1,91 +1,739 @@
 {
   "Subterráneo": [
-    { "left": 3, "top": 5, "width": 88, "height": 86, "text": "Sala Reunión", "zone": "z-other", "color": "#7d4a08" },
-    { "left": 94, "top": 7, "width": 44, "height": 86, "text": "Bodega UTP", "zone": "z-other", "color": "#6366f1" },
-    { "left": 138, "top": 7, "width": 44, "height": 86, "text": "Centro Estudiantes", "zone": "z-other", "color": "#8e4848" },
-    { "left": 182, "top": 7, "width": 44, "height": 86, "text": "Centro Padres", "zone": "z-other", "color": "#33ac11" },
-    { "left": 226, "top": 6, "width": 49, "height": 88, "text": "Fotocopiados", "zone": "z-other", "color": "#02a2ca" },
-    { "left": 275, "top": 7, "width": 49, "height": 86, "text": "Auxiliares", "zone": "z-other", "color": "#00012e" },
-    { "left": 324, "top": 7, "width": 43, "height": 85, "text": "Bodega 3", "zone": "z-other", "color": "#bdbdc7" },
-    { "left": 2, "top": 90, "width": 91, "height": 47, "text": "Biblioteca", "zone": "z-bib", "color": "#6081c3" },
-    { "left": 94, "top": 95, "width": 277, "height": 39, "text": "Pasillo P0.Rengo", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 1, "top": 357, "width": 89, "height": 85, "text": "Internado", "zone": "z-internado", "color": "#6366f1" }
+    {
+      "left": 3,
+      "top": 5,
+      "width": 88,
+      "height": 86,
+      "text": "Sala Reunión",
+      "zone": "z-other",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 94,
+      "top": 7,
+      "width": 44,
+      "height": 86,
+      "text": "Bodega UTP",
+      "zone": "z-other",
+      "color": "#6366f1"
+    },
+    {
+      "left": 138,
+      "top": 7,
+      "width": 44,
+      "height": 86,
+      "text": "Centro Estudiantes",
+      "zone": "z-other",
+      "color": "#8e4848"
+    },
+    {
+      "left": 182,
+      "top": 7,
+      "width": 44,
+      "height": 86,
+      "text": "Centro Padres",
+      "zone": "z-other",
+      "color": "#33ac11"
+    },
+    {
+      "left": 226,
+      "top": 6,
+      "width": 49,
+      "height": 88,
+      "text": "Fotocopiados",
+      "zone": "z-other",
+      "color": "#02a2ca"
+    },
+    {
+      "left": 275,
+      "top": 7,
+      "width": 49,
+      "height": 86,
+      "text": "Auxiliares",
+      "zone": "z-other",
+      "color": "#00012e"
+    },
+    {
+      "left": 324,
+      "top": 7,
+      "width": 43,
+      "height": 85,
+      "text": "Bodega 3",
+      "zone": "z-other",
+      "color": "#bdbdc7"
+    },
+    {
+      "left": 2,
+      "top": 90,
+      "width": 91,
+      "height": 47,
+      "text": "Bodega 1",
+      "zone": "z-bib",
+      "color": "#6081c3"
+    },
+    {
+      "left": 94,
+      "top": 95,
+      "width": 277,
+      "height": 39,
+      "text": "Pasillo P0.Rengo",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 1,
+      "top": 357,
+      "width": 89,
+      "height": 85,
+      "text": "Internado",
+      "zone": "z-internado",
+      "color": "#6366f1"
+    }
   ],
   "Piso 1": [
-    { "left": 3, "top": 5, "width": 47, "height": 86, "text": "Sala 2", "zone": "z-other", "color": "#7d4a08" },
-    { "left": 50, "top": 6, "width": 44, "height": 86, "text": "Sala 1", "zone": "z-other", "color": "#7d4a08" },
-    { "left": 94, "top": 7, "width": 44, "height": 86, "text": "Eq. Multi", "zone": "z-other", "color": "#6366f1" },
-    { "left": 138, "top": 7, "width": 44, "height": 86, "text": "Inspect.", "zone": "z-other", "color": "#8e4848" },
-    { "left": 182, "top": 7, "width": 44, "height": 86, "text": "Acce.Rengo", "zone": "z-other", "color": "#33ac11" },
-    { "left": 226, "top": 6, "width": 49, "height": 88, "text": "Secret", "zone": "z-other", "color": "#02a2ca" },
-    { "left": 275, "top": 7, "width": 49, "height": 86, "text": "Dir", "zone": "z-other", "color": "#00012e" },
-    { "left": 324, "top": 7, "width": 43, "height": 85, "text": "Acc.Esq.Rengo", "zone": "z-other", "color": "#bdbdc7" },
-    { "left": 2, "top": 90, "width": 91, "height": 86, "text": "Biblioteca", "zone": "z-bib", "color": "#6081c3" },
-    { "left": 94, "top": 95, "width": 249, "height": 39, "text": "Pasillo P1.Rengo", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 266, "top": 136, "width": 60, "height": 73, "text": "Sala 101", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 329, "top": 138, "width": 40, "height": 669, "text": "Pasillo P1.Cochrane", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 266, "top": 209, "width": 60, "height": 69, "text": "Sala 102", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 278, "width": 60, "height": 69, "text": "Sala 103", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 347, "width": 104, "height": 69, "text": "Acceso Cochrane", "zone": "z-acceso", "color": "#7d4a08" },
-    { "left": 266, "top": 416, "width": 60, "height": 69, "text": "Sala 104", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 485, "width": 60, "height": 69, "text": "Sala 105", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 554, "width": 60, "height": 69, "text": "PIE 1", "zone": "z-pie", "color": "#7d4a08" },
-    { "left": 266, "top": 623, "width": 60, "height": 69, "text": "PIE 2", "zone": "z-pie", "color": "#7d4a08" },
-    { "left": 39, "top": 696, "width": 294, "height": 39, "text": "Pasillo P1. Lincoyan", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 33, "top": 738, "width": 60, "height": 69, "text": "Lab.Bio.", "zone": "z-lab", "color": "#7d4a08" },
-    { "left": 97, "top": 737, "width": 40, "height": 69, "text": "Acceso. Lincoyan", "zone": "z-acceso", "color": "#7d4a08" },
-    { "left": 140, "top": 738, "width": 87, "height": 69, "text": "Lab. Fisica", "zone": "z-lab", "color": "#7d4a08" },
-    { "left": 229, "top": 738, "width": 96, "height": 69, "text": "Lab. Química", "zone": "z-lab", "color": "#7d4a08" },
-    { "left": 93, "top": 136, "width": 39, "height": 556, "text": "Pasillo P1. Internado", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 38, "top": 179, "width": 53, "height": 175, "text": "Comedores", "zone": "z-com", "color": "#325014" },
-    { "left": 39, "top": 357, "width": 51, "height": 86, "text": "Paradocentes", "zone": "z-other", "color": "#4a3654" },
-    { "left": 39, "top": 446, "width": 50, "height": 245, "text": "Fitness", "zone": "z-other", "color": "#837320" },
-    { "left": 134, "top": 374, "width": 131, "height": 39, "text": "Pasillo P1. Pergola", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 1, "top": 357, "width": 36, "height": 85, "text": "Internado", "zone": "z-internado", "color": "#6366f1" },
-    { "left": 343, "top": 94, "width": 25, "height": 43, "text": "ADS", "zone": "z-other", "color": "#751200" }
+    {
+      "left": 3,
+      "top": 5,
+      "width": 47,
+      "height": 86,
+      "text": "Sala 2",
+      "zone": "z-other",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 50,
+      "top": 6,
+      "width": 44,
+      "height": 86,
+      "text": "Sala 1",
+      "zone": "z-other",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 94,
+      "top": 7,
+      "width": 44,
+      "height": 86,
+      "text": "Eq. Multi",
+      "zone": "z-other",
+      "color": "#6366f1"
+    },
+    {
+      "left": 138,
+      "top": 7,
+      "width": 44,
+      "height": 86,
+      "text": "Inspect.",
+      "zone": "z-other",
+      "color": "#8e4848"
+    },
+    {
+      "left": 182,
+      "top": 7,
+      "width": 44,
+      "height": 86,
+      "text": "Acce.Rengo",
+      "zone": "z-other",
+      "color": "#33ac11"
+    },
+    {
+      "left": 226,
+      "top": 6,
+      "width": 49,
+      "height": 88,
+      "text": "Secret",
+      "zone": "z-other",
+      "color": "#02a2ca"
+    },
+    {
+      "left": 275,
+      "top": 7,
+      "width": 49,
+      "height": 86,
+      "text": "Dir",
+      "zone": "z-other",
+      "color": "#00012e"
+    },
+    {
+      "left": 324,
+      "top": 7,
+      "width": 43,
+      "height": 85,
+      "text": "Acc.Esq.Rengo",
+      "zone": "z-other",
+      "color": "#bdbdc7"
+    },
+    {
+      "left": 2,
+      "top": 90,
+      "width": 91,
+      "height": 86,
+      "text": "Biblioteca",
+      "zone": "z-bib",
+      "color": "#6081c3"
+    },
+    {
+      "left": 94,
+      "top": 95,
+      "width": 249,
+      "height": 39,
+      "text": "Pasillo P1.Rengo",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 266,
+      "top": 136,
+      "width": 60,
+      "height": 73,
+      "text": "Sala 101",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 329,
+      "top": 138,
+      "width": 40,
+      "height": 669,
+      "text": "Pasillo P1.Cochrane",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 266,
+      "top": 209,
+      "width": 60,
+      "height": 69,
+      "text": "Sala 102",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 278,
+      "width": 60,
+      "height": 69,
+      "text": "Sala 103",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 347,
+      "width": 104,
+      "height": 69,
+      "text": "Acceso Cochrane",
+      "zone": "z-acceso",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 416,
+      "width": 60,
+      "height": 69,
+      "text": "Sala 104",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 485,
+      "width": 60,
+      "height": 69,
+      "text": "Sala 105",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 554,
+      "width": 60,
+      "height": 69,
+      "text": "PIE 1",
+      "zone": "z-pie",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 623,
+      "width": 60,
+      "height": 69,
+      "text": "PIE 2",
+      "zone": "z-pie",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 39,
+      "top": 696,
+      "width": 294,
+      "height": 39,
+      "text": "Pasillo P1. Lincoyan",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 33,
+      "top": 738,
+      "width": 60,
+      "height": 69,
+      "text": "Lab.Bio.",
+      "zone": "z-lab",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 97,
+      "top": 737,
+      "width": 40,
+      "height": 69,
+      "text": "Acceso. Lincoyan",
+      "zone": "z-acceso",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 140,
+      "top": 738,
+      "width": 87,
+      "height": 69,
+      "text": "Lab. Fisica",
+      "zone": "z-lab",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 229,
+      "top": 738,
+      "width": 96,
+      "height": 69,
+      "text": "Lab. Química",
+      "zone": "z-lab",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 93,
+      "top": 136,
+      "width": 39,
+      "height": 556,
+      "text": "Pasillo P1. Internado",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 38,
+      "top": 179,
+      "width": 53,
+      "height": 175,
+      "text": "Comedores",
+      "zone": "z-com",
+      "color": "#325014"
+    },
+    {
+      "left": 39,
+      "top": 357,
+      "width": 51,
+      "height": 86,
+      "text": "Paradocentes",
+      "zone": "z-other",
+      "color": "#4a3654"
+    },
+    {
+      "left": 39,
+      "top": 446,
+      "width": 50,
+      "height": 245,
+      "text": "Fitness",
+      "zone": "z-other",
+      "color": "#837320"
+    },
+    {
+      "left": 134,
+      "top": 374,
+      "width": 131,
+      "height": 39,
+      "text": "Pasillo P1. Pergola",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 1,
+      "top": 357,
+      "width": 36,
+      "height": 85,
+      "text": "Internado",
+      "zone": "z-internado",
+      "color": "#6366f1"
+    },
+    {
+      "left": 343,
+      "top": 94,
+      "width": 25,
+      "height": 43,
+      "text": "ADS",
+      "zone": "z-other",
+      "color": "#751200"
+    }
   ],
   "Piso 2": [
-    { "left": 3, "top": 5, "width": 68, "height": 86, "text": "Lab.Comp. 1", "zone": "z-lab", "color": "#7d4a08" },
-    { "left": 73, "top": 4, "width": 70, "height": 86, "text": "Lab.Comp.2", "zone": "z-lab", "color": "#7d4a08" },
-    { "left": 144, "top": 4, "width": 86, "height": 86, "text": "Sala Profesores", "zone": "z-sala", "color": "#8e4848" },
-    { "left": 231, "top": 5, "width": 91, "height": 86, "text": "Comedores Profesores", "zone": "z-com", "color": "#33ac11" },
-    { "left": 324, "top": 7, "width": 43, "height": 85, "text": "UTP", "zone": "z-other", "color": "#5050b9" },
-    { "left": 2, "top": 90, "width": 38, "height": 48, "text": "Locker", "zone": "z-other", "color": "#6081c3" },
-    { "left": 41, "top": 91, "width": 328, "height": 43, "text": "Pasillo P2.Rengo", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 266, "top": 136, "width": 60, "height": 77, "text": "Sala 201", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 325, "top": 138, "width": 44, "height": 669, "text": "Pasillo P2.Cochrane", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 37, "top": 696, "width": 291, "height": 39, "text": "Pasillo P2. Lincoyan", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 35, "top": 737, "width": 95, "height": 69, "text": "Sala 211", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 38, "top": 134, "width": 53, "height": 221, "text": "Salón Medina", "zone": "z-other", "color": "#325014" },
-    { "left": 39, "top": 357, "width": 51, "height": 86, "text": "Box Dental", "zone": "z-other", "color": "#4a3654" },
-    { "left": 39, "top": 446, "width": 50, "height": 247, "text": "Gimnasio", "zone": "z-other", "color": "#837320" },
-    { "left": 1, "top": 357, "width": 36, "height": 85, "text": "Sala Musica", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 213, "width": 60, "height": 77, "text": "Sala 202", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 289, "width": 60, "height": 77, "text": "Sala 203", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 367, "width": 60, "height": 91, "text": "Hall Piso 2", "zone": "z-other", "color": "#7d4a08" },
-    { "left": 266, "top": 460, "width": 60, "height": 77, "text": "Sala 204", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 536, "width": 60, "height": 77, "text": "Sala 205", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 614, "width": 60, "height": 77, "text": "Sala 206", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 132, "top": 737, "width": 48, "height": 69, "text": "Sala 210", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 181, "top": 738, "width": 48, "height": 69, "text": "Sala 209", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 231, "top": 738, "width": 48, "height": 69, "text": "Sala 208", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 279, "top": 737, "width": 48, "height": 69, "text": "Sala 207", "zone": "z-sala", "color": "#7d4a08" }
+    {
+      "left": 3,
+      "top": 5,
+      "width": 68,
+      "height": 86,
+      "text": "Lab.Comp. 1",
+      "zone": "z-lab",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 73,
+      "top": 4,
+      "width": 70,
+      "height": 86,
+      "text": "Lab.Comp.2",
+      "zone": "z-lab",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 144,
+      "top": 4,
+      "width": 86,
+      "height": 86,
+      "text": "Sala Profesores",
+      "zone": "z-sala",
+      "color": "#8e4848"
+    },
+    {
+      "left": 231,
+      "top": 5,
+      "width": 91,
+      "height": 86,
+      "text": "Comedores Profesores",
+      "zone": "z-com",
+      "color": "#33ac11"
+    },
+    {
+      "left": 324,
+      "top": 7,
+      "width": 43,
+      "height": 85,
+      "text": "UTP",
+      "zone": "z-other",
+      "color": "#5050b9"
+    },
+    {
+      "left": 2,
+      "top": 90,
+      "width": 38,
+      "height": 48,
+      "text": "Locker",
+      "zone": "z-other",
+      "color": "#6081c3"
+    },
+    {
+      "left": 41,
+      "top": 91,
+      "width": 328,
+      "height": 43,
+      "text": "Pasillo P2.Rengo",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 266,
+      "top": 136,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 201",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 325,
+      "top": 138,
+      "width": 44,
+      "height": 669,
+      "text": "Pasillo P2.Cochrane",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 37,
+      "top": 696,
+      "width": 291,
+      "height": 39,
+      "text": "Pasillo P2. Lincoyan",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 35,
+      "top": 737,
+      "width": 95,
+      "height": 69,
+      "text": "Sala 211",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 38,
+      "top": 134,
+      "width": 53,
+      "height": 221,
+      "text": "Salón Medina",
+      "zone": "z-other",
+      "color": "#325014"
+    },
+    {
+      "left": 39,
+      "top": 357,
+      "width": 51,
+      "height": 86,
+      "text": "Box Dental",
+      "zone": "z-other",
+      "color": "#4a3654"
+    },
+    {
+      "left": 39,
+      "top": 446,
+      "width": 50,
+      "height": 247,
+      "text": "Gimnasio",
+      "zone": "z-other",
+      "color": "#837320"
+    },
+    {
+      "left": 1,
+      "top": 357,
+      "width": 36,
+      "height": 85,
+      "text": "Sala Musica",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 213,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 202",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 289,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 203",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 367,
+      "width": 60,
+      "height": 91,
+      "text": "Hall Piso 2",
+      "zone": "z-other",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 460,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 204",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 536,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 205",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 614,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 206",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 132,
+      "top": 737,
+      "width": 48,
+      "height": 69,
+      "text": "Sala 210",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 181,
+      "top": 738,
+      "width": 48,
+      "height": 69,
+      "text": "Sala 209",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 231,
+      "top": 738,
+      "width": 48,
+      "height": 69,
+      "text": "Sala 208",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 279,
+      "top": 737,
+      "width": 48,
+      "height": 69,
+      "text": "Sala 207",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    }
   ],
   "Piso 3": [
-    { "left": 266, "top": 136, "width": 60, "height": 77, "text": "Sala 301", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 325, "top": 137, "width": 44, "height": 669, "text": "Pasillo P3.Cochrane", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 34, "top": 696, "width": 294, "height": 39, "text": "Pasillo P3. Lincoyan", "zone": "z-pasillo", "color": "#404040" },
-    { "left": 33, "top": 737, "width": 97, "height": 69, "text": "Sala 311", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 1, "top": 357, "width": 36, "height": 85, "text": "Internado", "zone": "z-internado", "color": "#7d4a08" },
-    { "left": 266, "top": 213, "width": 60, "height": 77, "text": "Sala 302", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 289, "width": 60, "height": 77, "text": "Sala 303", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 366, "width": 60, "height": 91, "text": "Hall Piso 3", "zone": "z-other", "color": "#7d4a08" },
-    { "left": 266, "top": 460, "width": 60, "height": 77, "text": "Sala 304", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 536, "width": 60, "height": 77, "text": "Sala 305", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 266, "top": 614, "width": 60, "height": 77, "text": "Sala 306", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 132, "top": 737, "width": 48, "height": 69, "text": "Sala 310", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 181, "top": 737, "width": 48, "height": 69, "text": "Sala 309", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 231, "top": 737, "width": 48, "height": 69, "text": "Sala 308", "zone": "z-sala", "color": "#7d4a08" },
-    { "left": 279, "top": 737, "width": 48, "height": 69, "text": "Sala 307", "zone": "z-sala", "color": "#7d4a08" }
+    {
+      "left": 266,
+      "top": 136,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 301",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 325,
+      "top": 137,
+      "width": 44,
+      "height": 669,
+      "text": "Pasillo P3.Cochrane",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 34,
+      "top": 696,
+      "width": 294,
+      "height": 39,
+      "text": "Pasillo P3. Lincoyan",
+      "zone": "z-pasillo",
+      "color": "#404040"
+    },
+    {
+      "left": 33,
+      "top": 737,
+      "width": 97,
+      "height": 69,
+      "text": "Sala 311",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 1,
+      "top": 357,
+      "width": 36,
+      "height": 85,
+      "text": "Internado",
+      "zone": "z-internado",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 213,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 302",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 289,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 303",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 366,
+      "width": 60,
+      "height": 91,
+      "text": "Hall Piso 3",
+      "zone": "z-other",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 460,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 304",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 536,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 305",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 266,
+      "top": 614,
+      "width": 60,
+      "height": 77,
+      "text": "Sala 306",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 132,
+      "top": 737,
+      "width": 48,
+      "height": 69,
+      "text": "Sala 310",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 181,
+      "top": 737,
+      "width": 48,
+      "height": 69,
+      "text": "Sala 309",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 231,
+      "top": 737,
+      "width": 48,
+      "height": 69,
+      "text": "Sala 308",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    },
+    {
+      "left": 279,
+      "top": 737,
+      "width": 48,
+      "height": 69,
+      "text": "Sala 307",
+      "zone": "z-sala",
+      "color": "#7d4a08"
+    }
   ]
 }

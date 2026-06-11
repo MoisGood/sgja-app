@@ -5,7 +5,6 @@ import { registrarCierre } from '../services/online';
 import { UsuariosOnlineIndicador } from './UsuariosOnlineIndicador';
 import { Rol } from '../types';
 import { useTheme } from '../hooks/useTheme';
-import { usePermisosUsuario } from '../hooks/usePermisosUsuario';
 import { Moon, Sun, LogOut } from 'lucide-react';
 import DatosPersonalesModal from './DatosPersonalesModal';
 
@@ -16,6 +15,7 @@ interface Props {
   email: string;
   usuarioId?: string;
   idEstablecimiento?: string | null;
+  permisos: string[];
 }
 
 interface MenuButton {
@@ -49,11 +49,11 @@ export function MobileLayout({
   email,
   usuarioId,
   idEstablecimiento,
+  permisos,
 }: Props) {
   const navigate = useNavigate();
   const [modalDatosAbierto, setModalDatosAbierto] = useState(false);
   const { temaOscuro, setTemaOscuro } = useTheme();
-  const { permisos } = usePermisosUsuario(idEstablecimiento || '', rol);
   const botonesVisibles = FOOTER_BUTTONS.filter(btn => {
     if (!btn.roles.includes(rol)) return false;
     if (permisos.length > 0 && !permisos.includes(btn.ruta)) return false;

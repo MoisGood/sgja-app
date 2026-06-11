@@ -130,6 +130,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
   const [filtroTexto, setFiltroTexto] = useState('');
   const [filtroRol, setFiltroRol] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [filtroDominio, setFiltroDominio] = useState('');
 
   // Usuarios filtrados y ordenados
   const usuariosFiltrados = useMemo(() => {
@@ -153,13 +154,23 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       filtrados = filtrados.filter(u => u.activo === false);
     }
 
+    if (filtroDominio) {
+      filtrados = filtrados.filter(u => {
+        const email = (u.email || '').toLowerCase();
+        if (filtroDominio === 'otro') {
+          return !email.endsWith('@gmail.com') && !email.endsWith('@andaliensur.cl') && email.includes('@');
+        }
+        return email.endsWith(filtroDominio.toLowerCase());
+      });
+    }
+
     return filtrados.sort((a, b) => {
       if ((a.rol === Rol.ADMIN) === (b.rol === Rol.ADMIN)) {
         return (a.nombre_completo || '').localeCompare(b.nombre_completo || '', 'es');
       }
       return a.rol === Rol.ADMIN ? -1 : 1;
     });
-  }, [usuarios, filtroTexto, filtroRol, filtroEstado]);
+  }, [usuarios, filtroTexto, filtroRol, filtroEstado, filtroDominio]);
 
   const totalPaginas = Math.ceil(usuariosFiltrados.length / USUARIOS_POR_PAGINA);
   const inicio = (paginaActual - 1) * USUARIOS_POR_PAGINA;
@@ -444,6 +455,16 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
               <option value="">Todos los estados</option>
               <option value="activo">Activo</option>
               <option value="inactivo">Inactivo</option>
+            </select>
+            <select
+              value={filtroDominio}
+              onChange={(e) => { setFiltroDominio(e.target.value); setPaginaActual(1); }}
+              style={styles.filtroSelect}
+            >
+              <option value="">Todos los dominios</option>
+              <option value="@gmail.com">@gmail.com</option>
+              <option value="@andaliensur.cl">@andaliensur.cl</option>
+              <option value="otro">Otros</option>
             </select>
           </div>
         </Card>

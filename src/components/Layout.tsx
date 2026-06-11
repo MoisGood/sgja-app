@@ -13,7 +13,6 @@ import { obtenerEstablecimiento } from '../services/database';
 import { Rol } from '../types';
 import { MobileLayout } from './MobileLayout';
 import { useTheme } from '../hooks/useTheme';
-import { usePermisosUsuario } from '../hooks/usePermisosUsuario';
 import DatosPersonalesModal from './DatosPersonalesModal';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -36,6 +35,8 @@ interface Props {
   email:                string;
   usuarioId?:           string;
   idEstablecimiento:    string | null;
+  permisos:             string[];
+  cargandoPermisos:     boolean;
 }
 
 interface MenuItem {
@@ -125,10 +126,9 @@ const MENU_ITEMS: MenuItem[] = [
   } 
 ];
 
-export default function Layout({ children, rol, nombre, email, usuarioId, idEstablecimiento }: Props) {
+export default function Layout({ children, rol, nombre, email, usuarioId, idEstablecimiento, permisos, cargandoPermisos }: Props) {
   const location = useLocation();
   const { temaOscuro, setTemaOscuro } = useTheme();
-  const { permisos, cargando: cargandoPermisos } = usePermisosUsuario(idEstablecimiento || '', rol);
   const [sidebarAbierto, setSidebarAbierto] = useState(true);
   const [submenuAbierto, setSubmenuAbierto] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
@@ -206,7 +206,7 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
   const esRolPredefinido = Object.values(Rol).includes(rol as Rol);
 
   const tienePermiso = (ruta: string) => {
-    if (cargandoPermisos) return true;
+    if (cargandoPermisos) return false;
     if (permisos.length === 0) return false;
     return permisos.includes(ruta);
   };
@@ -266,6 +266,7 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
         email={email}
         usuarioId={usuarioId}
         idEstablecimiento={idEstablecimiento}
+        permisos={permisos}
       >
         <AnimatePresence mode="wait">
           <motion.div

@@ -34,12 +34,29 @@ export async function obtenerFuncionario(rut: string): Promise<Funcionario | nul
 }
 
 export async function crearFuncionario(f: Omit<Funcionario, 'creado_en' | 'actualizado_en'>): Promise<void> {
-  const { error } = await supabase.from('funcionarios').insert({
-    ...f,
-    creado_en: new Date().toISOString(),
-    actualizado_en: new Date().toISOString(),
-  });
-  if (error) throw error;
+  const ahora = new Date().toISOString();
+  const payload = { ...f, creado_en: ahora, actualizado_en: ahora };
+
+  // Intentar actualizar primero (si ya existe por correo_institucional)
+  const { data: existente } = await supabase
+    .from('funcionarios')
+    .select('rut')
+    .eq('correo_institucional', f.correo_institucional)
+    .maybeSingle();
+
+  if (existente) {
+    // Ya existe, actualizar
+    const { error: updErr } = await supabase
+      .from('funcionarios')
+      .update(payload)
+      .eq('rut', existente.rut);
+    if (updErr) throw updErr;
+  } else {
+    // No existe, insertar
+    const { error } = await supabase.from('funcionarios').insert(payload);
+    if (error) throw error;
+  }
+
   clearCache(CACHE_KEY);
 }
 

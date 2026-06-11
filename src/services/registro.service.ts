@@ -127,15 +127,22 @@ export async function rechazarSolicitud(uid: string): Promise<{ error: string | 
 
 export async function obtenerSolicitudesPaginadas(
   pagina: number,
-  porPagina: number = 7
+  porPagina: number = 15,
+  estado?: string
 ): Promise<{ data: SolicitudRegistro[]; total: number }> {
   try {
     const from = (pagina - 1) * porPagina;
     const to = from + porPagina - 1;
 
-    const { data, error, count } = await supabase
+    let query = supabase
       .from('solicitudes_registro')
-      .select('*', { count: 'exact' })
+      .select('*', { count: 'exact' });
+
+    if (estado) {
+      query = query.eq('estado', estado);
+    }
+
+    const { data, error, count } = await query
       .order('fecha_solicitud', { ascending: false })
       .range(from, to);
 
@@ -222,7 +229,7 @@ export async function guardarDatosPersonales(
   try {
     const { data: usuario } = await supabase
       .from('usuarios')
-      .select('id, tipo_usuario')
+      .select('id, tipo_usuario, email')
       .eq('uid', datos.uid)
       .maybeSingle();
 
@@ -238,7 +245,7 @@ export async function guardarDatosPersonales(
         comuna: datos.ciudad || 'Pendiente',
         celular: datos.telefono || '',
         correo_personal: datos.email_personal || '',
-        correo_institucional: '',
+        correo_institucional: usuario.email || `temp_${usuario.id}`,
         tipo_funcionario: 'docente',
         tipo_contrato: 'plazo_fijo',
         asignatura: datos.asignatura,

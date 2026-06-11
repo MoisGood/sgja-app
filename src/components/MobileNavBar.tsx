@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Map, Camera, Monitor, Settings } from 'lucide-react';
+import { Home, ClipboardList, Camera, Monitor, Settings } from 'lucide-react';
 
 const NAV_ITEMS = [
   { icono: <Home size={20} />, label: 'Inicio', ruta: '/tecnico/m/inicio' },
-  { icono: <Map size={20} />, label: 'Mapa', ruta: '/tecnico/m/mapa' },
+  { icono: <ClipboardList size={20} />, label: 'Historial', ruta: '/tecnico/m/historial' },
   { icono: <Camera size={20} />, label: 'QR', ruta: '/tecnico/m/qr' },
   { icono: <Monitor size={20} />, label: 'Equipos', ruta: '/tecnico/m/equipos' },
   { icono: <Settings size={20} />, label: 'Config', ruta: '/tecnico/m/config' },
