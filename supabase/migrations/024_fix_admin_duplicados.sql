@@ -1,16 +1,21 @@
 -- ============================================================
 -- SOLUCIÓN DEFINITIVA para "Permiso denegado: se requiere rol ADMIN"
 -- 1. Fusiona admins duplicados (seed id ≠ auth.uid)
--- 2. Normaliza is_admin() para que funcione con id real
+-- 2. Actualiza DINÁMICAMENTE todas las FKs que apuntan a usuarios.id
+-- 3. Normaliza is_admin() para que funcione con id real
 -- ============================================================
 
 DO $$
 DECLARE
   v_rec           record;
+  v_seed_data     jsonb;
   v_auth_uid      uuid;
   v_seed_id       uuid;
   v_count         int;
   v_admin_email   text;
+  v_fk            record;
+  v_sql           text;
+  v_updated       int;
 BEGIN
   -- Buscar TODOS los emails que tienen rol ADMIN y existen en auth.users
   FOR v_rec IN
@@ -33,22 +38,102 @@ BEGIN
       IF v_seed_id = v_auth_uid THEN
         RAISE NOTICE '  ✅ Ya está correcto';
       ELSE
-        RAISE NOTICE '  ⚠️  Un solo registro pero id=% ≠ auth.uid. Creando auth row...', v_seed_id;
-        -- Copiar datos al auth uid y eliminar el seed
-        UPDATE public.funcionarios SET id_usuario = v_auth_uid WHERE id_usuario = v_seed_id;
-        UPDATE public.equipos SET id_usuario = v_auth_uid WHERE id_usuario = v_seed_id;
-        UPDATE public.requerimientos SET id_solicitante = v_auth_uid WHERE id_solicitante = v_seed_id;
-        UPDATE public.requerimientos SET id_tecnico_asignado = v_auth_uid WHERE id_tecnico_asignado = v_seed_id;
-        UPDATE public.requerimientos SET id_tecnico_cierre = v_auth_uid WHERE id_tecnico_cierre = v_seed_id;
+        RAISE NOTICE '  ⚠️  Un solo registro pero id=% ≠ auth.uid', v_seed_id;
+
+        -- 1. Capturar datos del seed ANTES de modificarlo
+        SELECT to_jsonb(u) INTO v_seed_data FROM public.usuarios u WHERE id = v_seed_id;
+
+        -- 2. Liberar uid y email del seed para evitar conflictos UNIQUE al insertar el auth row
+        UPDATE public.usuarios SET
+          uid = 'TEMP_' || gen_random_uuid()::text,
+          email = 'TEMP_' || gen_random_uuid()::text || '@temp.com'
+        WHERE id = v_seed_id;
+
+        -- 3. Insertar auth row con id y uid correctos
+        INSERT INTO public.usuarios (id, uid, email, nombre, apellidos, rol, id_establecimiento, activo, creado_en, actualizado_en)
+        VALUES (
+          v_auth_uid,
+          v_auth_uid::text,
+          (v_seed_data->>'email')::text,
+          (v_seed_data->>'nombre')::text,
+          (v_seed_data->>'apellidos')::text,
+          (v_seed_data->>'rol')::text,
+          (v_seed_data->>'id_establecimiento')::uuid,
+          (v_seed_data->>'activo')::boolean,
+          (v_seed_data->>'creado_en')::timestamp,
+          now()
+        );
+
+        -- 4. Migrar TODAS las FKs DINÁMICAMENTE
+        FOR v_fk IN
+          SELECT
+            conrelid::regclass::text AS tabla,
+            a.attname AS columna
+          FROM pg_constraint c
+          JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+          WHERE c.confrelid = 'public.usuarios'::regclass
+            AND c.contype = 'f'
+            AND c.confkey @> ARRAY(
+              SELECT attnum FROM pg_attribute
+              WHERE attrelid = 'public.usuarios'::regclass AND attname = 'id'
+            )
+        LOOP
+          v_sql := format(
+            'UPDATE %I SET %I = $1 WHERE %I = $2',
+            v_fk.tabla, v_fk.columna, v_fk.columna
+          );
+          EXECUTE v_sql USING v_auth_uid, v_seed_id;
+          GET DIAGNOSTICS v_updated = ROW_COUNT;
+          IF v_updated > 0 THEN
+            RAISE NOTICE '    → %: % registros actualizados', v_fk.tabla, v_updated;
+          END IF;
+        END LOOP;
+
+        -- 5. También migrar columnas TEXT que almacenan el uid como texto
+        FOR v_fk IN
+          SELECT
+            conrelid::regclass::text AS tabla,
+            a.attname AS columna
+          FROM pg_constraint c
+          JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+          WHERE c.confrelid = 'public.usuarios'::regclass
+            AND c.contype = 'f'
+            AND c.confkey @> ARRAY(
+              SELECT attnum FROM pg_attribute
+              WHERE attrelid = 'public.usuarios'::regclass AND attname = 'uid'
+            )
+        LOOP
+          v_sql := format(
+            'UPDATE %I SET %I = $1 WHERE %I = $2',
+            v_fk.tabla, v_fk.columna, v_fk.columna
+          );
+          EXECUTE v_sql USING v_auth_uid::text, v_seed_id::text;
+          GET DIAGNOSTICS v_updated = ROW_COUNT;
+          IF v_updated > 0 THEN
+            RAISE NOTICE '    → %: % registros actualizados (uid text)', v_fk.tabla, v_updated;
+          END IF;
+        END LOOP;
+
+        -- 6. Tablas conocidas con uid como TEXT (sin FK formal)
         UPDATE public.solicitudes_registro SET uid = v_auth_uid::text WHERE uid = v_seed_id::text;
+        GET DIAGNOSTICS v_updated = ROW_COUNT;
+        IF v_updated > 0 THEN
+          RAISE NOTICE '    → solicitudes_registro: % actualizados (manual)', v_updated;
+        END IF;
+
         UPDATE public.datospersonalesusuarios SET uid = v_auth_uid::text WHERE uid = v_seed_id::text;
-        UPDATE public.online SET id_usuario = v_auth_uid WHERE id_usuario = v_seed_id;
+        GET DIAGNOSTICS v_updated = ROW_COUNT;
+        IF v_updated > 0 THEN
+          RAISE NOTICE '    → datospersonalesusuarios: % actualizados (manual)', v_updated;
+        END IF;
+
         UPDATE public.usuarios_eliminados SET id_usuario = v_auth_uid::text WHERE id_usuario = v_seed_id::text;
+        GET DIAGNOSTICS v_updated = ROW_COUNT;
+        IF v_updated > 0 THEN
+          RAISE NOTICE '    → usuarios_eliminados: % actualizados (manual)', v_updated;
+        END IF;
 
-        INSERT INTO public.usuarios (id, uid, email, nombre, apellidos, rol, id_establecimiento, activo, foto_url, creado_en, actualizado_en)
-        SELECT v_auth_uid, v_auth_uid::text, email, nombre, apellidos, rol, id_establecimiento, activo, foto_url, creado_en, now()
-        FROM public.usuarios WHERE id = v_seed_id;
-
+        -- 7. Eliminar seed
         DELETE FROM public.usuarios WHERE id = v_seed_id;
         RAISE NOTICE '  ✅ Creado auth row con id=% y eliminado seed', v_auth_uid;
       END IF;
@@ -75,15 +160,30 @@ BEGIN
           actualizado_en = now()
       WHERE id = v_auth_uid;
 
-      -- Migrar FKs del seed al auth
-      UPDATE public.funcionarios SET id_usuario = v_auth_uid WHERE id_usuario = v_seed_id;
-      UPDATE public.equipos SET id_usuario = v_auth_uid WHERE id_usuario = v_seed_id;
-      UPDATE public.requerimientos SET id_solicitante = v_auth_uid WHERE id_solicitante = v_seed_id;
-      UPDATE public.requerimientos SET id_tecnico_asignado = v_auth_uid WHERE id_tecnico_asignado = v_seed_id;
-      UPDATE public.requerimientos SET id_tecnico_cierre = v_auth_uid WHERE id_tecnico_cierre = v_seed_id;
+      -- Migrar FKs DINÁMICAMENTE
+      FOR v_fk IN
+        SELECT
+          conrelid::regclass::text AS tabla,
+          a.attname AS columna
+        FROM pg_constraint c
+        JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+        WHERE c.confrelid = 'public.usuarios'::regclass
+          AND c.contype = 'f'
+          AND c.confkey @> ARRAY(
+            SELECT attnum FROM pg_attribute
+            WHERE attrelid = 'public.usuarios'::regclass AND attname = 'id'
+          )
+      LOOP
+        v_sql := format(
+          'UPDATE %I SET %I = $1 WHERE %I = $2',
+          v_fk.tabla, v_fk.columna, v_fk.columna
+        );
+        EXECUTE v_sql USING v_auth_uid, v_seed_id;
+      END LOOP;
+
+      -- Tablas manuales (uid text)
       UPDATE public.solicitudes_registro SET uid = v_auth_uid::text WHERE uid = v_seed_id::text;
       UPDATE public.datospersonalesusuarios SET uid = v_auth_uid::text WHERE uid = v_seed_id::text;
-      UPDATE public.online SET id_usuario = v_auth_uid WHERE id_usuario = v_seed_id;
       UPDATE public.usuarios_eliminados SET id_usuario = v_auth_uid::text WHERE id_usuario = v_seed_id::text;
 
       DELETE FROM public.usuarios WHERE id = v_seed_id;

@@ -213,14 +213,16 @@ export default function MobileGrid({ idEstablecimiento }: { idEstablecimiento: s
                             background: bg, borderRadius: 3,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             cursor: 'pointer', overflow: 'hidden',
-                            border: '1px solid rgba(255,255,255,.08)', boxSizing: 'border-box',
+                            border: '1px solid rgba(255,255,255,.08)',
+                            boxSizing: 'border-box',
                           }}
                         >
                           {showText && (
                             <span style={{
                               fontSize, fontWeight: 600, textAlign: 'center',
                               color: '#fff', lineHeight: 1.15, padding: 1,
-                              textShadow: '0 1px 3px rgba(0,0,0,.6)', wordBreak: 'break-word',
+                              textShadow: '0 1px 3px rgba(0,0,0,.6)',
+                              wordBreak: 'break-word',
                             }}>{s.text}</span>
                           )}
                           <span style={{
@@ -240,67 +242,63 @@ export default function MobileGrid({ idEstablecimiento }: { idEstablecimiento: s
       )}
 
       {/* Side panel */}
-      <AnimatePresence>
-        {seleccionada && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setSeleccionada(null)}
-              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100 }} />
-            <motion.div
-              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{
-                position: 'fixed', top: 0, bottom: 0, right: 0, zIndex: 101,
-                width: '85%', maxWidth: 340,
-                background: '#1e293b', overflow: 'hidden',
-                display: 'flex', flexDirection: 'column',
-              }}
-            >
-              {/* Color bar */}
-              <div style={{
-                height: 48, background: seleccionada.color || zoneBg[seleccionada.zone] || '#6366f1',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
-                flexShrink: 0,
+      {seleccionada && (
+        <>
+          <div
+            onClick={() => setSeleccionada(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 1210 }} />
+          <div
+            style={{
+              position: 'fixed', top: 0, bottom: 0, right: 0, zIndex: 1220,
+              width: '85%', maxWidth: 340,
+              background: '#1e293b', overflow: 'hidden',
+              display: 'flex', flexDirection: 'column',
+              boxShadow: '-4px 0 24px rgba(0,0,0,.12)',
+            }}
+          >
+            {/* Color bar */}
+            <div style={{
+              height: 48, background: seleccionada.color || zoneBg[seleccionada.zone] || '#6366f1',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
+              flexShrink: 0,
+            }}>
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.7)',
+                textTransform: 'uppercase', letterSpacing: '0.05em',
               }}>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.7)',
-                  textTransform: 'uppercase', letterSpacing: '0.05em',
+                {pisos[pisoActivo]} · {seleccionada.zone.replace('z-', '')}
+              </span>
+              <button onClick={() => setSeleccionada(null)}
+                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.7)', cursor: 'pointer', padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ flex: 1, padding: '24px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9', margin: '0 0 32px', textAlign: 'center' }}>
+                {seleccionada.text}
+              </h2>
+
+              <button onClick={() => { const s = seleccionada; setSeleccionada(null); abrirTicket(s); }}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: 10, border: 'none',
+                  background: '#3b82f6', color: '#fff', fontSize: 15, fontWeight: 600,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10,
                 }}>
-                  {pisos[pisoActivo]} · {seleccionada.zone.replace('z-', '')}
-                </span>
-                <button onClick={() => setSeleccionada(null)}
-                  style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.7)', cursor: 'pointer', padding: 4 }}>
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div style={{ flex: 1, padding: '24px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9', margin: '0 0 32px', textAlign: 'center' }}>
-                  {seleccionada.text}
-                </h2>
-
-                <button onClick={() => { const s = seleccionada; setSeleccionada(null); abrirTicket(s); }}
-                  style={{
-                    width: '100%', padding: '14px', borderRadius: 10, border: 'none',
-                    background: '#3b82f6', color: '#fff', fontSize: 15, fontWeight: 600,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10,
-                  }}>
-                  <Ticket size={18} /> Abrir ticket
-                </button>
-                <button onClick={() => { const s = seleccionada; setSeleccionada(null); const key = s.text.toLowerCase().trim(); const lugar = lugarMap.current[key]; navigate('/tecnico/m/equipos' + (lugar ? `?id_lugar=${lugar.id}` : '')); }}
-                  style={{
-                    width: '100%', padding: '14px', borderRadius: 10, border: '1px solid #475569',
-                    background: 'transparent', color: '#94a3b8', fontSize: 15, fontWeight: 500,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  }}>
-                  <Settings size={18} /> Equipos
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                <Ticket size={18} /> Abrir ticket
+              </button>
+              <button onClick={() => { const s = seleccionada; setSeleccionada(null); const key = s.text.toLowerCase().trim(); const lugar = lugarMap.current[key]; navigate('/tecnico/m/equipos' + (lugar ? `?id_lugar=${lugar.id}` : '')); }}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: 10, border: '1px solid #475569',
+                  background: 'transparent', color: '#94a3b8', fontSize: 15, fontWeight: 500,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}>
+                <Settings size={18} /> Equipos
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

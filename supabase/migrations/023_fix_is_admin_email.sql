@@ -51,9 +51,12 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_usuario record;
-  v_funcionario record;
+  v_usuario      record;
+  v_funcionario  record;
   v_datospersonales record;
+  v_fk           record;
+  v_sql          text;
+  v_nullable     boolean;
 BEGIN
   IF NOT public.is_admin() THEN
     RETURN jsonb_build_object('error', 'Permiso denegado: se requiere rol ADMIN');
@@ -64,10 +67,14 @@ BEGIN
     RETURN jsonb_build_object('error', 'Usuario no encontrado');
   END IF;
 
-  SELECT * INTO v_funcionario FROM public.funcionarios WHERE id_usuario = p_id_usuario;
+  IF v_usuario.activo THEN
+    RETURN jsonb_build_object('error', 'El usuario debe estar inactivo antes de eliminarlo permanentemente');
+  END IF;
 
+  SELECT * INTO v_funcionario FROM public.funcionarios WHERE id_usuario = p_id_usuario;
   SELECT * INTO v_datospersonales FROM public.datospersonalesusuarios WHERE uid = COALESCE(v_usuario.uid, p_id_usuario::text);
 
+  -- Respaldar todo antes de eliminar
   INSERT INTO public.usuarios_eliminados (
     id_usuario, uid, email, nombre, rut, motivo,
     respaldo_usuarios, respaldo_funcionarios, respaldo_datospersonales
@@ -79,6 +86,7 @@ BEGIN
     CASE WHEN v_datospersonales.uid IS NOT NULL THEN row_to_json(v_datospersonales)::jsonb ELSE NULL END
   );
 
+  -- Limpiar tablas relacionadas conocidas
   IF v_funcionario.id_usuario IS NOT NULL THEN
     DELETE FROM public.funcionarios WHERE id_usuario = p_id_usuario;
   END IF;
@@ -87,9 +95,35 @@ BEGIN
     DELETE FROM public.datospersonalesusuarios WHERE uid = COALESCE(v_usuario.uid, p_id_usuario::text);
   END IF;
 
-  UPDATE public.usuarios
-  SET activo = false, actualizado_en = now()
-  WHERE id = p_id_usuario;
+  -- Limpiar DINÁMICAMENTE cualquier otra FK que apunte a usuarios.id
+  FOR v_fk IN
+    SELECT
+      conrelid::regclass::text AS tabla,
+      a.attname AS columna
+    FROM pg_constraint c
+    JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+    WHERE c.confrelid = 'public.usuarios'::regclass
+      AND c.contype = 'f'
+      AND c.confkey @> ARRAY(
+        SELECT attnum FROM pg_attribute
+        WHERE attrelid = 'public.usuarios'::regclass AND attname = 'id'
+      )
+      AND a.attrelid::regclass::text NOT IN ('funcionarios', 'datospersonalesusuarios')
+  LOOP
+    -- Verificar si la columna acepta NULL
+    SELECT a.is_nullable INTO v_nullable
+    FROM information_schema.columns a
+    WHERE a.table_name = v_fk.tabla
+      AND a.column_name = v_fk.columna;
+
+    IF v_nullable THEN
+      v_sql := format('UPDATE %I SET %I = NULL WHERE %I = $1', v_fk.tabla, v_fk.columna, v_fk.columna);
+      EXECUTE v_sql USING p_id_usuario;
+    END IF;
+  END LOOP;
+
+  -- Eliminar el registro de usuarios definitivamente
+  DELETE FROM public.usuarios WHERE id = p_id_usuario;
 
   RETURN jsonb_build_object('error', null);
 END;

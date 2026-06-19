@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>EduTech Support - QR Scanner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "primary-container": "#7a1f3d",
+                    "on-tertiary-fixed-variant": "#00468b",
+                    "on-primary-container": "#ff8ba8",
+                    "inverse-surface": "#2e3132",
+                    "outline-variant": "#dac0c4",
+                    "surface-container-low": "#f3f4f6",
+                    "primary-fixed-dim": "#ffb1c2",
+                    "background": "#f8f9fb",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#9f3c59",
+                    "tertiary-container": "#004182",
+                    "secondary": "#595f67",
+                    "on-surface": "#191c1e",
+                    "on-error-container": "#93000a",
+                    "inverse-on-surface": "#f0f1f3",
+                    "on-surface-variant": "#554245",
+                    "on-primary-fixed-variant": "#802442",
+                    "surface": "#f8f9fb",
+                    "secondary-fixed-dim": "#c1c7d0",
+                    "surface-dim": "#d9dadc",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#7dafff",
+                    "tertiary-fixed": "#d6e3ff",
+                    "inverse-primary": "#ffb1c2",
+                    "on-primary-fixed": "#3f0018",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed": "#dde3ec",
+                    "on-secondary-fixed-variant": "#41474f",
+                    "outline": "#887275",
+                    "on-secondary-container": "#5f656d",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#a8c8ff",
+                    "surface-variant": "#e1e2e4",
+                    "on-background": "#191c1e",
+                    "primary": "#5c0427",
+                    "secondary-container": "#dde3ec",
+                    "surface-container-highest": "#e1e2e4",
+                    "surface-bright": "#f8f9fb",
+                    "primary-fixed": "#ffd9df",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#edeef0",
+                    "on-error": "#ffffff",
+                    "tertiary": "#002b5a",
+                    "on-secondary-fixed": "#161c23",
+                    "surface-container-high": "#e7e8ea",
+                    "on-tertiary-fixed": "#001b3d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "16px",
+                    "base": "8px",
+                    "xl": "32px",
+                    "gutter": "12px",
+                    "xs": "4px",
+                    "lg": "24px",
+                    "safe-margin": "16px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "display-lg-mobile": ["Roboto Flex"],
+                    "caption": ["Roboto Flex"],
+                    "display-lg": ["Roboto Flex"],
+                    "body-md": ["Roboto Flex"],
+                    "headline-md": ["Roboto Flex"],
+                    "label-caps": ["Roboto Flex"],
+                    "title-sm": ["Roboto Flex"]
+            },
+            "fontSize": {
+                    "display-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "display-lg": ["34px", {"lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Roboto Flex', sans-serif;
+            background-color: #f8f9fb;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .qr-frame {
+            border: 2px solid white;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        .qr-frame::before, .qr-frame::after, .qr-corner-tr::before, .qr-corner-tr::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-color: #ffd9df; /* primary-fixed */
+            border-style: solid;
+        }
+        /* Top Left */
+        .qr-frame::before { top: -4px; left: -4px; border-width: 4px 0 0 4px; border-radius: 8px 0 0 0; }
+        /* Bottom Left */
+        .qr-frame::after { bottom: -4px; left: -4px; border-width: 0 0 4px 4px; border-radius: 0 0 0 8px; }
+        
+        .qr-corner-tr::before { top: -4px; right: -4px; border-width: 4px 4px 0 0; border-radius: 0 8px 0 0; }
+        .qr-corner-tr::after { bottom: -4px; right: -4px; border-width: 0 4px 4px 0; border-radius: 0 0 8px 0; }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ffb1c2, transparent);
+            animation: scan 3s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+
+        .pulse-warning {
+            animation: borderPulse 2s infinite;
+        }
+
+        @keyframes borderPulse {
+            0% { border-color: rgba(186, 26, 26, 0.4); }
+            50% { border-color: rgba(186, 26, 26, 1); }
+            100% { border-color: rgba(186, 26, 26, 0.4); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen">
+<!-- Top App Bar -->
+<header class="flex justify-between items-center px-4 h-14 w-full fixed top-0 z-50 bg-surface dark:bg-on-surface">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">menu</span>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary">EduTech Support</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-variant active:scale-95 transition-transform">search</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-14 pb-24 overflow-hidden relative flex flex-col">
+<!-- Camera Viewfinder (Simulated) -->
+<div class="relative w-full aspect-[4/5] md:aspect-video flex items-center justify-center overflow-hidden bg-black">
+<img class="absolute inset-0 w-full h-full object-cover opacity-80" data-alt="A clean, high-tech interior of a modern computer lab at a university during the daytime. Rows of sleek desktop computers and ergonomic chairs are visible under soft, clinical LED lighting. The image serves as a background for a camera viewfinder overlay, maintaining a systematic and reliable institutional atmosphere with a professional, light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2dGCFsucTYBT6ejt4_dxYu5Q47IvWftiG27bqN1C5HJcdpTG_htEM9zalGPfSEwGbV94efQjV_PEbKtrbG_ptIAcAkUZnN7SgRB9004cQC3EB_kEj8C3_ecmkkG9DBOxTjAxi1ntOZXBhkErgweSq0PIOTtbS4KYbbqvN_7ZlB919QGyn8Lbxh9-TbS48Px8RrSWs5Dj-JGdNICSZZGG0WqrKttG_4bykh_lSHlE3DhWRWLe0gcV8Lzw-Ax1FDmpRVe1D2pykDfM"/>
+<!-- Scan Overlay -->
+<div class="relative z-20 w-64 h-64 md:w-80 md:h-80 qr-frame">
+<div class="qr-corner-tr"></div>
+<div class="scan-line"></div>
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-black/40 text-white px-3 py-1 rounded-full text-xs font-label-caps backdrop-blur-md uppercase tracking-wider">
+                    Alinee el Código QR
+                </div>
+</div>
+<!-- Focus Markers -->
+<div class="absolute bottom-6 right-6 flex flex-col gap-3">
+<button class="bg-white/20 backdrop-blur-md p-3 rounded-full text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined">flashlight_on</span>
+</button>
+<button class="bg-white/20 backdrop-blur-md p-3 rounded-full text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+</div>
+</div>
+<!-- Quick Info Card (Bento Style) -->
+<section class="flex-grow px-md -mt-8 relative z-30">
+<div class="bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant p-md flex flex-col gap-4">
+<!-- Header Info -->
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Ubicación Escaneada</p>
+<h2 class="font-title-sm text-title-sm text-on-surface flex items-center gap-2">
+                            Sala de Computación 1
+                            <span class="material-symbols-outlined text-primary text-sm">verified</span>
+</h2>
+</div>
+<div class="bg-error-container text-on-error-container px-3 py-1 rounded-full flex items-center gap-1 pulse-warning border">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span class="text-[11px] font-bold uppercase tracking-tight">Incidencia Red</span>
+</div>
+</div>
+<!-- Stats Grid (Bento) -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container p-3 rounded-lg flex flex-col">
+<span class="material-symbols-outlined text-secondary mb-2">desktop_windows</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-on-surface">15</span>
+<span class="font-caption text-caption text-on-surface-variant">PCs Instalados</span>
+</div>
+<div class="bg-tertiary-container/10 p-3 rounded-lg flex flex-col border border-tertiary-container/20">
+<span class="material-symbols-outlined text-tertiary-container mb-2">confirmation_number</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-tertiary-container">2</span>
+<span class="font-caption text-caption text-on-tertiary-fixed-variant">Tickets Activos</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col gap-2 pt-2">
+<button class="w-full bg-primary text-on-primary h-12 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined">inventory</span>
+                        Ver Equipos
+                    </button>
+<button class="w-full bg-surface-container-high text-on-surface h-12 rounded-xl font-bold flex items-center justify-center gap-2 border border-outline-variant active:scale-95 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                        Crear Ticket en esta Sala
+                    </button>
+</div>
+</div>
+<!-- Technician Context Placeholder -->
+<div class="mt-4 flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-secondary-container">
+<img alt="IT Technician" class="w-full h-full object-cover" data-alt="A professional headshot of a Hispanic male IT technician in his 30s wearing a clean corporate polo shirt. He has a friendly, reliable expression. The lighting is bright and professional, consistent with an institutional campus setting. High-resolution digital photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-IMpRkQJeT9ALsymg5_yiOp6laOsi6-nSNVE7cCgO1_4LTQTn0FEscbB2prqIB2idGbo9tItyDJaDROkHtpgp66EEJpWW6_BcA62wCKU-QX1UnbBLbOaH-q35ke2tVmkt9p3498Qvb5Mdif4d4uUW0wN3av2uw1_yzVPPiDLqvlTe6gcZGAQrkuXcCmCZwYZkaHtRrrHOrbDyJkmSAFxNXtSjcEMIiK20pW00U4NvcQQRP3y9N4vWluG9HrqOq8IeVWdoLaPoQ0E"/>
+</div>
+<div>
+<p class="font-body-md text-on-surface leading-tight font-bold">Técnico de Soporte</p>
+<p class="font-caption text-on-surface-variant leading-tight">Activo en Campus A</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-2 bg-surface-container dark:bg-inverse-surface border-t border-outline-variant rounded-t-xl shadow-md">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">Historial</span>
+</a>
+<!-- Central QR Action (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-5 py-2 -mt-8 shadow-lg active:scale-90 transition-all border-4 border-background" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">QR</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">Inventario</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">Configuración</span>
+</a>
+</nav>
+<!-- PWA Bottom Safe Area Spacing -->
+<div class="h-6 w-full fixed bottom-0 bg-surface-container"></div>
+<script>
+        // Micro-interaction for buttons
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('click', (e) => {
+                // Subtle feedback logic could go here
+            });
+        });
+
+        // Simulating the QR focus interaction
+        setTimeout(() => {
+            const frame = document.querySelector('.qr-frame');
+            frame.style.transform = 'scale(1.05)';
+            setTimeout(() => { frame.style.transform = 'scale(1)'; }, 200);
+        }, 1500);
+    </script>
+</body></html>

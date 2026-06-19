@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>EduTech Support - Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "primary-container": "#7a1f3d",
+                        "on-tertiary-fixed-variant": "#00468b",
+                        "on-primary-container": "#ff8ba8",
+                        "inverse-surface": "#2e3132",
+                        "outline-variant": "#dac0c4",
+                        "surface-container-low": "#f3f4f6",
+                        "primary-fixed-dim": "#ffb1c2",
+                        "background": "#f8f9fb",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#9f3c59",
+                        "tertiary-container": "#004182",
+                        "secondary": "#595f67",
+                        "on-surface": "#191c1e",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f0f1f3",
+                        "on-surface-variant": "#554245",
+                        "on-primary-fixed-variant": "#802442",
+                        "surface": "#f8f9fb",
+                        "secondary-fixed-dim": "#c1c7d0",
+                        "surface-dim": "#d9dadc",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#7dafff",
+                        "tertiary-fixed": "#d6e3ff",
+                        "inverse-primary": "#ffb1c2",
+                        "on-primary-fixed": "#3f0018",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#dde3ec",
+                        "on-secondary-fixed-variant": "#41474f",
+                        "outline": "#887275",
+                        "on-secondary-container": "#5f656d",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#a8c8ff",
+                        "surface-variant": "#e1e2e4",
+                        "on-background": "#191c1e",
+                        "primary": "#5c0427",
+                        "secondary-container": "#dde3ec",
+                        "surface-container-highest": "#e1e2e4",
+                        "surface-bright": "#f8f9fb",
+                        "primary-fixed": "#ffd9df",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeef0",
+                        "on-error": "#ffffff",
+                        "tertiary": "#002b5a",
+                        "on-secondary-fixed": "#161c23",
+                        "surface-container-high": "#e7e8ea",
+                        "on-tertiary-fixed": "#001b3d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "safe-margin": "16px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Roboto Flex"],
+                        "caption": ["Roboto Flex"],
+                        "display-lg": ["Roboto Flex"],
+                        "body-md": ["Roboto Flex"],
+                        "headline-md": ["Roboto Flex"],
+                        "label-caps": ["Roboto Flex"],
+                        "title-sm": ["Roboto Flex"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "display-lg": ["34px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Roboto Flex', sans-serif;
+            background-color: #0d1117; /* Linear-inspired deep charcoal */
+            color: #c9d1d9;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ticket-card {
+            border: 1px solid #30363d;
+            background-color: #161b22;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .ticket-card:hover {
+            border-color: #8b949e;
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background: rgba(22, 27, 34, 0.8);
+        }
+        .sla-pulse {
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { border-color: rgba(186, 26, 26, 0.4); }
+            50% { border-color: rgba(186, 26, 26, 1); }
+            100% { border-color: rgba(186, 26, 26, 0.4); }
+        }
+    </style>
+</head>
+<body class="dark bg-[#0d1117] text-on-surface-variant/90 min-h-screen pb-32">
+<!-- TopAppBar Shell -->
+<header class="flex justify-between items-center px-4 h-14 w-full fixed top-0 z-50 glass-effect border-b border-outline-variant/10">
+<div class="flex items-center gap-3">
+<img alt="EduTech Logo" class="w-8 h-8 rounded-lg shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNM-L0kZwsiYMjbdlWq9ikfEPoz5sloG-do0yoKanprmshnEG6hX8iCrIzQJ0gA6JgoRO6WEPCLMy4LtE2Yk4sayQETJSgO0zE3zWW0DbOwn-x9ttCtHwMMDO1ftxFLbU1-3sLHAe0Nh_lBWMyaUovm4tRHN2wbDzA3NGmaRyBN5Feg7DyzsUKMVC3Ei9ngoXpu5bx6s1qVKiMWG3IaLGBU4nIUX1XClFhdmEsfmGXGo_c4p4kPUv4xUuErOGt0ck2C1ZmPpkuHI8"/>
+<span class="font-headline-md text-headline-md-mobile font-bold text-primary dark:text-primary-fixed-dim">EduTech Support</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-variant/10 transition-colors">
+<span class="material-symbols-outlined text-primary-fixed-dim">search</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-variant/10 transition-colors">
+<span class="material-symbols-outlined text-primary-fixed-dim">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-safe-margin max-w-5xl mx-auto">
+<!-- Greeting Section -->
+<section class="mb-8">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-inverse-on-surface">Hola, Técnico TI</h1>
+<p class="font-body-md text-body-md text-outline-variant">Tienes 12 tickets activos hoy en el Campus A.</p>
+</section>
+<!-- Bento Grid Stats -->
+<section class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-xl">
+<div class="ticket-card p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="z-10">
+<span class="font-label-caps text-label-caps text-outline-variant">TICKETS PENDING</span>
+<div class="font-display-lg text-display-lg text-white mt-1">05</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[80px]" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+</div>
+</div>
+<div class="ticket-card p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden group border-l-4 border-l-primary-container">
+<div class="z-10">
+<span class="font-label-caps text-label-caps text-outline-variant">IN PROCESS</span>
+<div class="font-display-lg text-display-lg text-white mt-1">04</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[80px]" style="font-variation-settings: 'FILL' 1;">sync</span>
+</div>
+</div>
+<div class="ticket-card p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden group col-span-2 md:col-span-1">
+<div class="z-10">
+<span class="font-label-caps text-label-caps text-outline-variant">CLOSED (TODAY)</span>
+<div class="font-display-lg text-display-lg text-white mt-1">03</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[80px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</section>
+<!-- Dynamic List: Ticket Feed -->
+<section class="space-y-4">
+<div class="flex justify-between items-center mb-2">
+<h2 class="font-title-sm text-title-sm text-white">Tareas Urgentes</h2>
+<button class="text-primary-fixed-dim font-label-caps text-label-caps flex items-center gap-1">
+                    VER TODO <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Urgent Ticket Item -->
+<div class="ticket-card p-md rounded-xl sla-pulse cursor-pointer active:scale-[0.98] transition-transform">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs text-primary-fixed-dim bg-primary-container/20 px-2 py-1 rounded">#TK-8821</span>
+<span class="bg-error text-white font-label-caps text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">Urgent</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-white mb-1">Falla de Red en Laboratorio 4</h3>
+<p class="font-caption text-caption text-outline-variant flex items-center gap-1 mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span> Edificio B, Piso 2
+                </p>
+<div class="flex justify-between items-center pt-2 border-t border-outline-variant/10">
+<div class="flex -space-x-2">
+<img alt="Technician" class="w-8 h-8 rounded-full border-2 border-[#161b22]" data-alt="A professional headshot of a young male IT technician with short dark hair and a friendly expression, wearing a navy blue tech company polo shirt. The lighting is bright and clean, typical of a modern corporate setting with a blurred office background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJsilkE77oJe0-2X4agnajiDpO9-Clvbio9ilRxSC3k6Ho0NlrN2lZr1yXLQ5Y0rNVwjw0e0vzGKfDURLUaqoKUdLmEQGKQQ5AyAQRokcPv-pe8Py1ceLFc98ZUoAYw2CuRpEqzj41_DsOQuPx4rSiC1aoEVi98d8iFjiMSHT0C99OEaDr1OcRqV9GWIS4BwFESbv08E_JtLI2zvnNM67Gh2yXd-UxO0OlHLX2Wz7htMAoslspOMnGTx-amfQew3qSQVdza1BEwVU"/>
+<div class="w-8 h-8 rounded-full border-2 border-[#161b22] bg-surface-variant flex items-center justify-center">
+<span class="text-[10px] font-bold text-on-surface">+1</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-error">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="font-label-caps text-label-caps">Expiró hace 12m</span>
+</div>
+</div>
+</div>
+<!-- Standard Ticket Item -->
+<div class="ticket-card p-md rounded-xl cursor-pointer active:scale-[0.98] transition-transform">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs text-outline-variant bg-surface-variant/10 px-2 py-1 rounded">#TK-8834</span>
+<span class="bg-secondary text-white font-label-caps text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">Standard</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-white mb-1">Mantenimiento Proyector</h3>
+<p class="font-caption text-caption text-outline-variant flex items-center gap-1 mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span> Auditorio Central
+                </p>
+<div class="flex justify-between items-center pt-2 border-t border-outline-variant/10">
+<div class="flex items-center gap-2">
+<img alt="Technician" class="w-8 h-8 rounded-full border-2 border-[#161b22]" data-alt="A profile picture of a diverse technical staff member, featuring a woman with curly hair wearing glasses and a burgundy lanyard. The background is a crisp, minimalist academic environment with high-key lighting, maintaining the agile and reliable brand personality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPNb2xU5Dytlkp1_Q71phLwyCQeHHd7NffMkZZbAm5e0Ue3N1XdA051LNkXpcXXMtW9j_WVcG6yE5kbxqOIyS7bC3mauDbMA8tH0gk4Tz4YIVaQ00Zyc2TNt9CRM2Wnnfy-XJtv5sll7wjApcnYdHcBVSQWBTYd_t0jWODO4OVFhc2f_fZebIu8ntv4B47CLhUT401r78tF4cPtVtu4lTqOpspXkYqtiYImLhQvV045EgUryGj8pxI7z-xu8i4JYcKuSv59GGnsow"/>
+<span class="font-caption text-caption text-outline-variant">Asignado a Milo</span>
+</div>
+<div class="flex items-center gap-1 text-outline-variant">
+<span class="material-symbols-outlined text-sm">history</span>
+<span class="font-label-caps text-label-caps">2h transcurridas</span>
+</div>
+</div>
+</div>
+<!-- In Progress Ticket Item -->
+<div class="ticket-card p-md rounded-xl cursor-pointer active:scale-[0.98] transition-transform border-l-4 border-l-primary-container">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs text-primary-fixed-dim bg-primary-container/20 px-2 py-1 rounded">#TK-8840</span>
+<span class="bg-primary-container text-on-primary-container font-label-caps text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">In Process</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-white mb-1">Reemplazo de Teclados (10u)</h3>
+<p class="font-caption text-caption text-outline-variant flex items-center gap-1 mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span> Sala de Computo 1
+                </p>
+<div class="flex justify-between items-center pt-2 border-t border-outline-variant/10">
+<div class="flex items-center gap-2">
+<img alt="Technician" class="w-8 h-8 rounded-full border-2 border-[#161b22]" data-alt="A portrait of a senior IT expert with graying hair and a calm, reliable gaze, looking directly into the camera. He is positioned in a modern, dark-themed server room with subtle blue and burgundy light reflections, emphasizing the systematic and technical nature of his work." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZRgSdLJY-tfRnPZDud1d9tBHY4eWA6YgAjLdwKGlBgfxdnZZGHAQdivcDUIT0tZ7JauVhcn_fLPGHj99ZkAkwANRuCJBsplh2yfuWUbQtVgbfbMW-P-dX1habPtRu6X9Q1NE7ZUdtQ6UMFCtK3C-q4V5JehfJeT_gHD7EUOfGfhLOV3hIDaxqOa7LhZ9XamBVviP3mhP6z12NepQch9gQ8sSsvHWxly44UZY7tonphhdcDdVZ_cGdPp0_gWNEeWDyLF_oVR-ffqc"/>
+<span class="font-caption text-caption text-outline-variant">En progreso</span>
+</div>
+<div class="flex items-center gap-1 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-sm">sync</span>
+<span class="font-label-caps text-label-caps">Actualizado ahora</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-2 bg-inverse-surface shadow-md rounded-t-xl border-t border-outline-variant/10">
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-caps text-label-caps mt-0.5">Inicio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline-variant px-4 py-1 hover:bg-secondary-fixed-variant/20 transition-all">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-caps text-label-caps mt-0.5">Historial</span>
+</button>
+<!-- Central QR Accent -->
+<div class="relative -top-6">
+<button class="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg border-4 border-[#0d1117] active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+</button>
+</div>
+<button class="flex flex-col items-center justify-center text-outline-variant px-4 py-1 hover:bg-secondary-fixed-variant/20 transition-all">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-caps text-label-caps mt-0.5">Inventario</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline-variant px-4 py-1 hover:bg-secondary-fixed-variant/20 transition-all">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps mt-0.5">Configuración</span>
+</button>
+</nav>
+<!-- FAB Suppression Rule Check: Main dashboard usually has its primary action in the Nav (QR) -->
+<script>
+        // Micro-interactions
+        document.querySelectorAll('.ticket-card').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+
+        // Pull to refresh simulation
+        let touchstartY = 0;
+        let touchendY = 0;
+        
+        document.addEventListener('touchstart', e => {
+            touchstartY = e.changedTouches[0].screenY;
+        }, false);
+
+        document.addEventListener('touchend', e => {
+            touchendY = e.changedTouches[0].screenY;
+            if (touchendY > touchstartY + 100 && window.scrollY === 0) {
+                location.reload();
+            }
+        }, false);
+    </script>
+</body></html>

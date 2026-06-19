@@ -268,17 +268,7 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
         idEstablecimiento={idEstablecimiento}
         permisos={permisos}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.12 }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
+        {children}
       </MobileLayout>
     );
   }

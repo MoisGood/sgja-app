@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>EduTech Support - Ticket Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "primary-container": "#7a1f3d",
+                        "on-tertiary-fixed-variant": "#00468b",
+                        "on-primary-container": "#ff8ba8",
+                        "inverse-surface": "#2e3132",
+                        "outline-variant": "#dac0c4",
+                        "surface-container-low": "#f3f4f6",
+                        "primary-fixed-dim": "#ffb1c2",
+                        "background": "#f8f9fb",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#9f3c59",
+                        "tertiary-container": "#004182",
+                        "secondary": "#595f67",
+                        "on-surface": "#191c1e",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f0f1f3",
+                        "on-surface-variant": "#554245",
+                        "on-primary-fixed-variant": "#802442",
+                        "surface": "#f8f9fb",
+                        "secondary-fixed-dim": "#c1c7d0",
+                        "surface-dim": "#d9dadc",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#7dafff",
+                        "tertiary-fixed": "#d6e3ff",
+                        "inverse-primary": "#ffb1c2",
+                        "on-primary-fixed": "#3f0018",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#dde3ec",
+                        "on-secondary-fixed-variant": "#41474f",
+                        "outline": "#887275",
+                        "on-secondary-container": "#5f656d",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#a8c8ff",
+                        "surface-variant": "#e1e2e4",
+                        "on-background": "#191c1e",
+                        "primary": "#5c0427",
+                        "secondary-container": "#dde3ec",
+                        "surface-container-highest": "#e1e2e4",
+                        "surface-bright": "#f8f9fb",
+                        "primary-fixed": "#ffd9df",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeef0",
+                        "on-error": "#ffffff",
+                        "tertiary": "#002b5a",
+                        "on-secondary-fixed": "#161c23",
+                        "surface-container-high": "#e7e8ea",
+                        "on-tertiary-fixed": "#001b3d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "safe-margin": "16px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Roboto Flex"],
+                        "caption": ["Roboto Flex"],
+                        "display-lg": ["Roboto Flex"],
+                        "body-md": ["Roboto Flex"],
+                        "headline-md": ["Roboto Flex"],
+                        "label-caps": ["Roboto Flex"],
+                        "title-sm": ["Roboto Flex"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "display-lg": ["34px", {"lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Roboto Flex', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .kanban-column::-webkit-scrollbar { display: none; }
+        .kanban-column { -ms-overflow-style: none; scrollbar-width: none; }
+        .ticket-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease; }
+        .ticket-card:active { transform: scale(0.97); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-4 h-14 w-full fixed top-0 z-50 bg-surface dark:bg-on-surface">
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary dark:text-primary-fixed-dim">EduTech Support</h1>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-full hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-primary">search</span>
+</button>
+<img class="w-8 h-8 rounded-full ml-2 border border-outline-variant" data-alt="A professional close-up portrait of an IT technician in a clean corporate academic environment. The technician is wearing a modern polo shirt and has a friendly, reliable expression. The lighting is bright and airy, reflecting a high-quality light-mode UI aesthetic with soft shadows and a professional, systematic atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtc0oE3aFizyVZ-FeRRCELBzwCHXDBBCAqZLntwFCslOAIIPPX2yjqcXSrv_K9_pSozIW6s2h-BfXTY4gGi7gQQN-uZdDhXylza2pb_kjNNPsYyaXe1gPE6VDvc5T8L94fnhLFG8l827HfvWlB7INw-uGR8-MR8A0yngViCVyBVlfthCcBV0pI7iSEHm57gAIwx4tr7OhYrhs5bVrVk99Ynn4KK33t-edfE_qU90Mm9cS-HWeSkSJ35M5TqZhbod3APpTGfgsrR3Q"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-16 px-safe-margin max-w-5xl mx-auto">
+<!-- Dashboard Greeting -->
+<section class="mt-6 mb-8">
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-on-surface">Panel de Tickets</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Gestión de incidentes de soporte de campo</p>
+</section>
+<!-- Kanban Board Container (Vertical Scrolling for Mobile) -->
+<div class="flex flex-col gap-8">
+<!-- Column: Nuevo -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-tertiary"></span>
+<h3 class="font-title-sm text-title-sm font-bold uppercase tracking-wider text-on-surface-variant">Nuevo</h3>
+<span class="bg-surface-container-high px-2 py-0.5 rounded-full text-[10px] font-bold text-on-surface">2</span>
+</div>
+<button class="text-primary material-symbols-outlined">add</button>
+</div>
+<div class="space-y-3">
+<!-- Ticket Card 1 -->
+<div class="ticket-card bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded">TKT-102</span>
+<span class="bg-error text-on-error text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">High</span>
+</div>
+<h4 class="font-title-sm text-title-sm mb-1 leading-tight">Falla en Proyector HDMI</h4>
+<div class="flex items-center gap-2 text-on-surface-variant mb-3">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-caption font-caption">Edificio A - Aula 304</span>
+</div>
+<div class="flex justify-between items-center border-t border-surface-variant pt-3">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span class="text-caption font-caption">Hace 5 min</span>
+</div>
+<img class="w-6 h-6 rounded-full" data-alt="A small circular avatar of a tech support specialist. The lighting is even and bright, consistent with a professional corporate tool. The style is minimalist and clean, integrated seamlessly into the light-mode interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8QG3yfGmfKhHdGKPQzFpjqkfSoUA297NkcN5D1qVXnL0sTa98veLFFZViirwNFSnkpdAur0pYjs3nPH7yqjh4GVkMpb1cg0ZAoRjITeM_2tuSG7Q7QogVjqaLNGdOsjnvprxyaPT0EZCX3zG3AU7-3bVhWFGCgAD-tPQ-C7sec3mEzFx4LlTVEqRe3C4o0z0WOGcDsluOM-uHWwKB5RUGyt0zx4Owg5wVYqMehlwiLkTW-iHuoPEgewlJCPoZDbnGn_mJtf99NJ0"/>
+</div>
+</div>
+<!-- Ticket Card 2 -->
+<div class="ticket-card bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded">TKT-105</span>
+<span class="bg-surface-variant text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Low</span>
+</div>
+<h4 class="font-title-sm text-title-sm mb-1 leading-tight">Actualización Software Lab</h4>
+<div class="flex items-center gap-2 text-on-surface-variant mb-3">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-caption font-caption">Edificio B - Lab 1</span>
+</div>
+<div class="flex justify-between items-center border-t border-surface-variant pt-3">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span class="text-caption font-caption">Hace 45 min</span>
+</div>
+<span class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold">JD</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Column: En Proceso -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-2 px-1">
+<span class="w-3 h-3 rounded-full bg-primary-container"></span>
+<h3 class="font-title-sm text-title-sm font-bold uppercase tracking-wider text-on-surface-variant">En Proceso</h3>
+<span class="bg-surface-container-high px-2 py-0.5 rounded-full text-[10px] font-bold text-on-surface">3</span>
+</div>
+<div class="space-y-3">
+<!-- Ticket Card 3 -->
+<div class="ticket-card bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm border-l-4 border-l-primary">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded">TKT-098</span>
+<span class="bg-tertiary-container text-on-tertiary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Medium</span>
+</div>
+<h4 class="font-title-sm text-title-sm mb-1 leading-tight">Reemplazo de Access Point</h4>
+<div class="flex items-center gap-2 text-on-surface-variant mb-3">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-caption font-caption">Pasillo Norte - 2do Piso</span>
+</div>
+<div class="flex justify-between items-center border-t border-surface-variant pt-3">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span class="text-caption font-caption">Iniciado: 1h ago</span>
+</div>
+<img class="w-6 h-6 rounded-full" data-alt="A portrait-style avatar of a technician with a neutral background. The lighting is clean and bright, reflecting the corporate support brand's agile and systematic personality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSg2h0WZ-uz1rkryPNP183rJd7yK2qlOIIdi4-BYqEvXuq3XgkDnRdiHZ7uWcR6ctVDCnOtOFIvfgHgZro1xqjeJ7JGzqiviJSoOS6ZvrIMWKjlQCKFqPmQwiOX99nfJBg7080l3yw3JTZH_xPNuDZ0Cse6l-aJFqK1dz8ewfSw3Hx7K7vl5ZZGSwi7_JvPKjeq2H_Yeqtmft5a3h7YlsTJarJU7nzdqffS8bQB7BRtnkbub89uGEQaJHyUGWvRXAksiFJxA7UC3A"/>
+</div>
+</div>
+<!-- Ticket Card 4 -->
+<div class="ticket-card bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm border-l-4 border-l-primary">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded">TKT-099</span>
+<span class="bg-error text-on-error text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">High</span>
+</div>
+<h4 class="font-title-sm text-title-sm mb-1 leading-tight">Servidor DNS sin Respuesta</h4>
+<div class="flex items-center gap-2 text-on-surface-variant mb-3">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-caption font-caption">Data Center - Rack 4</span>
+</div>
+<div class="flex justify-between items-center border-t border-surface-variant pt-3">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span class="text-caption font-caption">Iniciado: 2h ago</span>
+</div>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="Small team avatar group icon." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMPXmyxLC4DC6zn_-Ox1gKt2uieFsznouIsnfj3o566iZGs89F2jn4GPL8ZL6e1uxyZ-gbtnRzgEOu321XQaMX9qTITxmAiooZnAOJ8cdh9-okNp3TEv4-HXU-yHM7RULTJiCHsFMesssMa3K5kDN2F5keSX7mfK2MBYYXi3hrznoBotOALi_xbmXUMqxSKjiI9dHJ6xy2KB2XtK32AcAVBQNOq9Tie53-W_pqL82jIHYExBLrYYq29fO_sZn4cAg46c1EschhLY4"/>
+<img class="w-6 h-6 rounded-full border border-white" data-alt="Small team avatar group icon." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjP4yKCP9TWPN5_1vBL2wPlwvNlWScrdRET_qXO4eFFqroPHC0agIcojwvWEA4tq-yM_4Xit3G_-ezANmA-o_-IR9ljXX299L3beasQhdxPKPGGRP1LkNdt0R2_3H6Axrz4IzMclXseQvBQL49FiKiGRBwEvLk4r6WzCVDkcyLc34J6f3K45SIoeNmhAf_4es7_lTrP1jds9tpm8obwrWPiRcrPibul_EGaIQwIH8uZeOnUzQVElKBHLiYCb4_C5Q_vQM20G9W2_o"/>
+</div>
+</div>
+</div>
+<!-- Ticket Card 5 -->
+<div class="ticket-card bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm border-l-4 border-l-primary">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded">TKT-101</span>
+<span class="bg-surface-variant text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Low</span>
+</div>
+<h4 class="font-title-sm text-title-sm mb-1 leading-tight">Configuración de Impresora</h4>
+<div class="flex items-center gap-2 text-on-surface-variant mb-3">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-caption font-caption">Oficina Administrativa</span>
+</div>
+<div class="flex justify-between items-center border-t border-surface-variant pt-3">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span class="text-caption font-caption">Iniciado: 3h ago</span>
+</div>
+<span class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center text-[10px] font-bold">AM</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Column: Esperando Repuesto -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-2 px-1">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<h3 class="font-title-sm text-title-sm font-bold uppercase tracking-wider text-on-surface-variant">Esperando Repuesto</h3>
+<span class="bg-surface-container-high px-2 py-0.5 rounded-full text-[10px] font-bold text-on-surface">1</span>
+</div>
+<div class="space-y-3">
+<!-- Ticket Card 6 -->
+<div class="ticket-card bg-surface-container border border-dashed border-outline rounded-xl p-4 opacity-80">
+<div class="flex justify-between items-start mb-2">
+<span class="font-mono text-xs font-bold text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded">TKT-082</span>
+<span class="bg-tertiary-container text-on-tertiary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Medium</span>
+</div>
+<h4 class="font-title-sm text-title-sm mb-1 leading-tight">Batería de UPS Agotada</h4>
+<div class="flex items-center gap-2 text-on-surface-variant mb-3">
+<span class="material-symbols-outlined text-[16px]">inventory</span>
+<span class="text-caption font-caption">En pedido #7721</span>
+</div>
+<div class="flex justify-between items-center border-t border-outline-variant pt-3">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">pause_circle</span>
+<span class="text-caption font-caption">Pausado: 2 días ago</span>
+</div>
+<img class="w-6 h-6 rounded-full" data-alt="Avatar of a technical manager coordinating parts. Bright and professional lighting style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAayhmnQgTkDu_w7Anar_fb9lMBmWodszUz1axfg64400mjqN0DPUlFDuQkGIo-YEGlouTZUZQsUfIV3hsDOVRSvhSMzbh98V2lm3cjv7bYQugvUzYZFYbsf0OhORporDVezplRWrm0XhFk5PQ_71FyPflMg1wi6JFyZTDqgO0C09lhoDwKyob4bPdiEKepcUtcJKIs209UMLYYbQ9v5RlVacKiR7dFp2Zhx4nCHigxmWslt_11acTc4eMWK50fivCwVCScQK2Oe58"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Column: Cerrado -->
+<section class="flex flex-col gap-4 mb-8">
+<div class="flex items-center gap-2 px-1">
+<span class="w-3 h-3 rounded-full bg-on-tertiary-fixed-variant"></span>
+<h3 class="font-title-sm text-title-sm font-bold uppercase tracking-wider text-on-surface-variant">Cerrado</h3>
+<span class="bg-surface-container-high px-2 py-0.5 rounded-full text-[10px] font-bold text-on-surface">Recientes</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-4 bg-surface-container-low p-3 rounded-lg border border-outline-variant/30">
+<div class="p-2 bg-on-tertiary-fixed-variant/10 rounded-lg">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant">task_alt</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="text-[10px] font-mono text-on-surface-variant">TKT-075</span>
+<span class="text-[10px] text-on-surface-variant">Ayer</span>
+</div>
+<p class="text-body-md font-bold leading-tight line-through opacity-50">Reseteo de Password VPN</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low p-3 rounded-lg border border-outline-variant/30">
+<div class="p-2 bg-on-tertiary-fixed-variant/10 rounded-lg">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant">task_alt</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="text-[10px] font-mono text-on-surface-variant">TKT-072</span>
+<span class="text-[10px] text-on-surface-variant">2 días ago</span>
+</div>
+<p class="text-body-md font-bold leading-tight line-through opacity-50">Instalación Smart Board</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- FAB (Quick Scan) -->
+<button class="fixed bottom-24 right-4 w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl z-40 flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[32px]">qr_code_scanner</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-2 bg-surface-container dark:bg-inverse-surface border-t border-outline-variant dark:border-on-secondary-fixed-variant shadow-md">
+<div class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-[10px] uppercase">Inicio</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-caps text-[10px] uppercase">Historial</span>
+</div>
+<div class="relative -top-4 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all duration-200 border-4 border-background">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-caps text-[10px] uppercase">Inventario</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-[10px] uppercase">Configuración</span>
+</div>
+</nav>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('.ticket-card').forEach(card => {
+            card.addEventListener('click', () => {
+                // Subtle ripple/feedback simulation
+                card.style.borderColor = '#5c0427';
+                setTimeout(() => {
+                    card.style.borderColor = '#dac0c4';
+                }, 400);
+            });
+        });
+    </script>
+</body></html>

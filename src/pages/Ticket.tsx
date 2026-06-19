@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { validarTicket, crearRequerimiento } from '../services/requerimiento.service';
 import { subirEvidencia, obtenerEvidencias } from '../services/evidenciaService';
+import { enviarCorreo as enviarCorreoEmail } from '../services/emailService';
 
 interface Props {
   idEstablecimiento: string;
@@ -64,6 +65,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
   const [searchParams] = useSearchParams();
   const [paso, setPaso] = useState<Paso>('loading');
   const [lugar, setLugar] = useState<Lugar | null>(null);
+  const [usuario, setUsuario] = useState<{ id: string; nombre: string; email: string } | null>(null);
   const [equiposLugar, setEquiposLugar] = useState<Equipo[]>([]);
   const [todosEquipos, setTodosEquipos] = useState<(Equipo & { estado?: string; id_usuario?: string })[]>([]);
   const [todosUsuarios, setTodosUsuarios] = useState<{ id: string; nombre: string; email: string }[]>([]);
@@ -105,24 +107,68 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
     const lugarId = searchParams.get('lugar');
     const equipoId = searchParams.get('equipo');
     const lugarNombre = searchParams.get('lugar_nombre');
+    const usuarioId = searchParams.get('usuario');
 
     if (ticketId) {
       loadTicket(ticketId);
       return;
     }
 
+    // ── Flujo por usuario ──
+    if (usuarioId) {
+      supabase.from('usuarios').select('id, nombre, email').eq('id', usuarioId).maybeSingle()
+        .then(async ({ data: usr }) => {
+          if (!usr) {
+            setMensaje('⚠️ Usuario no encontrado.');
+            setPaso('done');
+            return;
+          }
+          setUsuario(usr);
+          const { data: equipos } = await supabase
+            .from('equipos').select('id, nombre, id_lugar, estado, id_usuario')
+            .eq('id_establecimiento', idEstablecimiento).eq('id_usuario', usr.id).eq('activo', true).order('nombre');
+          setTodosEquipos(equipos || []);
+          setEquiposLugar(equipos || []);
+
+          const { data: users } = await supabase
+            .from('usuarios').select('id, nombre, email')
+            .eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre');
+          setTodosUsuarios(users || []);
+
+          setPaso('splash');
+
+          supabase
+            .from('requerimientos')
+            .select('*')
+            .eq('id_establecimiento', idEstablecimiento)
+            .eq('id_solicitante', usr.id)
+            .in('estado', ['Pendiente', 'En Proceso'])
+            .eq('activo', true)
+            .order('created_at', { ascending: false })
+            .then(async ({ data }) => {
+              setTicketsActivos(data || []);
+              setPagTicket(0);
+              if (data && data.length > 0) {
+                setPosibleFalla(data[0].posible_falla || '');
+                setDiagnostico(data[0].diagnostico || '');
+              }
+            });
+        });
+      return;
+    }
+
     if (!lugarId && !equipoId && !lugarNombre) {
-      setMensaje('⚠️ Falta parámetro ?lugar=ID o ?equipo=ID en la URL.');
+      setMensaje('⚠️ Falta parámetro ?lugar=ID, ?equipo=ID o ?usuario=ID en la URL.');
       setPaso('done');
       return;
     }
 
     Promise.all([
-      supabase.from('lugares').select('id, nombre, piso, soporte').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
+      supabase.from('lugares').select('id, nombre, piso, soporte, abreviatura').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
       supabase.from('equipos').select('id, nombre, id_lugar, id_usuario, estado').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
       supabase.from('usuarios').select('id, nombre, email').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
     ]).then(([lugRes, eqRes, usrRes]) => {
-      const todosLugares = (lugRes.data || []) as Lugar[];
+      const todosLugares = (lugRes.data || []) as (Lugar & { abreviatura?: string })[];
       const todosEquipos = (eqRes.data || []) as (Equipo & { estado?: string; id_usuario?: string })[];
       const todosUsuarios = (usrRes.data || []) as { id: string; nombre: string; email: string }[];
 
@@ -234,7 +280,10 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
   const [lugarTicket, setLugarticket] = useState<string>('');
   const [equipoTicket, setEquipoTicket] = useState<string>('');
   const [conforme, setConforme] = useState(false);
-  const [enviarCorreo, setEnviarCorreo] = useState(false);
+  const [plantillaSel, setPlantillaSel] = useState('');
+  const [plantillas, setPlantillas] = useState<{ id: string; titulo: string; asunto: string; cuerpo: string }[]>([]);
+  const [enviandoCorreo, setEnviandoCorreo] = useState(false);
+  const [correoSolicitante, setCorreoSolicitante] = useState('');
   const [cierreProgramado, setCierreProgramado] = useState('');
 
   async function loadTicket(id: string) {
@@ -257,6 +306,14 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
     }
     setPaso('view');
     obtenerEvidencias(id).then(urls => setEvidencias(urls));
+    if (req.id_solicitante) {
+      const { data: sol } = await supabase.from('usuarios').select('email,nombre').eq('id', req.id_solicitante).maybeSingle();
+      if (sol) {
+        setCorreoSolicitante(sol.email || '');
+      }
+    }
+    const { data: pts } = await supabase.from('plantillas_correo_tecnico').select('id, titulo, asunto, cuerpo').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('titulo');
+    if (pts) setPlantillas(pts);
   }
 
   async function crearTicket() {
@@ -271,14 +328,16 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
       setCreando(false);
       return;
     }
-    const idSolicitante = userData.id;
+    const idTecnico = userData.id;
 
     const eq = todosEquipos.find(e => e.id === equipoSel) || null;
+
+    const solicitanteId = usuario?.id || idTecnico;
 
     const errVal = await validarTicket({
       equipo: eq ? { id: eq.id, estado: eq.estado || 'Operativo', id_usuario: eq.id_usuario } : null,
       posibleFalla,
-      solicitanteId: idSolicitante,
+      solicitanteId,
       lugarSoporte: lugar?.soporte,
     });
 
@@ -294,12 +353,13 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
       }
     }
 
-    const descripcion = `[Ticket rápido] ${posibleFalla ? `Falla: ${posibleFalla}. ` : ''}${diagnostico}`;
+    const ctx = usuario ? `Usuario: ${usuario.nombre}` : lugar ? `Lugar: ${lugar.nombre}` : '';
+    const descripcion = `[Ticket rápido] ${ctx ? `(${ctx}) ` : ''}${posibleFalla ? `Falla: ${posibleFalla}. ` : ''}${diagnostico}`;
     const res = await crearRequerimiento({
       idEstablecimiento,
-      idLugar: lugar!.id,
+      idLugar: lugar?.id || null,
       idEquipo: eq?.id || null,
-      idSolicitante,
+      idSolicitante: solicitanteId,
       tipoReq,
       descripcion,
       posibleFalla: posibleFalla || null,
@@ -370,10 +430,11 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: paso === 'splash' ? 20 : 4 }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>
-            {paso === 'splash' ? '📍' : paso === 'create' ? '🔧' : paso === 'close' ? '✅' : '🎉'}
+            {paso === 'splash' ? (usuario ? '👤' : '📍') : paso === 'create' ? '🔧' : paso === 'close' ? '✅' : '🎉'}
           </div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>
             {paso === 'splash' && lugar && `Requerimiento en ${lugar.nombre}`}
+            {paso === 'splash' && usuario && `Ticket para ${usuario.nombre}`}
             {paso === 'create' && 'Registrar Diagnóstico'}
             {paso === 'close' && 'Cerrar Ticket'}
             {paso === 'done' && 'Listo'}
@@ -381,8 +442,9 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         </div>
 
         {/* Splash */}
-        {paso === 'splash' && lugar && (
+        {paso === 'splash' && (lugar || usuario) && (
           <div>
+            {lugar ? (
               <div style={{
                 background: '#0f172a', borderRadius: 14, padding: 16,
                 marginBottom: 16, border: '1px solid #334155',
@@ -391,6 +453,16 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                 <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9' }}>{lugar.nombre}</div>
                 <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Piso {lugar.piso}</div>
               </div>
+            ) : usuario ? (
+              <div style={{
+                background: '#0f172a', borderRadius: 14, padding: 16,
+                marginBottom: 16, border: '1px solid #334155',
+              }}>
+                <div style={{ fontSize: 13, color: '#64748b', marginBottom: 2 }}>👤 Usuario</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9' }}>{usuario.nombre}</div>
+                <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{usuario.email}</div>
+              </div>
+            ) : null}
 
             {/* Selector de equipo */}
             <div style={{ marginBottom: 16 }}>
@@ -402,7 +474,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                   style={{ ...s.sel, flex: 1 }}
                 >
                   <option value="">— Sin equipo específico —</option>
-                  {(buscarUsuario ? equiposFiltrados : equiposLugar).map(eq => {
+                  {(buscarUsuario ? equiposFiltrados : (lugar ? equiposLugar : todosEquipos)).map(eq => {
                     const usr = todosUsuarios.find(u => u.id === eq.id_usuario);
                     return (
                       <option key={eq.id} value={eq.id} disabled={eq.estado === 'Baja'} style={eq.estado === 'Baja' ? { opacity: 0.4 } : {}}>
@@ -462,9 +534,14 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                   </p>
                 )}
               </div>
-              {equiposLugar.length === 0 && (
+              {lugar && equiposLugar.length === 0 && (
                 <p style={{ fontSize: 11, color: '#64748b', margin: '4px 0 0' }}>
                   No hay equipos registrados en este lugar
+                </p>
+              )}
+              {usuario && todosEquipos.length === 0 && (
+                <p style={{ fontSize: 11, color: '#64748b', margin: '4px 0 0' }}>
+                  Este usuario no tiene equipos asignados
                 </p>
               )}
               {equipoSel && (() => {
@@ -475,12 +552,12 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                   <p style={{ fontSize: 11, color: '#fcd34d', margin: '4px 0 0' }}>⚠️ Este equipo no tiene responsable asignado</p>
                 ) : null;
               })()}
-              {lugar.soporte === false && (
+              {lugar && lugar.soporte === false && (
                 <p style={{ fontSize: 11, color: '#fca5a5', margin: '4px 0 0' }}>⚠️ Este lugar no tiene soporte activo</p>
               )}
             </div>
 
-            {/* Tickets activos del lugar */}
+            {/* Tickets activos */}
             {ticketsActivos.length > 0 && (
               <div style={{ marginBottom: 16 }}>
                 <label style={{ ...s.label, marginBottom: 6, fontSize: 11 }}>Tickets abiertos ({ticketsActivos.length})</label>
@@ -539,7 +616,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
 
             {ticketsActivos.length === 0 && (
               <p style={{ fontSize: 12, color: '#64748b', marginBottom: 12, textAlign: 'center' }}>
-                No hay tickets abiertos en este lugar
+                {lugar ? 'No hay tickets abiertos en este lugar' : 'No hay tickets abiertos para este usuario'}
               </p>
             )}
 
@@ -567,9 +644,10 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         {/* Create */}
         {paso === 'create' && (
           <div>
-            {lugar && (
+            {(lugar || usuario) && (
               <div style={{ fontSize: 13, color: '#64748b', marginBottom: 16, textAlign: 'center' }}>
-                📍 {lugar.nombre}
+                {lugar && `📍 ${lugar.nombre}`}
+                {usuario && `👤 ${usuario.nombre}`}
                 {equipoSel && todosEquipos.find(e => e.id === equipoSel) && (
                   <> · 🔧 {todosEquipos.find(e => e.id === equipoSel)!.nombre}</>
                 )}
@@ -655,9 +733,10 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         {/* Close */}
         {paso === 'close' && ticketActivo && (
           <div>
-            {lugar && (
+            {(lugar || usuario) && (
               <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12, textAlign: 'center' }}>
-                📍 {lugar.nombre}
+                {lugar && `📍 ${lugar.nombre}`}
+                {usuario && `👤 ${usuario.nombre}`}
               </div>
             )}
 
@@ -859,6 +938,46 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                     <div style={{ fontSize: 13, color: '#f1f5f9' }}>{observaciones || '—'}</div>
                   )}
                 </div>
+                {/* Enviar correo */}
+                <div style={{ marginBottom: 10, borderTop: '1px solid #334155', paddingTop: 10 }}>
+                  <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Enviar correo</label>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <select value={plantillaSel} onChange={e => setPlantillaSel(e.target.value)}
+                      style={{ flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+                      <option value="">-- Plantilla --</option>
+                      {plantillas.map(p => <option key={p.id} value={p.id}>{p.titulo}</option>)}
+                    </select>
+                    <button onClick={async () => {
+                      if (!plantillaSel) return alert('Selecciona una plantilla.');
+                      if (!correoSolicitante) return alert('El solicitante no tiene correo registrado.');
+                      setEnviandoCorreo(true);
+                      const tmpl = plantillas.find(p => p.id === plantillaSel);
+                      if (!tmpl) { setEnviandoCorreo(false); return; }
+                      const { data: solData } = await supabase.from('usuarios').select('nombre').eq('id', ticketData.id_solicitante).maybeSingle();
+                      const { data: tecData } = await supabase.from('usuarios').select('nombre').eq('uid', idUsuario).maybeSingle();
+                      const vars: Record<string, string> = {
+                        codigo: ticketData.codigo || ticketData.id || '', lugar: lugarTicket || '', equipo: equipoTicket || '',
+                        descripcion: ticketData.descripcion || '', diagnostico: diagnostico || '', solucion: solucion || '',
+                        posible_falla: posibleFalla || '', falla: posibleFalla || '', observaciones: observaciones || '',
+                        usuario: solData?.nombre || '', tecnico: tecData?.nombre || '', nombre_tecnico: tecData?.nombre || '',
+                        fecha: new Date().toLocaleDateString('es-CL'), estado: ticketData.estado || '',
+                      };
+                      let html = tmpl.cuerpo;
+                      let asunto = tmpl.asunto;
+                      for (const [k, v] of Object.entries(vars)) { html = html.replaceAll(`{${k}}`, v); asunto = asunto.replaceAll(`{${k}}`, v); }
+                      const { data: cfg } = await supabase.from('email_config').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).maybeSingle();
+                      const emailConfig = cfg ? { email: cfg.email, appPassword: cfg.app_password, displayName: cfg.display_name, port: cfg.smtp_port || 587, ssl: cfg.smtp_port === 465 } : undefined;
+                      const res = await enviarCorreoEmail(correoSolicitante, asunto, `<p>${html.replace(/\n/g, '<br>')}</p>`, emailConfig);
+                      setEnviandoCorreo(false);
+                      setMensaje(res.success ? '✅ Correo enviado.' : `⚠️ Error: ${res.error}`);
+                    }} style={{
+                      padding: '8px 14px', borderRadius: 8, border: 'none',
+                      background: enviandoCorreo ? '#334155' : '#2563eb', color: '#fff', fontSize: 12, fontWeight: 600, cursor: enviandoCorreo ? 'not-allowed' : 'pointer',
+                    }}>
+                      {enviandoCorreo ? '...' : '📧 Enviar'}
+                    </button>
+                  </div>
+                </div>
                 {/* Evidencia foto reparacion */}
                 {ticketData.estado !== 'Completada' && (
                 <div style={{ marginBottom: 10 }}>
@@ -970,10 +1089,6 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                   <input type="checkbox" checked={conforme} onChange={e => setConforme(e.target.checked)} />
                   Usuario conforme
                 </label>
-                <label style={{ fontSize: 12, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: 8 }}>
-                  <input type="checkbox" checked={enviarCorreo} onChange={e => setEnviarCorreo(e.target.checked)} />
-                  Enviar correo de cierre
-                </label>
                 <div style={{ marginBottom: 10 }}>
                   <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Cierre programado</label>
                   <input type="datetime-local" value={cierreProgramado} onChange={e => setCierreProgramado(e.target.value)}
@@ -981,7 +1096,6 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                 </div>
                 <button onClick={async () => {
                   if (!conforme) return alert('Confirma que el usuario está conforme.');
-                  if (enviarCorreo) console.log('📧 Enviar correo de cierre (pendiente implementar)');
                   const updates: any = { conforme: true };
                   if (cierreProgramado) updates.fecha_cierre = new Date(cierreProgramado).toISOString();
                   await supabase.from('requerimientos').update(updates).eq('id', ticketData.id);
@@ -1014,6 +1128,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
             <p style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 500, margin: '0 0 4px' }}>{mensaje}</p>
             <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 24px' }}>
               {lugar && `📍 ${lugar.nombre}${equipoSel && todosEquipos.find(e => e.id === equipoSel) ? ` · 🔧 ${todosEquipos.find(e => e.id === equipoSel)!.nombre}` : ''}`}
+              {usuario && `👤 ${usuario.nombre}${equipoSel && todosEquipos.find(e => e.id === equipoSel) ? ` · 🔧 ${todosEquipos.find(e => e.id === equipoSel)!.nombre}` : ''}`}
             </p>
             <button
               onClick={() => {

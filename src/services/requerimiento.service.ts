@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 
 export interface CrearRequerimientoParams {
   idEstablecimiento: string;
-  idLugar: string;
+  idLugar?: string | null;
   idEquipo?: string | null;
   idSolicitante: string;
   tipoReq: string;
@@ -28,21 +28,31 @@ export type ErrorValidacion =
   | { type: 'advertencia'; mensaje: string }
   | null;
 
-async function generarCodigoTicket(idEstablecimiento: string, lugarId: string): Promise<string> {
-  const { data: lugar } = await supabase.from('lugares').select('abreviatura').eq('id', lugarId).single();
-  const abrev = (lugar?.abreviatura || 'XX').toUpperCase();
+async function generarCodigoTicket(idEstablecimiento: string, lugarId?: string | null): Promise<string> {
+  let abrev: string;
+  let seqLocal: number;
 
-  const { count: countLugar } = await supabase
-    .from('requerimientos').select('*', { count: 'exact', head: true })
-    .eq('id_lugar', lugarId).eq('activo', true);
-  const seqLugar = ((countLugar || 0) + 1).toString().padStart(2, '0');
+  if (lugarId) {
+    const { data: lugar } = await supabase.from('lugares').select('abreviatura').eq('id', lugarId).single();
+    abrev = (lugar?.abreviatura || 'XX').toUpperCase();
+    const { count } = await supabase
+      .from('requerimientos').select('*', { count: 'exact', head: true })
+      .eq('id_lugar', lugarId).eq('activo', true);
+    seqLocal = (count || 0) + 1;
+  } else {
+    abrev = 'GEN';
+    const { count } = await supabase
+      .from('requerimientos').select('*', { count: 'exact', head: true })
+      .eq('id_establecimiento', idEstablecimiento).eq('activo', true).is('id_lugar', null);
+    seqLocal = (count || 0) + 1;
+  }
 
   const { count: countTotal } = await supabase
     .from('requerimientos').select('*', { count: 'exact', head: true })
     .eq('id_establecimiento', idEstablecimiento).eq('activo', true);
   const seqTotal = ((countTotal || 0) + 1).toString().padStart(3, '0');
 
-  return `${abrev}${seqLugar}-${seqTotal}`;
+  return `${abrev}${seqLocal.toString().padStart(2, '0')}-${seqTotal}`;
 }
 
 export async function validarTicket(params: ValidarTicketParams): Promise<ErrorValidacion> {
@@ -94,7 +104,7 @@ export async function crearRequerimiento(params: CrearRequerimientoParams): Prom
 
     const payload: Record<string, any> = {
       id_establecimiento: params.idEstablecimiento,
-      id_lugar: params.idLugar,
+      id_lugar: params.idLugar || null,
       id_equipo: params.idEquipo || null,
       id_solicitante: params.idSolicitante,
       tipo_requerimiento: params.tipoReq,
@@ -108,24 +118,31 @@ export async function crearRequerimiento(params: CrearRequerimientoParams): Prom
       codigo,
     };
 
-    const { error } = await supabase.rpc('insertar_requerimiento', {
-      p_id_establecimiento: payload.id_establecimiento,
-      p_id_lugar: payload.id_lugar,
-      p_id_equipo: payload.id_equipo,
-      p_id_solicitante: payload.id_solicitante,
-      p_tipo_requerimiento: payload.tipo_requerimiento,
-      p_descripcion: payload.descripcion,
-      p_posible_falla: payload.posible_falla,
-      p_diagnostico: payload.diagnostico,
-      p_prioridad: payload.prioridad,
-      p_estado: payload.estado,
-      p_fecha_solicitud: payload.fecha_solicitud,
-      p_codigo: codigo,
-    });
+    let error;
 
-    if (error) {
-      const { error: ie } = await supabase.from('requerimientos').insert(payload);
-      if (ie) return { error: ie.message };
+    if (params.idLugar) {
+      ({ error } = await supabase.rpc('insertar_requerimiento', {
+        p_id_establecimiento: payload.id_establecimiento,
+        p_id_lugar: params.idLugar,
+        p_id_equipo: payload.id_equipo,
+        p_id_solicitante: payload.id_solicitante,
+        p_tipo_requerimiento: payload.tipo_requerimiento,
+        p_descripcion: payload.descripcion,
+        p_posible_falla: payload.posible_falla,
+        p_diagnostico: payload.diagnostico,
+        p_prioridad: payload.prioridad,
+        p_estado: payload.estado,
+        p_fecha_solicitud: payload.fecha_solicitud,
+        p_codigo: codigo,
+      }));
+
+      if (error) {
+        ({ error } = await supabase.from('requerimientos').insert(payload));
+        if (error) return { error: error.message };
+      }
+    } else {
+      ({ error } = await supabase.from('requerimientos').insert(payload));
+      if (error) return { error: error.message };
     }
 
     return { codigo };

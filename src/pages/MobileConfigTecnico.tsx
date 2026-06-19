@@ -10,6 +10,7 @@ import { AlertTriangle, Search, CheckCircle2, FileText, Smartphone, X, ChevronRi
 import MobileSwipeWrapper from '../components/MobileSwipeWrapper';
 import { supabase } from '../lib/supabase';
 import { tecnicoCache } from '../services/tecnicoCache';
+import { useTheme } from '../hooks/useTheme';
 import type { PosibleFalla, PosibleDiagnostico, PosibleSolucion, PosibleObservacion } from '../types';
 
 interface Props { idEstablecimiento: string }
@@ -30,6 +31,7 @@ const TABS: { key: Tab; label: string; icono: JSX.Element }[] = [
 
 export default function MobileConfigTecnico({ idEstablecimiento: _idEst }: Props) {
   const navigate = useNavigate();
+  const { temaOscuro, setTemaOscuro } = useTheme();
   const [tab, setTab] = useState<Tab>('fallas');
   const [fallas, setFallas] = useState<PosibleFalla[]>([]);
   const [diagnosticos, setDiagnosticos] = useState<PosibleDiagnostico[]>([]);
@@ -146,6 +148,30 @@ export default function MobileConfigTecnico({ idEstablecimiento: _idEst }: Props
 
   return (
     <MobileSwipeWrapper>
+      {/* TopAppBar */}
+      <header style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        height: 56, padding: '0 16px', position: 'sticky', top: 0,
+        background: temaOscuro ? '#111827' : '#f8f9fb', zIndex: 50,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={() => navigate('/tecnico/m/inicio')}
+            style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 9999, border: 'none', background: 'transparent', cursor: 'pointer' }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>arrow_back</span>
+          </button>
+          <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: temaOscuro ? '#f3f4f6' : '#191c1e' }}>Soporte TI</h1>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button onClick={() => setTemaOscuro(!temaOscuro)}
+            style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 9999, border: 'none', background: 'transparent', cursor: 'pointer' }}
+            title={temaOscuro ? 'Modo claro' : 'Modo oscuro'}>
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>
+              {temaOscuro ? 'light_mode' : 'dark_mode'}
+            </span>
+          </button>
+        </div>
+      </header>
     <div style={{ padding: 16, maxWidth: 500, margin: '0 auto' }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1A3C6B', margin: '0 0 16px' }}>Configuracion</h1>
 
@@ -345,7 +371,7 @@ export default function MobileConfigTecnico({ idEstablecimiento: _idEst }: Props
                       style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #E5E7EB', background: '#fff', color: '#1F2937', fontSize: 13, resize: 'vertical', fontFamily: 'monospace', lineHeight: 1.5 }}
                     />
                     <div style={{ fontSize: 11, color: '#9CA3AF', padding: '4px 0' }}>
-                      Variables disponibles: {'{codigo}'}, {'{fecha}'}, {'{falla}'}, {'{diagnostico}'}, {'{solucion}'}, {'{observaciones}'}, {'{nombre_tecnico}'}
+                      Variables disponibles: {'{codigo}'}, {'{fecha}'}, {'{falla}'}, {'{diagnostico}'}, {'{solucion}'}, {'{observaciones}'}, {'{nombre_tecnico}'}, {'{lugar}'}
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <motion.button whileTap={{ scale: 0.95 }} onClick={async () => {

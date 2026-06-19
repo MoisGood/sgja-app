@@ -26,7 +26,7 @@ export default function HistorialMovil({ idEstablecimiento }: Props) {
   const prioridadParam = searchParams.get('prioridad');
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
-  const [estados, setEstados] = useState<string[]>(estadoParam ? [estadoParam] : ['Pendiente', 'En Proceso']);
+  const [estados, setEstados] = useState<string[]>(estadoParam ? [estadoParam] : []);
   const [idLugar, setIdLugar] = useState('');
   const [idUsuario, setIdUsuario] = useState('');
 
@@ -42,34 +42,57 @@ export default function HistorialMovil({ idEstablecimiento }: Props) {
       const from = (p - 1) * POR_PAGINA;
       const to = from + POR_PAGINA - 1;
 
-      let query = supabase
+      let dataQuery = supabase
         .from('requerimientos')
-        .select('id,tipo_requerimiento,descripcion,estado,prioridad,created_at,lugares(nombre)', { count: 'exact' })
+        .select('id,tipo_requerimiento,descripcion,estado,prioridad,created_at,lugares(nombre)')
         .eq('id_establecimiento', idEstablecimiento)
         .eq('activo', true)
         .order('created_at', { ascending: false })
         .range(from, to);
 
-      if (f.estados && f.estados.length > 0) query = query.in('estado', f.estados);
-      if (f.idLugar) query = query.eq('id_lugar', f.idLugar);
-      if (f.idUsuario) query = query.eq('id_tecnico_asignado', f.idUsuario);
-      if (f.prioridad) query = query.eq('prioridad', f.prioridad);
-      if (f.desde) query = query.gte('created_at', new Date(f.desde).toISOString());
+      let countQuery = supabase
+        .from('requerimientos')
+        .select('*', { count: 'exact', head: true })
+        .eq('id_establecimiento', idEstablecimiento)
+        .eq('activo', true);
+
+      if (f.estados && f.estados.length > 0) {
+        dataQuery = dataQuery.in('estado', f.estados);
+        countQuery = countQuery.in('estado', f.estados);
+      }
+      if (f.idLugar) {
+        dataQuery = dataQuery.eq('id_lugar', f.idLugar);
+        countQuery = countQuery.eq('id_lugar', f.idLugar);
+      }
+      if (f.idUsuario) {
+        dataQuery = dataQuery.eq('id_tecnico_asignado', f.idUsuario);
+        countQuery = countQuery.eq('id_tecnico_asignado', f.idUsuario);
+      }
+      if (f.prioridad) {
+        dataQuery = dataQuery.eq('prioridad', f.prioridad);
+        countQuery = countQuery.eq('prioridad', f.prioridad);
+      }
+      if (f.desde) {
+        dataQuery = dataQuery.gte('created_at', new Date(f.desde).toISOString());
+        countQuery = countQuery.gte('created_at', new Date(f.desde).toISOString());
+      }
       if (f.hasta) {
         const fin = new Date(f.hasta);
         fin.setHours(23, 59, 59, 999);
-        query = query.lte('created_at', fin.toISOString());
+        dataQuery = dataQuery.lte('created_at', fin.toISOString());
+        countQuery = countQuery.lte('created_at', fin.toISOString());
       }
 
-      const [reqRes, lugRes, usrRes] = await Promise.all([
-        query,
+      const [reqRes, countRes, lugRes, usrRes] = await Promise.all([
+        dataQuery,
+        countQuery,
         supabase.from('lugares').select('id,nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
         supabase.from('usuarios').select('id,nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
       ]);
 
       if (lugRes.data) setLugares(lugRes.data);
       if (usrRes.data) setUsuarios(usrRes.data);
-      setTotal(reqRes.count ?? 0);
+      setTotal(countRes.count ?? 0);
       if (reqRes.data) {
         setItems((reqRes.data as any[]).map(r => ({
           id: r.id, tipo_requerimiento: r.tipo_requerimiento,
@@ -80,7 +103,9 @@ export default function HistorialMovil({ idEstablecimiento }: Props) {
       } else {
         setItems([]);
       }
-    } catch {}
+    } catch (e) {
+      console.error('Error al cargar historial:', e);
+    }
     setCargando(false);
   };
 
@@ -115,10 +140,10 @@ export default function HistorialMovil({ idEstablecimiento }: Props) {
     setPagina(1);
     setDesde('');
     setHasta('');
-    setEstados(['Pendiente', 'En Proceso']);
+    setEstados([]);
     setIdLugar('');
     setIdUsuario('');
-    fetchData(1, { estados: ['Pendiente', 'En Proceso'] });
+    fetchData(1);
   };
 
   const irPagina = (p: number) => {

@@ -379,6 +379,7 @@ export interface Equipo {
   numero_serie?: string;
   cod_inventario?: string;
   estado: EstadoEquipo;
+  foto_url?: string;
   activo: boolean;
   created_at: string;
   updated_at: string;

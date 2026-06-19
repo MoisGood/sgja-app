@@ -61,6 +61,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
   const [formEditar, setFormEditar] = useState({
     rol: Rol.PROFESOR as string,
     activo: true,
+    id_establecimiento: null as string | null,
   });
 
   // Modal de Eliminar
@@ -93,6 +94,10 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       if (extra.length > 0) {
         setOpcionesRol([...ROLES_OPCIONES, ...extra]);
       }
+    })();
+    (async () => {
+      const data = await obtenerTodosLosEstablecimientos();
+      setEstablecimientos(data);
     })();
   }, [idEstablecimiento]);
 
@@ -242,6 +247,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
     setFormEditar({
       rol: usuario.rol,
       activo: usuario.activo ?? true,
+      id_establecimiento: usuario.id_establecimiento || null,
     });
     setModalEditar(true);
   };
@@ -261,6 +267,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       await actualizarUsuario(usuarioEditar.id_usuario, {
         rol: formEditar.rol as Rol,
         activo: formEditar.activo,
+        id_establecimiento: formEditar.id_establecimiento,
       } as Partial<Usuario>);
 
       await cargarUsuarios();
@@ -299,8 +306,10 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
       if (!usuarioEliminar.activo) {
         if (!motivoEliminar.trim()) { setError('Debes ingresar un motivo para la eliminación permanente.'); setGuardando(false); return; }
         await eliminarUsuarioPermanente(usuarioEliminar.id_usuario, motivoEliminar.trim());
+        showSuccess('Usuario eliminado permanentemente');
       } else {
         await eliminarUsuario(usuarioEliminar.id_usuario);
+        showSuccess('Usuario desactivado correctamente');
       }
       await cargarUsuarios();
       cerrarModalEliminar();
@@ -495,6 +504,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
                       <tr style={styles.encabezadoTabla}>
                         <th style={styles.celdaEncabezado}>Nombre Completo</th>
                         <th style={styles.celdaEncabezado}>Email</th>
+                        <th style={styles.celdaEncabezado}>Establecimiento</th>
                         <th style={styles.celdaEncabezado}>Rol</th>
                         <th style={styles.celdaEncabezado}>Estado</th>
                         <th style={styles.celdaEncabezado}>Acciones</th>
@@ -519,6 +529,7 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
                             </span>
                           </td>
                           <td style={styles.celda}>{usuario.email || 'N/A'}</td>
+                          <td style={styles.celda}>{establecimientos.find(e => e.id === usuario.id_establecimiento)?.nombre || '—'}</td>
                           <td style={styles.celda}>
                             <RolBadge rol={usuario.rol} />
                           </td>
@@ -704,6 +715,20 @@ export default function GestionUsuarios({ idEstablecimiento }: Props) {
         onCerrar={cerrarModalEditar}
       >
         <div style={styles.formulario}>
+          <label style={styles.etiqueta}>
+            Establecimiento
+            <select
+              style={styles.select}
+              value={formEditar.id_establecimiento || ''}
+              onChange={(e) => setFormEditar({ ...formEditar, id_establecimiento: e.target.value || null })}
+            >
+              <option value="">Sin establecimiento</option>
+              {establecimientos.map((e) => (
+                <option key={e.id} value={e.id}>{e.nombre}</option>
+              ))}
+            </select>
+          </label>
+
           <label style={styles.etiqueta}>
             Rol
             <select

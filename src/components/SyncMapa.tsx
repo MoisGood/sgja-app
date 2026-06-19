@@ -105,10 +105,7 @@ export default function SyncMapa({ idEstablecimiento }: Props) {
   }
 
   async function vincular(sala: SalaData, lugar: LugarDB) {
-    // If names differ, update the DB nombre to match the JSON
-    const { error } = await supabase.from('lugares').update({ nombre: sala.text.trim() }).eq('id', lugar.id);
-    if (error) { showError(error.message); return; }
-    showSuccess(`"${lugar.nombre}" → renombrado a "${sala.text}" en DB`);
+    showSuccess(`"${sala.text}" vinculado a "${lugar.nombre}"`);
     setSinDB(prev => prev.filter(p => p.sala.text.toLowerCase().trim() !== sala.text.toLowerCase().trim()));
     setResultados([]);
     setBuscando(null);

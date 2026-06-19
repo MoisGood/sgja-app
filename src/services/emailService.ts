@@ -15,8 +15,9 @@ export async function enviarCorreo(
       body: JSON.stringify(body),
     });
     if (!res.ok) {
-      const err = await res.json();
-      return { success: false, error: err.error };
+      let errMsg = 'Error del servidor';
+      try { const err = await res.json(); errMsg = err.error || errMsg; } catch { try { errMsg = await res.text(); } catch {} }
+      return { success: false, error: errMsg };
     }
     return { success: true };
   } catch (error: any) {

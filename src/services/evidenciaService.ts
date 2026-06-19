@@ -77,6 +77,35 @@ export async function eliminarEvidencia(path: string): Promise<string | null> {
   return error ? error.message : null;
 }
 
+export async function subirFotoEquipo(
+  idEstablecimiento: string,
+  archivo: File
+): Promise<{ url?: string; error?: string }> {
+  try {
+    const blob = await comprimirImagen(archivo);
+    const ext = 'jpg';
+    const path = `equipos/${idEstablecimiento}/${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, blob, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: 'image/jpeg',
+      });
+
+    if (uploadError) return { error: uploadError.message };
+
+    const { data: publicUrl } = supabase.storage
+      .from(BUCKET)
+      .getPublicUrl(path);
+
+    return { url: publicUrl.publicUrl };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Error al subir imagen' };
+  }
+}
+
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';

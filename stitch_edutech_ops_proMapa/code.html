@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Mapa de Infraestructura - Academic IT</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'academic-primary': '#7a1f3d',
+            'surface': '#f8f9fb',
+            'surface-dim': '#d9dadc',
+            'room-border': '#334155',
+          },
+          borderRadius: {
+            'academic': '8px',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="typography">
+    body {
+      font-family: 'Roboto Flex', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+<style data-purpose="map-layout">
+    /* Custom grid/flex layout to mimic the architectural plan provided */
+    .map-container {
+      background-color: #f1f5f9;
+      position: relative;
+      overflow: auto;
+      height: calc(100vh - 120px);
+      width: 100%;
+    }
+    
+    .room-block {
+      background: white;
+      border: 1px solid #475569;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      text-align: center;
+      font-size: 0.65rem;
+      font-weight: 500;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .room-block:active {
+      background-color: #f1f5f9;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+    }
+
+    .dot-green { background-color: #22c55e; }
+    .dot-yellow { background-color: #eab308; }
+    .dot-red { background-color: #ef4444; }
+
+    /* Layout specific spacing to match image structure */
+    .floorplan-wrapper {
+      min-width: 800px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-gap: 4px;
+    }
+  </style>
+</head>
+<body class="bg-surface text-slate-900 overflow-hidden">
+<!-- BEGIN: MainHeader -->
+<header class="h-14 flex items-center px-4 bg-white border-b border-gray-200">
+<button aria-label="Volver" class="p-2 -ml-2">
+<svg class="h-6 w-6 text-academic-primary" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<h1 class="ml-2 text-lg font-bold text-academic-primary">Mapa de Infraestructura</h1>
+<div class="ml-auto">
+<svg class="h-6 w-6 text-slate-600" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: FloorSelector -->
+<nav class="h-16 flex items-center justify-center bg-white border-b border-gray-200 px-2 overflow-x-auto whitespace-nowrap">
+<div class="flex space-x-2">
+<button class="px-4 py-2 rounded-full text-xs font-medium bg-gray-100 text-slate-600">Subterráneo</button>
+<button class="px-6 py-2 rounded-full text-xs font-medium bg-academic-primary text-white shadow-md">Piso 1</button>
+<button class="px-6 py-2 rounded-full text-xs font-medium bg-gray-100 text-slate-600">Piso 2</button>
+<button class="px-6 py-2 rounded-full text-xs font-medium bg-gray-100 text-slate-600">Piso 3</button>
+</div>
+</nav>
+<!-- END: FloorSelector -->
+<!-- BEGIN: MapArea -->
+<main class="map-container relative">
+<!-- Floor Plan Grid Simulation -->
+<div class="floorplan-wrapper">
+<!-- Top Row -->
+<div class="room-block h-24 col-span-1">Sala 2</div>
+<div class="room-block h-24 col-span-1">Sala 1</div>
+<div class="room-block h-24 col-span-1">Eq. Multi</div>
+<div class="room-block h-24 col-span-1">Inspect.</div>
+<div class="room-block h-24 col-span-1">
+        Acces.<br/>Rengo
+        <span class="status-dot dot-green"></span>
+</div>
+<div class="room-block h-24 col-span-1">Secret.</div>
+<div class="room-block h-24 col-span-1">Dir.</div>
+<div class="room-block h-24 col-span-1">
+        Acc. Eq.<br/>Rengo
+        <span class="status-dot dot-green"></span>
+</div>
+<div class="col-span-4"></div>
+<!-- Main Body - High Level Grid Positioning -->
+<!-- Left Column -->
+<div class="col-span-2 mt-2">
+<div class="room-block h-32 mb-1">
+          Biblioteca
+          <span class="status-dot dot-green"></span>
+</div>
+<div class="room-block h-64 mb-1">
+          Comedores
+          <span class="status-dot dot-green"></span>
+</div>
+<div class="flex gap-1 mb-1">
+<div class="room-block h-24 w-full">Internado<span class="status-dot dot-green"></span></div>
+<div class="room-block h-24 w-full">Parvularios</div>
+</div>
+<div class="room-block h-48">Gimnasio</div>
+</div>
+<!-- Central Corridor Area -->
+<div class="col-span-1 flex flex-col pt-2 px-1">
+<div class="flex-grow bg-gray-200 border border-slate-300 rounded flex items-center justify-center">
+<span class="rotate-90 text-[10px] text-slate-500 font-bold uppercase tracking-widest">Pasillo P1. Internado</span>
+</div>
+</div>
+<!-- Main Open Space & Inner Rooms -->
+<div class="col-span-9 grid grid-cols-6 gap-2 pt-2">
+<!-- Pasillo Superior -->
+<div class="col-span-5 h-12 bg-gray-100 border border-slate-300 rounded flex items-center justify-center text-[10px] text-slate-500 uppercase font-bold">
+          Pasillo P1. Rengo
+        </div>
+<div class="col-span-1 h-12 room-block">ADS</div>
+<!-- Right Side Classrooms -->
+<div class="col-span-4 h-full bg-white/50 border-dashed border border-slate-300 rounded relative">
+<!-- Inner Pasillo Pergola -->
+<div class="absolute top-1/2 left-0 w-full h-12 -translate-y-1/2 bg-gray-100 border border-slate-200 flex items-center justify-center text-[10px] text-slate-500 uppercase">
+             Pasillo P1. Pergola
+           </div>
+</div>
+<div class="col-span-2 space-y-1">
+<div class="room-block h-20">Sala 101 <span class="status-dot dot-green"></span></div>
+<div class="room-block h-20">Sala 102 <span class="status-dot dot-green"></span></div>
+<div class="room-block h-20">Sala 103 <span class="status-dot dot-green"></span></div>
+<div class="room-block h-20">Acceso Cochera <span class="status-dot dot-green"></span></div>
+<div class="room-block h-16">Sala 104 <span class="status-dot dot-green"></span></div>
+<div class="room-block h-16">Sala 105 <span class="status-dot dot-green"></span></div>
+<div class="room-block h-12">PIE 1 <span class="status-dot dot-green"></span></div>
+<div class="room-block h-12">PIE 2 <span class="status-dot dot-green"></span></div>
+</div>
+<!-- Lower Corridor -->
+<div class="col-span-6 h-12 bg-gray-100 border border-slate-300 rounded mt-2 flex items-center justify-center text-[10px] text-slate-500 uppercase">
+          Pasillo P1. Linconyan
+        </div>
+<!-- Labs -->
+<div class="col-span-6 flex gap-1 h-24">
+<div class="room-block flex-1">Lab. Bibl.</div>
+<div class="room-block flex-1">Acceso Linconyan <span class="status-dot dot-green"></span></div>
+<div class="room-block flex-1">Lab. Física</div>
+<div class="room-block flex-[1.5]">Lab. Química</div>
+</div>
+</div>
+</div>
+<!-- BEGIN: FloatingActions -->
+<div class="absolute bottom-6 right-4 flex flex-col space-y-2" data-purpose="map-controls">
+<button class="w-12 h-12 bg-white rounded-t-lg border border-gray-200 shadow-lg flex items-center justify-center text-slate-600 active:bg-gray-100">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<button class="w-12 h-12 bg-white rounded-b-lg border-x border-b border-gray-200 shadow-lg flex items-center justify-center text-slate-600 active:bg-gray-100">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 12H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<button class="w-12 h-12 bg-white rounded-lg border border-gray-200 shadow-lg flex items-center justify-center text-slate-600 active:bg-gray-100 mt-2">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- END: FloatingActions -->
+</main>
+<!-- END: MapArea -->
+<!-- BEGIN: BottomSheetMockup -->
+<!-- This is hidden by default and would be triggered by clicking a room -->
+<div class="fixed inset-x-0 bottom-0 transform translate-y-full transition-transform duration-300 ease-in-out bg-white rounded-t-3xl shadow-2xl z-50 p-6 hidden" id="room-details-sheet">
+<div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-6"></div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="text-xl font-bold text-slate-800" id="sheet-room-name">Sala 101</h2>
+<p class="text-sm text-slate-500">Piso 1 - Edificio Principal</p>
+</div>
+<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">OPERATIVO</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-6">
+<button class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-xl bg-gray-50 active:bg-gray-100">
+<svg class="h-6 w-6 text-academic-primary mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-xs font-medium">Crear Ticket</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-xl bg-gray-50 active:bg-gray-100">
+<svg class="h-6 w-6 text-academic-primary mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.75 17L9 21h6l-.75-4M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-xs font-medium">Ver Equipos</span>
+</button>
+</div>
+<button class="w-full mt-6 py-3 bg-slate-800 text-white font-bold rounded-xl active:bg-slate-900" id="close-sheet">Cerrar</button>
+</div>
+<!-- END: BottomSheetMockup -->
+<script data-purpose="interaction-logic">
+    // Simple logic to show bottom sheet when clicking any room-block
+    const roomBlocks = document.querySelectorAll('.room-block');
+    const sheet = document.getElementById('room-details-sheet');
+    const sheetTitle = document.getElementById('sheet-room-name');
+    const closeBtn = document.getElementById('close-sheet');
+
+    roomBlocks.forEach(block => {
+      block.addEventListener('click', () => {
+        sheetTitle.innerText = block.innerText.replace(/\n/g, ' ');
+        sheet.classList.remove('hidden', 'translate-y-full');
+      });
+    });
+
+    closeBtn.addEventListener('click', () => {
+      sheet.classList.add('translate-y-full');
+      setTimeout(() => sheet.classList.add('hidden'), 300);
+    });
+  </script>
+</body></html>
