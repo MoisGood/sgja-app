@@ -67,7 +67,7 @@ export default function Equipos({ idEstablecimiento }: Props) {
     return {
       usuario: [...new Set(equipos.map(e => usuarios.find(u => u.id === e.id_usuario)?.nombre || '').filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')),
       marca_modelo: [...new Set(equipos.map(e => [e.marca, e.modelo].filter(Boolean).join(' · ')).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')),
-      tipo: [...new Set(equipos.map(e => e.tipo_equipo).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')),
+      tipo: [...new Set(equipos.map(e => e.tipo_equipo).filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b, 'es')),
       ubicacion: [...new Set(equipos.map(e => lugares.find(l => l.id === e.id_lugar)?.nombre || '').filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')),
     };
   }, [equipos, usuarios, lugares]);
@@ -90,12 +90,13 @@ export default function Equipos({ idEstablecimiento }: Props) {
     e.preventDefault();
     dragRef.current = { key, startX: e.clientX, startW: colWidths[key] };
     const onMove = (ev: MouseEvent) => {
-      if (!dragRef.current) return;
-      const diff = ev.clientX - dragRef.current.startX;
-      const col = COLUMNAS.find(c => c.key === dragRef.current.key)!;
-      const newW = Math.max(col.minW, dragRef.current.startW + diff);
+      const current = dragRef.current;
+      if (!current) return;
+      const diff = ev.clientX - current.startX;
+      const col = COLUMNAS.find(c => c.key === current.key)!;
+      const newW = Math.max(col.minW, current.startW + diff);
       setColWidths(prev => {
-        const next = { ...prev, [dragRef.current!.key]: newW };
+        const next = { ...prev, [current.key]: newW };
         localStorage.setItem('eq_colWidths', JSON.stringify(next));
         return next;
       });
