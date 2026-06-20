@@ -124,7 +124,7 @@
       "top": 7,
       "width": 44,
       "height": 86,
-      "text": "Inspect.",
+      "text": "Inspectoría",
       "zone": "z-other",
       "color": "#8e4848"
     },
@@ -142,7 +142,7 @@
       "top": 6,
       "width": 49,
       "height": 88,
-      "text": "Secret",
+      "text": "Secretaría",
       "zone": "z-other",
       "color": "#02a2ca"
     },
@@ -151,7 +151,7 @@
       "top": 7,
       "width": 49,
       "height": 86,
-      "text": "Dir",
+      "text": "Dirección",
       "zone": "z-other",
       "color": "#00012e"
     },
