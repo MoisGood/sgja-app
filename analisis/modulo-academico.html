@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Módulo Académico — Aprendizaje Autodirigido</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'sans-serif'] },
+      colors: {
+        surface: '#131c31',
+        surface2: '#1a2642',
+        border: '#1e3150',
+      }
+    }
+  }
+}
+</script>
+<style>
+  :root {
+    --bg: #0b1120;
+    --surface: #131c31;
+    --surface2: #1a2642;
+    --border: #1e3150;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --accent: #60a5fa;
+    --accent2: #818cf8;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #c084fc;
+    --pink: #f472b6;
+    --cyan: #22d3ee;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+  header {
+    text-align: center;
+    padding: 60px 24px 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  header p { color: var(--text2); font-size: 1.1rem; max-width: 700px; margin: 0 auto; }
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+  .section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section h2 .badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--text2);
+  }
+  .badge-basic { background: #1e3a5f !important; color: var(--accent) !important; }
+  .badge-medium { background: #3a2a1e !important; color: var(--yellow) !important; }
+  .badge-adv { background: #2a1e3a !important; color: var(--purple) !important; }
+  .badge-future { background: #1e2a3a !important; color: var(--cyan) !important; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card .icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+  .card p { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+  .card .stat { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
+  .chart-wrapper { position: relative; height: 280px; margin: 16px 0; }
+  .flow-wrapper {
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 24px;
+    overflow-x: auto;
+    margin: 20px 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 16px 0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--text2);
+    font-weight: 600;
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:hover td { background: rgba(96, 165, 250, .05); }
+  .mockup {
+    background: #0a0f1a;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    white-space: pre;
+    overflow-x: auto;
+    color: var(--text2);
+  }
+  .mockup strong { color: var(--text); font-weight: 600; }
+  .mockup .hl { color: var(--accent); }
+  .mockup .ok { color: var(--green); }
+  .mockup .warn { color: var(--yellow); }
+  .mockup .err { color: var(--red); }
+  .mockup .pie { color: var(--pink); }
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .tag-green { background: rgba(74, 222, 128, .15); color: var(--green); }
+  .tag-yellow { background: rgba(251, 191, 36, .15); color: var(--yellow); }
+  .tag-red { background: rgba(248, 113, 113, .15); color: var(--red); }
+  .tag-blue { background: rgba(96, 165, 250, .15); color: var(--accent); }
+  .tag-purple { background: rgba(192, 132, 252, .15); color: var(--purple); }
+  .roadmap-item {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-left: 2px solid var(--border);
+    padding-left: 24px;
+    margin-left: 12px;
+    position: relative;
+  }
+  .roadmap-item::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--accent);
+    position: absolute;
+    left: -7px;
+    top: 24px;
+  }
+  .roadmap-item.past::before { border-color: var(--green); background: var(--green); }
+  .roadmap-item.active::before { border-color: var(--yellow); background: var(--yellow); }
+  .roadmap-item h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+  .roadmap-item p { font-size: 0.8rem; color: var(--text2); }
+  .roadmap-item .date { font-size: 0.7rem; color: var(--text2); font-weight: 500; }
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .kpi {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .kpi .value { font-size: 1.6rem; font-weight: 800; }
+  .kpi .label { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+  .sala-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .sala-card {
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .sala-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+  .sala-card p  { font-size: 0.75rem; color: var(--text2); }
+  .sala-card .ocup { font-size: 1.4rem; font-weight: 700; }
+  .hidden { display: none !important; }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.8rem; }
+    .container { padding: 20px 16px; }
+    .section { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="sticky top-0 z-50 bg-[#0b1120]/90 backdrop-blur-md border-b border-[#1e3150]">
+  <div class="max-w-[1200px] mx-auto px-6 flex items-center h-14 gap-1">
+    <a href="#aprendizaje" class="px-4 py-2 text-sm font-medium rounded-lg transition-all bg-blue-600 text-white shadow-lg shadow-blue-600/20">🎓 Aprendizaje Autodirigido</a>
+    <a href="#plan" class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">📋 Plan de Trabajo</a>
+  </div>
+</nav>
+
+<div id="aprendizaje" style="scroll-margin-top: 80px;">
+  <header>
+    <h1>🎓 Aprendizaje Autodirigido</h1>
+    <p>Sistema de orquestación de salas de aprendizaje, diagnóstico con IA, evaluación con QR y monitoreo en tiempo real. El docente pasa a ser monitor. El PIE recibe alertas automáticas. El estudiante avanza a su ritmo.</p>
+    <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+      <span class="tag tag-blue">Offline-first</span>
+      <span class="tag tag-green">Salas de aprendizaje</span>
+      <span class="tag tag-yellow">QR + Visión</span>
+      <span class="tag tag-purple">IA + Rutas</span>
+      <span class="tag tag-red">Alertas PIE</span>
+    </div>
+  </header>
+
+<div class="container">
+
+  <!-- Nuevo paradigma -->
+  <div class="section">
+    <h2>🔄 Nuevo paradigma</h2>
+    <p style="color: var(--text2); margin-bottom: 24px;">El juego ya resolvió la pedagogía: tutorial interactivo, dificultad adaptativa, feedback inmediato, motivación intrínseca. El sistema aplica el mismo principio al aula.</p>
+
+    <div class="grid-2">
+      <div>
+        <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--red);">Antes</h3>
+        <div class="mockup" style="font-size: 0.75rem;">
+Docente → Prepara clase → Expone 45 min
+        → Toma lista → Asigna tarea
+        → Corrección manual días después
+        → Nota al final del semestre
+        → Sin datos de progreso real
+        → PIE trabaja sin información
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--green);">Después</h3>
+        <div class="mockup" style="font-size: 0.75rem;">
+Monitor → Abre dashboard → Asigna salas
+        → Sistema orquesta estudiantes
+        → Evaluación QR → corrección automática
+        → Feedback inmediato al estudiante
+        → IA detecta patrones → alerta al monitor
+        → PIE recibe alerta automática
+        → Datos en tiempo real por estudiante
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-wrapper" style="margin-top: 24px;">
+      <pre class="mermaid" style="text-align: center;">
+flowchart TB
+    subgraph Roles [Roles Rediseñados]
+        M[Monitor] -->|Orquesta| S1[Sala Cognitiva]
+        M -->|Orquesta| S2[Sala Audiovisual]
+        M -->|Orquesta| S3[Sala Colaborativa]
+        M -->|Orquesta| S4[Sala Investigativa]
+        M -->|Orquesta| S5[Sala Evaluación]
+    end
+    subgraph Sistema [Sistema]
+        IA[IA] -->|Diagnostica| E[Estudiante]
+        IA -->|Asigna ruta| E
+        IA -->|Alerta| PIE[PIE]
+    end
+    E -->|Rotación según ruta| S1
+    E --> S2
+    E --> S3
+    E --> S4
+    E --> S5
+    S5 -->|Resultados| IA
+    PIE -->|Intervención| E
+      </pre>
+    </div>
+
+    <div class="grid-3" style="margin-top: 20px;">
+      <div class="card">
+        <div class="icon">🧑‍🏫</div>
+        <h3>Monitor</h3>
+        <p>Persona multifuncional que orquesta salas, resuelve dudas puntuales y actúa sobre alertas del sistema. No necesita saber la respuesta, necesita saber qué sala activar.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🧠</div>
+        <h3>IA Orquestadora</h3>
+        <p>Diagnostica, asigna ruta, detecta atascos, alerta al monitor y al PIE. Sugiere contenido y cambio de sala en tiempo real.</p>
+      </div>
+      <div class="card">
+        <div class="icon" style="color: var(--pink);">❤️</div>
+        <h3>PIE</h3>
+        <p>Recibe alertas automáticas de estudiantes con bajo rendimiento sostenido. Se enfoca en apoyo profundo. El resto lo resuelve el sistema.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Referentes -->
+  <div class="section">
+    <h2>📚 Referentes</h2>
+    <p style="color: var(--text2); margin-bottom: 20px;">El modelo se sostiene sobre tres pilares conceptuales que validan el enfoque de aprendizaje autodirigido.</p>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">🌐</div>
+        <h3>SOLE — Sugata Mitra</h3>
+        <p>Niños aprenden solos con una computadora si el entorno es estimulante y hay una pregunta poderosa. El monitor no enseña, facilita.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🎮</div>
+        <h3>Videojuegos</h3>
+        <p>Tutorial interactivo, dificultad adaptativa, feedback inmediato, motivación intrínseca. El sistema aplica el mismo principio al aula.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🚪</div>
+        <h3>Salas de aprendizaje</h3>
+        <p>Distintos espacios con distintos estímulos (cognitivo, audiovisual, colaborativo, práctico). El estudiante rota según su perfil y progreso.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Salas de aprendizaje -->
+  <div class="section">
+    <h2>🏛️ Salas de aprendizaje</h2>
+    <p style="color: var(--text2); margin-bottom: 16px;">El espacio físico se divide en estaciones. Cada una estimula una inteligencia distinta. El estudiante rota según su ruta personalizada.</p>
+
+    <div class="sala-grid">
+      <div class="sala-card" style="background: rgba(96, 165, 250, .08); border-color: #60a5fa;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="color: var(--accent);">🧠 Cognitiva</h4>
+          <span class="ocup" style="color: var(--accent);">40%</span>
+        </div>
+        <p>Diagnóstico adaptativo, ejercicios progresivos, test de conocimiento. Individual. Pantalla táctil + lápiz óptico.</p>
+        <span class="tag tag-blue">Individual</span>
+      </div>
+      <div class="sala-card" style="background: rgba(251, 191, 36, .08); border-color: #fbbf24;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="color: var(--yellow);">🎬 Audiovisual</h4>
+          <span class="ocup" style="color: var(--yellow);">25%</span>
+        </div>
+        <p>Video interactivo, simulación, realidad virtual (futuro). Grupal. Proyector + audífonos.</p>
+        <span class="tag tag-yellow">Grupal</span>
+      </div>
+      <div class="sala-card" style="background: rgba(74, 222, 128, .08); border-color: #4ade80;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="color: var(--green);">🤝 Colaborativa</h4>
+          <span class="ocup" style="color: var(--green);">20%</span>
+        </div>
+        <p>Problemas en equipo, debates, proyectos. Mesa táctil + pizarra digital. Mide habilidades blandas.</p>
+        <span class="tag tag-green">Grupal</span>
+      </div>
+      <div class="sala-card" style="background: rgba(192, 132, 252, .08); border-color: #c084fc;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="color: var(--purple);">🔬 Investigativa</h4>
+          <span class="ocup" style="color: var(--purple);">15%</span>
+        </div>
+        <p>Búsqueda guiada, experimentos, análisis de casos. Navegador controlado + laboratorio físico.</p>
+        <span class="tag tag-purple">Individual/Grupal</span>
+      </div>
+      <div class="sala-card" style="background: rgba(248, 113, 113, .08); border-color: #f87171;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="color: var(--red);">📝 Evaluación</h4>
+          <span class="ocup" style="color: var(--red);">—</span>
+        </div>
+        <p>Prueba formal impresa con QR. Captura con móvil y corrección automática. Resultado inmediato.</p>
+        <span class="tag tag-red">Individual</span>
+      </div>
+    </div>
+
+    <div class="w-full rounded-xl bg-slate-900 border border-slate-700 overflow-hidden shadow-2xl mt-4">
+      <!-- Top bar -->
+      <div class="flex items-center justify-between px-5 py-3 bg-slate-800/50 border-b border-slate-700">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">🏛️</span>
+          <span class="text-slate-100 font-semibold text-sm">Planta de Salas</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-slate-400">3° Medio A</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span class="text-xs text-slate-400">08:30</span>
+        </div>
+      </div>
+      <!-- Rooms grid -->
+      <div class="grid grid-cols-5 gap-px bg-slate-700/50">
+        <!-- Cognitiva -->
+        <div class="bg-slate-900 p-3 min-h-[180px] flex flex-col">
+          <div class="flex items-center gap-1.5 mb-2">
+            <span class="text-base">🧠</span>
+            <span class="text-xs font-semibold text-blue-400">Cognitiva</span>
+          </div>
+          <div class="flex-1 space-y-1.5">
+            <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-200 font-medium">Pérez</span>
+                <span class="text-xs text-emerald-400">✅ 80%</span>
+              </div>
+              <div class="mt-1 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                <div class="h-full w-[80%] rounded-full bg-blue-500"></div>
+              </div>
+            </div>
+            <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-200 font-medium">González</span>
+                <span class="text-xs text-yellow-400">⏳ 65%</span>
+              </div>
+              <div class="mt-1 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                <div class="h-full w-[65%] rounded-full bg-yellow-500"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center gap-1.5">
+            <span class="text-xs">👤</span>
+            <span class="text-xs text-emerald-400">●</span>
+            <span class="text-xs text-slate-400">Activo</span>
+          </div>
+        </div>
+        <!-- Audiovisual -->
+        <div class="bg-slate-900 p-3 min-h-[180px] flex flex-col">
+          <div class="flex items-center gap-1.5 mb-2">
+            <span class="text-base">🎬</span>
+            <span class="text-xs font-semibold text-yellow-400">Audiovisual</span>
+          </div>
+          <div class="flex-1 space-y-1.5">
+            <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-200 font-medium">Muñoz</span>
+                <span class="text-xs text-red-400">⚠️ 30%</span>
+              </div>
+              <div class="mt-1 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                <div class="h-full w-[30%] rounded-full bg-red-500"></div>
+              </div>
+            </div>
+            <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-200 font-medium">Soto</span>
+                <span class="text-xs text-yellow-400">⏳ 40%</span>
+              </div>
+              <div class="mt-1 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                <div class="h-full w-[40%] rounded-full bg-yellow-500"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center gap-1.5">
+            <span class="text-xs">👤</span>
+            <span class="text-xs text-yellow-400">●</span>
+            <span class="text-xs text-slate-400">Ocupado</span>
+          </div>
+        </div>
+        <!-- Colaborativa -->
+        <div class="bg-slate-900 p-3 min-h-[180px] flex flex-col">
+          <div class="flex items-center gap-1.5 mb-2">
+            <span class="text-base">🤝</span>
+            <span class="text-xs font-semibold text-emerald-400">Colaborativa</span>
+          </div>
+          <div class="flex-1 space-y-1.5">
+            <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-200 font-medium">Rodríguez</span>
+                <span class="text-xs text-emerald-400">🟢 Activo</span>
+              </div>
+              <div class="mt-1 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                <div class="h-full w-[70%] rounded-full bg-emerald-500"></div>
+              </div>
+            </div>
+            <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-200 font-medium">López</span>
+                <span class="text-xs text-emerald-400">🟢 Activo</span>
+              </div>
+              <div class="mt-1 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                <div class="h-full w-[85%] rounded-full bg-emerald-500"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center gap-1.5">
+            <span class="text-xs">👤</span>
+            <span class="text-xs text-emerald-400">●</span>
+            <span class="text-xs text-slate-400">Activo</span>
+          </div>
+        </div>
+        <!-- Investigativa -->
+        <div class="bg-slate-900 p-3 min-h-[180px] flex flex-col">
+          <div class="flex items-center gap-1.5 mb-2">
+            <span class="text-base">🔬</span>
+            <span class="text-xs font-semibold text-purple-400">Investigativa</span>
+          </div>
+          <div class="flex-1 space-y-1.5">
+            <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-200 font-medium">Martínez</span>
+                <span class="text-xs text-purple-400">🔵 Activo</span>
+              </div>
+              <div class="mt-1 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                <div class="h-full w-[55%] rounded-full bg-purple-500"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center gap-1.5">
+            <span class="text-xs">👤</span>
+            <span class="text-xs text-yellow-400">●</span>
+            <span class="text-xs text-slate-400">Ocupado</span>
+          </div>
+        </div>
+        <!-- Evaluación -->
+        <div class="bg-slate-900 p-3 min-h-[180px] flex flex-col">
+          <div class="flex items-center gap-1.5 mb-2">
+            <span class="text-base">📝</span>
+            <span class="text-xs font-semibold text-red-400">Evaluación</span>
+          </div>
+          <div class="flex-1 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-3xl mb-1">📄</div>
+              <div class="text-xs text-slate-500">Sin actividad</div>
+            </div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center gap-1.5">
+            <span class="text-xs">👤</span>
+            <span class="text-xs text-slate-600">●</span>
+            <span class="text-xs text-slate-600">Inactivo</span>
+          </div>
+        </div>
+      </div>
+      <!-- Bottom bar -->
+      <div class="flex items-center justify-between px-5 py-2.5 bg-slate-800/50 border-t border-slate-700">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs">⚠️</span>
+            <span class="text-xs text-yellow-400 font-medium">Muñoz</span>
+            <span class="text-xs text-slate-400">atascado 3 días</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs">→</span>
+            <span class="text-xs text-pink-400 font-medium">🚨 PIE notificado</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-slate-400">
+          <span>🧠 <strong class="text-blue-400">40%</strong></span>
+          <span>🎬 <strong class="text-yellow-400">25%</strong></span>
+          <span>🤝 <strong class="text-emerald-400">20%</strong></span>
+          <span>🔬 <strong class="text-purple-400">15%</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fase 1 -->
+  <div class="section">
+    <h2>📊 Fase 1: Registro de Desempeño <span class="badge badge-basic">Básico</span></h2>
+    <p style="color: var(--text2); margin-bottom: 16px;">Reemplazar el libro de clases. El monitor registra desempeño por sala. El sistema calcula métricas, tendencias y alertas.</p>
+
+    <div class="flow-wrapper">
+      <pre class="mermaid" style="text-align: center;">
+flowchart LR
+    A[Monitor] --> B[Crea actividad de sala]
+    B --> C{cognitiva, audiovisual, colaborativa, investigativa, evaluacion}
+    C --> D[Registra desempeño por estudiante]
+    D --> E[Sistema calcula]
+    E --> F[Promedio sala]
+    E --> G[Tendencia]
+    E --> H[Alertas]
+    H --> I{PIE si bajo rendimiento sostenido}
+      </pre>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="value" style="color: var(--accent);">5.1</div><div class="label">Promedio sala cognitiva</div></div>
+      <div class="kpi"><div class="value" style="color: var(--green);">72%</div><div class="label">Tasa progreso</div></div>
+      <div class="kpi"><div class="value" style="color: var(--yellow);">3</div><div class="label">Alertas activas</div></div>
+      <div class="kpi"><div class="value" style="color: var(--purple);">12</div><div class="label">Actividades del mes</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="chart-wrapper">
+        <canvas id="chartDistribucion"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="chartTendencia"></canvas>
+      </div>
+    </div>
+
+    <h3 style="margin: 20px 0 12px; font-size: 1rem;">Dashboard del monitor</h3>
+    <div class="w-full rounded-xl bg-slate-900 border border-slate-700 overflow-hidden shadow-2xl">
+      <!-- Top bar -->
+      <div class="flex items-center justify-between px-5 py-3 bg-slate-800/50 border-b border-slate-700">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📊</span>
+          <span class="text-slate-100 font-semibold text-sm">Panel de Monitoreo</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span>2026 · Semestre 1</span>
+        </div>
+      </div>
+      <!-- Filter bar -->
+      <div class="flex items-center justify-between px-5 py-2.5 bg-slate-800/30 border-b border-slate-700/50">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs text-slate-400">Asignatura:</span>
+            <select class="text-xs bg-slate-800 border border-slate-600 rounded-md px-2 py-1 text-slate-200">
+              <option>Matemática</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs text-slate-400">Sala:</span>
+            <select class="text-xs bg-slate-800 border border-slate-600 rounded-md px-2 py-1 text-blue-400 font-medium">
+              <option>Cognitiva</option>
+            </select>
+          </div>
+        </div>
+        <button class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-md font-medium transition-colors">+ Nueva Actividad</button>
+      </div>
+      <!-- Table -->
+      <div class="p-4">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="text-slate-500 border-b border-slate-700/50">
+              <th class="text-left font-medium pb-2 pl-2">Estudiante</th>
+              <th class="text-left font-medium pb-2">Desempeño</th>
+              <th class="text-left font-medium pb-2">Nota</th>
+              <th class="text-left font-medium pb-2">Progreso</th>
+              <th class="text-left font-medium pb-2 pr-2">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-700/30">
+            <tr class="hover:bg-slate-800/40 transition-colors">
+              <td class="py-2.5 pl-2 text-slate-200 font-medium">Pérez</td>
+              <td class="py-2.5">
+                <div class="w-28 h-2 rounded-full bg-slate-700 overflow-hidden">
+                  <div class="h-full w-[80%] rounded-full bg-emerald-500"></div>
+                </div>
+              </td>
+              <td class="py-2.5">
+                <span class="text-emerald-400 font-semibold">6.5</span>
+              </td>
+              <td class="py-2.5">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-16 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                    <div class="h-full w-[80%] rounded-full bg-blue-500"></div>
+                  </div>
+                  <span class="text-slate-400">80%</span>
+                </div>
+              </td>
+              <td class="py-2.5 pr-2"><span class="text-emerald-400">✅</span></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition-colors">
+              <td class="py-2.5 pl-2 text-slate-200 font-medium">González</td>
+              <td class="py-2.5">
+                <div class="w-28 h-2 rounded-full bg-slate-700 overflow-hidden">
+                  <div class="h-full w-[65%] rounded-full bg-emerald-500"></div>
+                </div>
+              </td>
+              <td class="py-2.5">
+                <span class="text-emerald-400 font-semibold">4.0</span>
+              </td>
+              <td class="py-2.5">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-16 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                    <div class="h-full w-[65%] rounded-full bg-yellow-500"></div>
+                  </div>
+                  <span class="text-slate-400">65%</span>
+                </div>
+              </td>
+              <td class="py-2.5 pr-2"><span class="text-emerald-400">✅</span></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition-colors bg-red-950/20">
+              <td class="py-2.5 pl-2 text-slate-200 font-medium flex items-center gap-1">
+                Muñoz <span class="text-yellow-400">⚠️</span>
+              </td>
+              <td class="py-2.5">
+                <div class="w-28 h-2 rounded-full bg-slate-700 overflow-hidden">
+                  <div class="h-full w-[30%] rounded-full bg-red-500"></div>
+                </div>
+              </td>
+              <td class="py-2.5">
+                <span class="text-red-400 font-semibold">2.3</span>
+              </td>
+              <td class="py-2.5">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-16 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                    <div class="h-full w-[30%] rounded-full bg-red-500"></div>
+                  </div>
+                  <span class="text-red-400">30%</span>
+                </div>
+              </td>
+              <td class="py-2.5 pr-2"><span class="text-red-400">❌</span></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition-colors">
+              <td class="py-2.5 pl-2 text-slate-200 font-medium">Rodríguez</td>
+              <td class="py-2.5">
+                <div class="w-28 h-2 rounded-full bg-slate-700 overflow-hidden">
+                  <div class="h-full w-[70%] rounded-full bg-emerald-500"></div>
+                </div>
+              </td>
+              <td class="py-2.5">
+                <span class="text-emerald-400 font-semibold">5.8</span>
+              </td>
+              <td class="py-2.5">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-16 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                    <div class="h-full w-[70%] rounded-full bg-blue-500"></div>
+                  </div>
+                  <span class="text-slate-400">70%</span>
+                </div>
+              </td>
+              <td class="py-2.5 pr-2"><span class="text-emerald-400">✅</span></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition-colors bg-yellow-950/20">
+              <td class="py-2.5 pl-2 text-slate-200 font-medium">Soto</td>
+              <td class="py-2.5">
+                <div class="w-28 h-2 rounded-full bg-slate-700 overflow-hidden">
+                  <div class="h-full w-[40%] rounded-full bg-yellow-500"></div>
+                </div>
+              </td>
+              <td class="py-2.5">
+                <span class="text-yellow-400 font-semibold">3.5</span>
+              </td>
+              <td class="py-2.5">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-16 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                    <div class="h-full w-[40%] rounded-full bg-yellow-500"></div>
+                  </div>
+                  <span class="text-yellow-400">40%</span>
+                </div>
+              </td>
+              <td class="py-2.5 pr-2"><span class="text-yellow-400">⚠️</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Bottom stats -->
+      <div class="flex items-center justify-between px-5 py-3 bg-slate-800/50 border-t border-slate-700">
+        <div class="flex items-center gap-6">
+          <div class="text-xs"><span class="text-slate-400">Promedio sala:</span> <strong class="text-blue-400 text-sm">4.8</strong></div>
+          <div class="text-xs"><span class="text-slate-400">Tasa progreso:</span> <strong class="text-emerald-400 text-sm">68%</strong></div>
+          <div class="flex items-center gap-2 text-xs">
+            <button class="px-2 py-1 bg-slate-800 rounded-md border border-slate-600 text-slate-300 hover:border-blue-500 transition-colors">📈 Tendencia</button>
+            <button class="px-2 py-1 bg-slate-800 rounded-md border border-slate-600 text-slate-300 hover:border-blue-500 transition-colors">📉 Comparar salas</button>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs">🚨</span>
+          <span class="text-xs text-yellow-400 font-medium">2 estudiantes requieren revisión PIE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fase 2 -->
+  <div class="section">
+    <h2>📷 Fase 2: Evaluación con QR <span class="badge badge-medium">Medio</span></h2>
+    <p style="color: var(--text2); margin-bottom: 16px;">El monitor genera prueba impresa con QR único por estudiante. Captura con el móvil y el sistema corrige automáticamente. La nota se registra al instante y la IA sugiere siguiente sala.</p>
+
+    <div class="flow-wrapper">
+      <pre class="mermaid" style="text-align: center;">
+flowchart TB
+    A[Monitor crea prueba] --> B[Sistema genera PDF + QR por estudiante]
+    B --> C[Imprime y aplica en Sala Evaluación]
+    C --> D[Estudiante marca círculos]
+    D --> E[Monitor captura con cámara]
+    E --> F[QR identifica estudiante+prueba]
+    E --> G[Detección de círculos]
+    F --> H[Corrección automática vs plantilla]
+    G --> H
+    H --> I[Nota registrada en desempeño]
+    H --> J[Estadísticas por pregunta]
+    H --> K[IA recomienda próxima sala]
+      </pre>
+    </div>
+
+    <div class="grid-2" style="margin: 20px 0;">
+      <div class="card">
+        <div class="icon">📱</div>
+        <h3>Captura móvil</h3>
+        <p>Usa la cámara del celular. BarcodeDetector/zxing-wasm para QR. Algoritmo de visión en canvas para círculos.</p>
+      </div>
+      <div class="card">
+        <div class="icon">⚡</div>
+        <h3>Feedback inmediato</h3>
+        <p>El estudiante sabe su nota al instante. No espera días. El sistema ajusta su ruta de aprendizaje automáticamente.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📊</div>
+        <h3>Análisis por pregunta</h3>
+        <p>Identifica preguntas con bajo acierto. Sugiere qué sala reforzar. Mide dificultad y discriminación.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📴</div>
+        <h3>Offline</h3>
+        <p>Todo el proceso funciona sin internet. La sincronización es diferida. Ideal para aulas sin conectividad.</p>
+      </div>
+    </div>
+
+    <h3 style="margin: 20px 0 12px; font-size: 1rem;">Algoritmo de detección de círculos</h3>
+    <div class="mockup" style="font-size: 0.75rem;">
+<strong>1.</strong> Capturar imagen desde cámara → canvas 2D
+<strong>2.</strong> Escala de grises
+<strong>3.</strong> Umbral adaptativo (binarización)
+<strong>4.</strong> Detección de contornos (Canny)
+<strong>5.</strong> Filtrar por:
+     - Relación aspecto 0.8–1.2 (circular)
+     - Radio &gt; 8px
+     - Densidad de píxeles oscuros &gt; umbral
+<strong>6.</strong> Mapa de respuestas: [A, B, C, D, E] → [0, 1, 0, 0, 0]
+<strong>7.</strong> Comparar con plantilla → puntaje → nota → IA sugiere sala
+      </pre>
+    </div>
+  </div>
+
+  <!-- Fase 3 -->
+  <div class="section">
+    <h2>🧠 Fase 3: Diagnóstico y Rutas Personalizadas <span class="badge badge-adv">Avanzado</span></h2>
+    <p style="color: var(--text2); margin-bottom: 16px;">Test adaptativo diagnostica al estudiante, la IA asigna una ruta de salas personalizada y alerta al monitor y PIE según rendimiento.</p>
+
+    <div class="flow-wrapper">
+      <pre class="mermaid" style="text-align: center;">
+flowchart TB
+    A[Estudiante] --> B[Sala Cognitiva: test adaptativo]
+    B --> C{IA diagnostica}
+    C --> D[Fortalezas]
+    C --> E[Debilidades]
+    D --> F[Asigna ruta de salas]
+    E --> F
+    F --> G{¿Perfil del estudiante?}
+    G -->|Visual| H[Sala Audiovisual]
+    G -->|Práctico| I[Sala Colaborativa]
+    G -->|Analítico| J[Sala Investigativa]
+    G -->|Refuerzo| K[Sala Cognitiva]
+    H & I & J & K --> L[Monitor ve progreso]
+    H & I & J & K --> M{IA monitorea}
+    M -->|Atascado| N[Alerta al monitor]
+    M -->|Riesgo severo| O[🚨 Alerta PIE automática]
+    M -->|Completó ruta| P[Nueva ruta]
+      </pre>
+    </div>
+
+    <h3 style="margin: 24px 0 12px; font-size: 1rem;">Dashboard del monitor con rutas</h3>
+    <div class="mockup">
+┌─────────────────────────────────────────────────────────────────────┐
+│  <span class="hl">📈 Panel de Aprendizaje</span> — Matemática · 3° Medio A             │
+├─────────────────────────────────────────────────────────────────────┤
+│  Sala activa: <span class="hl">Cognitiva</span>  |  Estudiantes en sala: 12/30         │
+│  Ocupación: 🟢 Cog 40%  🟡 Aud 25%  🔵 Col 20%  🟣 Inv 15%        │
+├───────────────────────────────────┬─────────────────────────────────┤
+│  Distribución de rutas            │  Alertas                        │
+│ ┌────────────────────────────────┐│ <span class="warn">⚠️ Muñoz</span>                      │
+│ │ 🔵 Pérez   → Cog→Col→Inv→Aud   ││   Atascado en Cognitiva        │
+│ │ ██████████ 80%                 ││   3 días consecutivos          │
+│ │ 🟢 González → Cog→Aud→Col      ││                                │
+│ │ ███       30%                  ││ <span class="pie">🚨 PIE: Pérez</span>                │
+│ │ 🔴 Muñoz   → Cog (repite)      ││   Bajo rendimiento sostenido   │
+│ │ ██        10%                  ││   en 3 de 4 salas              │
+│ │ 🟣 Rodríguez → Cog→Inv→Aud     ││                                │
+│ │ ████████  75%                  ││                                │
+│ │ 🟢 Soto    → Cog→Col→Aud       ││                                │
+│ │ ██████    55%                  ││                                │
+│ └────────────────────────────────┘│                                │
+│ [🎯 Reasignar sala] [📊 Detalle]  │                                │
+└───────────────────────────────────┴─────────────────────────────────┘
+    </div>
+
+    <div class="grid-2" style="margin: 24px 0;">
+      <div class="chart-wrapper">
+        <canvas id="chartRadar"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="chartOcupacion"></canvas>
+      </div>
+    </div>
+
+    <h3 style="margin: 20px 0 12px; font-size: 1rem;">Prompt de IA</h3>
+    <div class="mockup" style="font-size: 0.75rem;">
+<span class="hl">Input:</span> Resultados de 30 estudiantes · Sala Cognitiva · Matemática
+<span class="hl">Datos:</span> 10 preguntas · % acierto por eje/habilidad · rutas actuales
+<span class="hl">Instrucción:</span>
+1. Resumen de la sesión
+2. 3 estudiantes que deberían cambiar de sala
+3. Alertas para PIE (estudiantes que requieren intervención)
+4. Sugerencia de contenido para cada sala activa
+      </pre>
+    </div>
+  </div>
+
+  <!-- Fase 4 -->
+  <div class="section">
+    <h2>🤖 Fase 4: Sala Inteligente <span class="badge badge-future">Visión</span></h2>
+    <p style="color: var(--text2); margin-bottom: 16px;">Visión artificial para asistencia, monitoreo de atención y evaluación interactiva en pantalla táctil.</p>
+
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <h3 style="font-size: 0.9rem; margin-bottom: 12px;">Flujo aula del futuro</h3>
+      <ol style="color: var(--text2); line-height: 2; font-size: 0.85rem; padding-left: 20px;">
+        <li>Entrada → Cámara detecta estudiantes → Registro automático en sala</li>
+        <li>Instrucción → Sistema reproduce contenido según ruta del estudiante</li>
+        <li>Monitoreo → IA detecta desconexión → Alerta al monitor</li>
+        <li>Interacción → Estudiante responde en pantalla táctil: ordenar, clasificar, relacionar, investigar, resolver</li>
+        <li>Síntesis → Sistema genera reporte por habilidad</li>
+        <li>Cierre → Recomienda siguiente sala según desempeño</li>
+      </ol>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">👤</div>
+        <h3>Asistencia facial</h3>
+        <p>Cámara detecta rostros al entrar a la sala. Registro automático. TensorFlow.js facemesh.</p>
+      </div>
+      <div class="card">
+        <div class="icon">👀</div>
+        <h3>Monitoreo de atención</h3>
+        <p>Detecta si el estudiante mira la pantalla vs distraído. Alerta al monitor en tiempo real.</p>
+      </div>
+      <div class="card">
+        <div class="icon">✍️</div>
+        <h3>Test interactivo táctil</h3>
+        <p>El estudiante responde con gestos, arrastre y dibujo. Evalúa análisis, investigación y resolución.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🤝</div>
+        <h3>Habilidades blandas</h3>
+        <p>Sala colaborativa mide participación, turnos y comunicación. Dashboard de habilidades sociales.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🖐️</div>
+        <h3>Reconocimiento de gestos</h3>
+        <p>Estudiante levanta la mano → alerta al monitor. Sin interrumpir la actividad.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📊</div>
+        <h3>Reporte integrado</h3>
+        <p>Consolida asistencia, atención, desempeño académico y habilidades en un dashboard.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integración Moodle -->
+  <div class="section">
+    <h2>🔗 Integración con Moodle</h2>
+    <p style="color: var(--text2); margin-bottom: 16px;">Moodle es el repositorio de contenido asincrónico. El sistema es el cerebro pedagógico. Se complementan vía API.</p>
+
+    <div class="flow-wrapper">
+      <pre class="mermaid" style="text-align: center;">
+flowchart LR
+    subgraph Sistema [Sistema (orquestador offline-first)]
+        A[Desempeño por sala]
+        B[Evaluaciones QR]
+        C[Diagnóstico IA]
+        D[Rutas personalizadas]
+        E[Alertas PIE]
+    end
+    subgraph Moodle [Moodle LMS]
+        F[Contenido asincrónico]
+        G[Foros]
+        H[Tareas]
+        I[Certificaciones]
+    end
+    J[(Sync API)] --> A & B & C & D & E
+    J <--> F
+      </pre>
+    </div>
+
+    <table>
+      <tr><th>Dato</th><th>Origen</th><th>Destino</th><th>Frecuencia</th></tr>
+      <tr><td>Desempeño</td><td>Sistema</td><td>Moodle</td><td>Diario</td></tr>
+      <tr><td>Estudiantes</td><td>Moodle</td><td>Sistema</td><td>Semestral</td></tr>
+      <tr><td>Contenido</td><td>Moodle</td><td>Sistema (caché offline)</td><td>Al conectarse</td></tr>
+      <tr><td>Diagnósticos</td><td>Sistema</td><td>Moodle</td><td>Después del test</td></tr>
+      <tr><td>Alertas PIE</td><td>Sistema</td><td>Moodle (campo)</td><td>Tiempo real</td></tr>
+    </table>
+  </div>
+
+  <!-- Roadmap -->
+  <div class="section">
+    <h2>🛣️ Roadmap</h2>
+    <div class="roadmap">
+      <div class="roadmap-item past">
+        <div>
+          <h3>Módulos base</h3>
+          <p>Tickets, equipos, inventario, mapa, configuración</p>
+          <div class="date">Q2 2026 ✅</div>
+        </div>
+      </div>
+      <div class="roadmap-item active">
+        <div>
+          <h3>Registro de desempeño por sala</h3>
+          <p>Actividades, desempeño, promedios, reportes. Primer módulo académico.</p>
+          <div class="date">Q3 2026 ← <strong>Ahora</strong></div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div>
+          <h3>Evaluación digital con QR</h3>
+          <p>Generación de pruebas, QR por estudiante, captura con cámara, corrección automática.</p>
+          <div class="date">Q4 2026</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div>
+          <h3>Diagnóstico + rutas personalizadas + alertas PIE</h3>
+          <p>Test adaptativo, asignación automática de salas, IA orquestadora, alertas al monitor y PIE.</p>
+          <div class="date">Q1 2027</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div>
+          <h3>Integración Moodle</h3>
+          <p>Sincronización bidireccional de desempeño, estudiantes, contenido y diagnósticos.</p>
+          <div class="date">Q2 2027</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div>
+          <h3>Piloto en establecimiento real</h3>
+          <p>Marcha blanca con todas las salas de aprendizaje funcionando.</p>
+          <div class="date">Q3 2027</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div>
+          <h3>Sala inteligente con visión artificial</h3>
+          <p>Asistencia facial, monitoreo de atención, test interactivo, reconocimiento de gestos.</p>
+          <div class="date">2028</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tablas -->
+  <div class="section">
+    <h2>🗄️ Estructura de datos</h2>
+
+    <h3 style="font-size: 1rem; margin-bottom: 12px;">Base</h3>
+    <div class="mockup" style="font-size: 0.75rem;">
+<strong>asignaturas</strong> (id, nombre, nivel, horas_semanales, activo)
+<strong>periodos</strong> (id, nombre, fecha_inicio, fecha_fin, activo)
+<strong>salas_aprendizaje</strong> (id, nombre, tipo, capacidad, activo)
+   <span class="hl">-- tipo: cognitiva, audiovisual, colaborativa, investigativa, evaluacion</span>
+<strong>actividades</strong> (id, id_asignatura, id_periodo, id_sala, nombre, ponderacion, fecha, activo)
+<strong>desempeno</strong> (id, id_actividad, id_estudiante, nota, observaciones, created_at, activo)
+<strong>promedios</strong> (id, id_estudiante, id_asignatura, id_periodo, promedio_final, estado, activo)
+    </div>
+
+    <h3 style="font-size: 1rem; margin: 20px 0 12px;">Evaluaciones QR</h3>
+    <div class="mockup" style="font-size: 0.75rem;">
+<strong>preguntas</strong> (id, id_asignatura, tipo, enunciado, alternativas_json, respuesta_correcta, dificultad, activo)
+<strong>pruebas</strong> (id, id_actividad, instrucciones, preguntas_ids, created_at, activo)
+<strong>pruebas_estudiante</strong> (id, id_prueba, id_estudiante, qr_hash, pdf_url, estado, created_at)
+<strong>respuestas</strong> (id, id_prueba_estudiante, id_pregunta, alternativa_marcada, correcta, created_at)
+<strong>resultados_prueba</strong> (id_prueba, id_estudiante, puntaje_total, nota)
+    </div>
+
+    <h3 style="font-size: 1rem; margin: 20px 0 12px;">Diagnóstico y rutas</h3>
+    <div class="mockup" style="font-size: 0.75rem;">
+<strong>perfiles_aprendizaje</strong> (id, id_estudiante, id_asignatura, nivel_general, ejes_json, habilidades_json, sala_recomendada, ultima_actualizacion)
+<strong>rutas_aprendizaje</strong> (id, id_estudiante, id_asignatura, salas_json, progreso, estado, activo)
+<strong>sesiones_sala</strong> (id, id_estudiante, id_sala, id_actividad, hora_entrada, hora_salida, metricas_json, activo)
+<strong>contenido</strong> (id, id_asignatura, titulo, tipo, url, nivel_dificultad, sala_origen, activo)
+<strong>progreso_contenido</strong> (id, id_estudiante, id_contenido, estado, intentos, puntaje_post, created_at)
+    </div>
+  </div>
+
+  <!-- Riesgos -->
+  <div class="section">
+    <h2>⚠️ Riesgos y mitigaciones</h2>
+    <table>
+      <tr><th>Riesgo</th><th>Impacto</th><th>Mitigación</th></tr>
+      <tr><td>Monitores no adoptan el sistema</td><td><span class="tag tag-red">Alto</span></td><td>Capacitación gradual, interfaz simple, modo offline</td></tr>
+      <tr><td>Internet inestable</td><td><span class="tag tag-red">Alto</span></td><td>PWA + IndexedDB + SQLite futuro</td></tr>
+      <tr><td>Resistencia al cambio</td><td><span class="tag tag-yellow">Medio</span></td><td>Mostrar reducción de carga administrativa</td></tr>
+      <tr><td>Privacidad de datos (Ley 21.719)</td><td><span class="tag tag-red">Alto</span></td><td>Datos cifrados, logs de acceso, roles</td></tr>
+      <tr><td>Dependencia de una persona</td><td><span class="tag tag-yellow">Medio</span></td><td>Documentación, código modular, formación de segundo monitor</td></tr>
+      <tr><td>Integración Moodle frágil</td><td><span class="tag tag-yellow">Medio</span></td><td>API versionada, fallback manual, logs</td></tr>
+    </table>
+  </div>
+
+  <!-- Notas para implementación -->
+  <div class="section">
+    <h2>📝 Notas para implementación</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">📁</div>
+        <h3>Estructura de archivos</h3>
+        <p>Los módulos académicos vivirán en <code style="background: var(--bg); padding: 1px 6px; border-radius: 4px;">src/pages/academico/</code> con componentes y servicios propios.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔧</div>
+        <h3>Tecnologías futuras</h3>
+        <p>OpenCV.js (detección de círculos), TensorFlow.js (visión artificial), Web Speech API, jsPDF (generación de PDFs).</p>
+      </div>
+      <div class="card">
+        <div class="icon">📡</div>
+        <h3>Offline-first</h3>
+        <p>Toda la lógica académica funciona sin conexión. PWA + IndexedDB. La sincronización con el servidor es diferida.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📱</div>
+        <h3>QR</h3>
+        <p>El sistema actual ya tiene zxing-wasm integrado para lecturas de QR y DataMatrix. Se reutiliza para identificación y evaluaciones.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🏛️</div>
+        <h3>Salas como eje</h3>
+        <p>La tabla <code style="background: var(--bg); padding: 1px 6px; border-radius: 4px;">salas_aprendizaje</code> es central. Toda actividad, ruta y reporte se organiza en torno a ella.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Tab Plan de Trabajo -->
+<div id="plan" style="scroll-margin-top: 80px;">
+  <div class="container">
+
+    <div class="section">
+      <h2>📋 Plan de Trabajo</h2>
+      <p style="color: var(--text2); margin-bottom: 20px;">Workflow, hitos, fechas push y estrategia para el desarrollo del módulo académico.</p>
+
+      <h3 style="font-size: 1rem; margin-bottom: 16px;">Workflow por feature</h3>
+      <div class="flow-wrapper">
+        <pre class="mermaid" style="text-align: center;">
+flowchart LR
+    A[Análisis + Docs] --> B[Diseño]
+    B --> C[Código + Commit]
+    C --> D[Pruebas]
+    D --> E[Documentación]
+    E --> F[Blog post + Difusión]
+    F --> G{¿Push date?}
+    G -->|Sí| H[🟢 Lanzar a usuarios]
+    G -->|No| A
+        </pre>
+      </div>
+    </div>
+
+    <!-- Fechas Push -->
+    <div class="section">
+      <h2>📅 Fechas Push</h2>
+      <p style="color: var(--text2); margin-bottom: 16px;">Fechas límite donde el sistema debe estar listo para mostrar a usuarios reales.</p>
+
+      <div style="position: relative; padding-left: 24px;">
+        <div style="position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border);"></div>
+
+        <div style="position: relative; padding: 16px 20px; margin-bottom: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="position: absolute; left: -17px; top: 20px; width: 14px; height: 14px; border-radius: 50%; background: var(--green); border: 2px solid var(--bg);"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div><strong style="color: var(--accent);">Push 1</strong> — <span style="color: var(--text);">Registro de Desempeño</span></div>
+            <span class="tag tag-green">Q3 2026</span>
+          </div>
+          <p style="color: var(--text2); font-size: 0.85rem; margin-top: 6px;">CRUD actividades, notas, promedios, dashboard básico, alertas PIE</p>
+        </div>
+
+        <div style="position: relative; padding: 16px 20px; margin-bottom: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="position: absolute; left: -17px; top: 20px; width: 14px; height: 14px; border-radius: 50%; background: var(--yellow); border: 2px solid var(--bg);"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div><strong style="color: var(--yellow);">Push 2</strong> — <span style="color: var(--text);">Blog Interno</span></div>
+            <span class="tag tag-yellow">Q3 2026</span>
+          </div>
+          <p style="color: var(--text2); font-size: 0.85rem; margin-top: 6px;">Blog funcional + primer post explicando el sistema + botón compartir WhatsApp</p>
+        </div>
+
+        <div style="position: relative; padding: 16px 20px; margin-bottom: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="position: absolute; left: -17px; top: 20px; width: 14px; height: 14px; border-radius: 50%; background: var(--orange); border: 2px solid var(--bg);"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div><strong style="color: var(--orange);">Push 3</strong> — <span style="color: var(--text);">Evaluación Digital con QR</span></div>
+            <span class="tag tag-yellow">Q4 2026</span>
+          </div>
+          <p style="color: var(--text2); font-size: 0.85rem; margin-top: 6px;">Generación de pruebas, QR por estudiante, captura con cámara, corrección automática</p>
+        </div>
+
+        <div style="position: relative; padding: 16px 20px; margin-bottom: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="position: absolute; left: -17px; top: 20px; width: 14px; height: 14px; border-radius: 50%; background: var(--purple); border: 2px solid var(--bg);"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div><strong style="color: var(--purple);">Push 4</strong> — <span style="color: var(--text);">Diagnóstico Adaptativo + IA</span></div>
+            <span class="tag tag-purple">Q1 2027</span>
+          </div>
+          <p style="color: var(--text2); font-size: 0.85rem; margin-top: 6px;">Test adaptativo, rutas personalizadas, alertas PIE automáticas</p>
+        </div>
+
+        <div style="position: relative; padding: 16px 20px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="position: absolute; left: -17px; top: 20px; width: 14px; height: 14px; border-radius: 50%; background: var(--red); border: 2px solid var(--bg);"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div><strong style="color: var(--red);">Push 5</strong> — <span style="color: var(--text);">Piloto EE Real</span></div>
+            <span class="tag tag-red">Q3 2027</span>
+          </div>
+          <p style="color: var(--text2); font-size: 0.85rem; margin-top: 6px;">Todo el módulo académico funcionando en un establecimiento educacional real</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Registro de Desempeño (detalle) -->
+    <div class="section">
+      <h2>📊 Registro de Desempeño — Detalle</h2>
+      <p style="color: var(--text2); margin-bottom: 16px;">Fase 1: reemplazar el Excel/libro de clases.</p>
+      <table>
+        <tr><th>Componente</th><th>Qué hace</th></tr>
+        <tr><td><strong>CRUD de actividades</strong></td><td>El monitor crea una actividad (nombre, fecha, ponderación, sala, asignatura)</td></tr>
+        <tr><td><strong>Registro de desempeño</strong></td><td>El monitor ingresa nota 1.0–7.0 por estudiante por actividad</td></tr>
+        <tr><td><strong>Cálculo de promedios</strong></td><td>El sistema calcula promedio ponderado por asignatura y periodo</td></tr>
+        <tr><td><strong>Reportes</strong></td><td>Dashboard con distribución, tendencia, alertas de bajo rendimiento</td></tr>
+        <tr><td><strong>Alertas PIE</strong></td><td>Si un estudiante mantiene promedio &lt; 4.0 en 2+ actividades consecutivas</td></tr>
+      </table>
+      <div class="grid-2" style="margin-top: 16px;">
+        <div class="card" style="border-color: var(--yellow);">
+          <h3>¿Online u offline-first?</h3>
+          <p style="font-size: 0.85rem; color: var(--text2);">¿El registro de desempeño debe tener captura offline (PWA + IndexedDB) desde el inicio, o arrancamos online y agregamos offline después?</p>
+        </div>
+        <div class="card" style="border-color: var(--yellow);">
+          <h3>¿Planilla o uno por uno?</h3>
+          <p style="font-size: 0.85rem; color: var(--text2);">¿El monitor registra uno por uno o necesita una vista tipo "planilla" donde ve a todos los estudiantes y llena notas en lote?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Claude Code vs opencode -->
+    <div class="section">
+      <h2>⚖️ Claude Code vs opencode</h2>
+      <table>
+        <tr><th>Aspecto</th><th>opencode</th><th>Claude Code</th></tr>
+        <tr><td><strong>Costo</strong></td><td>Gratuito (open source)</td><td>$20/mes Pro o $0.003/request API</td></tr>
+        <tr><td><strong>Modelo</strong></td><td>Usa el que configures (varios providers)</td><td>Solo Claude (Sonnet/Opus/Haiku)</td></tr>
+        <tr><td><strong>Calidad</strong></td><td>Depende del modelo que le pongas</td><td>Claude 4 Sonnet es excelente en código</td></tr>
+        <tr><td><strong>Offline</strong></td><td>Depende del provider</td><td>No, necesita internet</td></tr>
+        <tr><td><strong>Económico</strong></td><td>✅ Sí, gratis</td><td>$20/mes fijo</td></tr>
+      </table>
+      <p style="color: var(--accent); font-size: 0.85rem; margin-top: 12px;">
+        Recomendación: <strong>opencode</strong> es más económico (gratis + el modelo que elijas). 
+        Para tareas complejas, Claude Code con Sonnet vale los $20/mes. No necesitas ambos.
+      </p>
+    </div>
+
+    <!-- Contenido automatizado -->
+    <div class="section">
+      <h2>🤖 Contenido Automatizado — Flujo</h2>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+        <ol style="color: var(--text2); line-height: 2;">
+          <li>Terminas feature → haces commit</li>
+          <li>Ejecutas script o prompt que:</li>
+          <ul style="padding-left: 24px; margin-bottom: 8px;">
+            <li>Lee el diff del commit</li>
+            <li>Lee el análisis en <code style="background: var(--bg); padding: 1px 6px; border-radius: 4px;">analisis/README.md</code></li>
+            <li>Genera borrador de post para el blog</li>
+          </ul>
+          <li>Revisas, ajustas, publicas</li>
+          <li>El post se difunde automáticamente a grupos de WhatsApp/RRSS</li>
+        </ol>
+      </div>
+      <p style="color: var(--text2); font-size: 0.85rem; margin-top: 12px;">
+        ¿Quieres que integremos esto como un script Node en el proyecto que lea el último commit y genere el post?
+      </p>
+    </div>
+
+    <!-- Próximos pasos -->
+    <div class="section">
+      <h2>🚀 Próximos Pasos Inmediatos</h2>
+      <div class="grid-2">
+        <div class="card" style="border-color: var(--green);">
+          <div class="icon">✅</div>
+          <h3>1. Confirmar fechas push</h3>
+          <p style="font-size: 0.85rem; color: var(--text2);">Q3 2026 desempeño + blog, Q4 QR, Q1 2027 adaptativo, Q3 2027 piloto</p>
+        </div>
+        <div class="card" style="border-color: var(--green);">
+          <div class="icon">✅</div>
+          <h3>2. Decidir online vs offline-first</h3>
+          <p style="font-size: 0.85rem; color: var(--text2);">Registro de desempeño: ¿arranca online u offline-first?</p>
+        </div>
+        <div class="card" style="border-color: var(--green);">
+          <div class="icon">✅</div>
+          <h3>3. Definir blog: ¿comentarios?</h3>
+          <p style="font-size: 0.85rem; color: var(--text2);">¿Solo lectura o con comentarios? ¿Revisas borrador IA o publicas directo?</p>
+        </div>
+        <div class="card" style="border-color: var(--green);">
+          <div class="icon">✅</div>
+          <h3>4. Arrancar con tablas y componentes</h3>
+          <p style="font-size: 0.85rem; color: var(--text2);">Estructura de tablas del módulo académico y componentes base</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blog + Contenido -->
+    <div class="section">
+      <h2>📝 Blog + Contenido Automatizado</h2>
+      <div class="grid-2">
+        <div class="card">
+          <div class="icon">📰</div>
+          <h3>Blog interno</h3>
+          <p>Nueva ruta <code style="background: var(--bg); padding: 1px 6px; border-radius: 4px;">/blog</code> dentro de la app. Solo usuarios autenticados. Post por feature + tips semanales.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🤖</div>
+          <h3>Generación automatizada</h3>
+          <p>Script Node que lee el último commit + el análisis y genera borrador de post. Tú revisas y publicas.</p>
+        </div>
+        <div class="card">
+          <div class="icon">📱</div>
+          <h3>Difusión RRSS</h3>
+          <p>Botón compartir que abre WhatsApp con mensaje predefinido. Integración con grupos internos.</p>
+        </div>
+        <div class="card">
+          <div class="icon">📅</div>
+          <h3>Frecuencia</h3>
+          <p>1 post por feature completado + 1 semanal de tips/tutoriales. El sistema se vende solo si se usa.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estrategia adopción -->
+    <div class="section">
+      <h2>🧭 Estrategia de Adopción</h2>
+      <div class="flow-wrapper">
+        <pre class="mermaid" style="text-align: center;">
+flowchart TB
+    A[Blog post: problema conocido] --> B["Ej: '¿Cuántas horas pierdes corrigiendo?'"]
+    B --> C[Muestra solución: sistema + QR]
+    C --> D[Ofrece alivio inmediato]
+    D --> E[Usuario prueba una vez]
+    E --> F{¿Resolvió el problema?}
+    F -->|Sí| G[Uso recurrente]
+    F -->|No| H[Ajuste + nuevo post]
+    G --> I[Dependencia del sistema]
+    I --> J[Siguiente módulo]
+        </pre>
+      </div>
+      <p style="color: var(--text2); font-size: 0.85rem; margin-top: 12px;">
+        No vendes el sistema. Vendes <strong style="color: var(--accent);">menos carga administrativa</strong>.
+        Lo académico entra después, cuando confíen.
+      </p>
+    </div>
+
+    <!-- Pendientes -->
+    <div class="section">
+      <h2>❓ Pendientes por definir</h2>
+      <div class="grid-3">
+        <div class="card" style="border-color: var(--yellow);">
+          <h3>1. Registro de Desempeño</h3>
+          <p>¿Online primero u offline-first desde el inicio? ¿Vista planilla o ingreso uno por uno?</p>
+        </div>
+        <div class="card" style="border-color: var(--yellow);">
+          <h3>2. Blog</h3>
+          <p>¿Comentarios habilitados o solo lectura? ¿Tú revisas borradores IA o publicas directo?</p>
+        </div>
+        <div class="card" style="border-color: var(--green);">
+          <h3>3. Claude Code vs opencode</h3>
+          <p>✅ Decidido: opencode (gratis). Ver tabla comparativa arriba.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leyes -->
+    <div class="section">
+      <h2>📜 Leyes chilenas a considerar (futuro)</h2>
+      <table>
+        <tr><th>Ley / Norma</th><th>Impacto en el sistema</th><th>Estado</th></tr>
+        <tr><td>Ley 21.719 — Protección de Datos</td><td>Datos de estudiantes cifrados, logs de acceso, consentimiento</td><td><span class="tag tag-yellow">Pendiente</span></td></tr>
+        <tr><td>LGE 20.370 — Ley General de Educación</td><td>Marco legal del sistema educativo, calificaciones, evaluación</td><td><span class="tag tag-yellow">Investigar</span></td></tr>
+        <tr><td>Reglamento de Calificaciones</td><td>Escala 1.0–7.0, ponderaciones, promedios, eximiciones</td><td><span class="tag tag-yellow">Investigar</span></td></tr>
+        <tr><td>Normativa SLEP</td><td>Requisitos de compras, licitaciones, integración con sistemas oficiales</td><td><span class="tag tag-yellow">Investigar</span></td></tr>
+      </table>
+      <p style="color: var(--text2); font-size: 0.85rem; margin-top: 12px;">Se investigarán y analizarán en su momento. Ahora priorizamos el prototipo funcional.</p>
+    </div>
+
+  </div>
+</div>
+<!-- fin tab-plan -->
+
+<script>
+  mermaid.initialize({
+    theme: 'dark',
+    themeVariables: {
+      fontFamily: 'Inter',
+      primaryColor: '#60a5fa',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#1e3150',
+      lineColor: '#1e3150',
+      secondaryColor: '#1a2642',
+      tertiaryColor: '#131c31',
+      clusterBkg: '#131c31',
+      clusterBorder: '#1e3150',
+      nodeBorder: '#1e3150',
+    },
+    flowchart: { useMaxWidth: true }
+  });
+
+  new Chart(document.getElementById('chartDistribucion'), {
+    type: 'bar',
+    data: {
+      labels: ['1.0-2.0', '2.1-3.0', '3.1-4.0', '4.1-5.0', '5.1-6.0', '6.1-7.0'],
+      datasets: [{
+        label: 'Estudiantes',
+        data: [2, 3, 5, 8, 7, 5],
+        backgroundColor: ['#f87171', '#fb923c', '#fbbf24', '#4ade80', '#22d3ee', '#60a5fa'],
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Distribución de desempeño — Sala Cognitiva', color: '#94a3b8', font: { family: 'Inter', size: 13 } }
+      },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e3150' } },
+        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e3150' }, beginAtZero: true }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartTendencia'), {
+    type: 'line',
+    data: {
+      labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6'],
+      datasets: [{
+        label: 'Sala Cognitiva',
+        data: [4.2, 4.5, 4.8, 5.1, 5.1, 5.3],
+        borderColor: '#60a5fa',
+        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+        fill: true, tension: 0.3, pointBackgroundColor: '#60a5fa', pointRadius: 4,
+      }, {
+        label: 'Sala Audiovisual',
+        data: [4.0, 4.3, 4.6, 4.9, 5.0, 5.1],
+        borderColor: '#fbbf24',
+        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+        fill: true, tension: 0.3, pointBackgroundColor: '#fbbf24', pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Tendencia por sala', color: '#94a3b8', font: { family: 'Inter', size: 13 } }
+      },
+      scales: {
+        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e3150' } },
+        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e3150' }, min: 3.5, max: 6 }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartRadar'), {
+    type: 'radar',
+    data: {
+      labels: ['Conocer', 'Aplicar', 'Analizar', 'Evaluar', 'Crear'],
+      datasets: [{
+        label: 'Curso actual',
+        data: [80, 65, 45, 30, 20],
+        borderColor: '#60a5fa',
+        backgroundColor: 'rgba(96, 165, 250, 0.15)',
+        pointBackgroundColor: '#60a5fa', pointRadius: 4,
+      }, {
+        label: 'Meta semestral',
+        data: [85, 75, 60, 50, 40],
+        borderColor: '#4ade80',
+        backgroundColor: 'rgba(74, 222, 128, 0.1)',
+        pointBackgroundColor: '#4ade80', pointRadius: 4,
+        borderDash: [5, 5],
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Habilidades — Curso vs Meta', color: '#94a3b8', font: { family: 'Inter', size: 13 } }
+      },
+      scales: {
+        r: {
+          angleLines: { color: '#1e3150' },
+          grid: { color: '#1e3150' },
+          ticks: { color: '#94a3b8', backdropColor: 'transparent', font: { size: 9 } },
+          pointLabels: { color: '#e2e8f0', font: { size: 11 } }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartOcupacion'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Cognitiva', 'Audiovisual', 'Colaborativa', 'Investigativa'],
+      datasets: [{
+        data: [40, 25, 20, 15],
+        backgroundColor: ['#60a5fa', '#fbbf24', '#4ade80', '#c084fc'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Ocupación de salas', color: '#94a3b8', font: { family: 'Inter', size: 13 } },
+        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 }, padding: 12 } }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,7 +1,8 @@
 import { IndicadorConexion } from './IndicadorConexion';
 import NotificacionCampana from './NotificacionCampana';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { Rol } from '../types';
+import { useOfflineSync } from '../hooks/useOfflineSync';
 
 const ROL_COLORES: Record<Rol, string> = {
   [Rol.ADMIN]: '#7C3AED', [Rol.INSPECTOR]: '#0369A1', [Rol.PROFESOR]: '#065F46',
@@ -26,6 +27,8 @@ interface Props {
 }
 
 export default function Header({ temaOscuro, setTemaOscuro, nombre, rol, email, usuarioId, onAbrirDatos, establecimientoNombre, sistemaNombre = 'Intranet', sistemaSubtitulo = '' }: Props) {
+  const { status, pendingCount } = useOfflineSync();
+
   return (
     <header style={{
       backgroundColor: '#FFFFFF', borderBottom: '1px solid #E2E8F0',
@@ -44,6 +47,19 @@ export default function Header({ temaOscuro, setTemaOscuro, nombre, rol, email, 
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <IndicadorConexion />
+        {pendingCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '11px', color: '#f59e0b', fontWeight: 600 }}>
+            <RefreshCw size={12} className={status === 'syncing' ? 'animate-spin' : ''} />
+            {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}
+          </div>
+        )}
+        {status === 'syncing' && (
+          <div style={{ fontSize: '11px', color: '#3b82f6', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <RefreshCw size={12} className="animate-spin" />
+            sincronizando
+          </div>
+        )}
+      
         <NotificacionCampana />
         <button type="button" onClick={() => setTemaOscuro(!temaOscuro)} style={{
           background: 'none', border: 'none', cursor: 'pointer', padding: '8px',
