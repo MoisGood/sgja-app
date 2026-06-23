@@ -483,3 +483,75 @@ export interface QrCode {
   created_at: string;
   updated_at: string;
 }
+
+// ============================================================
+// Módulo Académico — Catálogos
+// ============================================================
+
+export type SalaTipo = 'cognitiva' | 'audiovisual' | 'colaborativa' | 'investigativa' | 'practica' | 'evaluacion';
+
+export interface SalaAprendizaje {
+  id: string;
+  nombre: string;
+  tipo: SalaTipo;
+  capacidad: number;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Asignatura {
+  id: string;
+  nombre: string;
+  nivel: string;
+  horas_semanales: number;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Periodo {
+  id: string;
+  nombre: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Actividad {
+  id: string;
+  id_asignatura: string;
+  id_periodo: string;
+  id_sala: string | null;
+  nombre: string;
+  descripcion: string;
+  ponderacion: number;
+  fecha: string;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Desempeno {
+  id: string;
+  id_actividad: string;
+  id_estudiante: string;
+  nota: number | null;
+  observaciones: string;
+  created_at: string;
+  activo: boolean;
+}
+
+export interface Promedio {
+  id: string;
+  id_estudiante: string;
+  id_asignatura: string;
+  id_periodo: string;
+  promedio_final: number;
+  estado: 'activo' | 'riesgo' | 'reprobado';
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+}

@@ -1,17 +1,29 @@
 import { openDB } from 'idb';
 import type { DBSchema, IDBPDatabase } from 'idb';
 
-export type StoreTable = 'desempeno' | 'actividades' | 'sync_queue' | 'metadata';
+export type StoreTable = 'salas_aprendizaje' | 'asignaturas' | 'periodos' | 'actividades' | 'desempeno' | 'sync_queue' | 'metadata';
 
 const DB_NAME = 'sgja-offline';
 const DB_VERSION = 1;
 
 interface OfflineDBSchema extends DBSchema {
-  desempeno: {
+  salas_aprendizaje: {
+    key: string;
+    value: Record<string, unknown> & { _synced: boolean; _updated_at: number };
+  };
+  asignaturas: {
+    key: string;
+    value: Record<string, unknown> & { _synced: boolean; _updated_at: number };
+  };
+  periodos: {
     key: string;
     value: Record<string, unknown> & { _synced: boolean; _updated_at: number };
   };
   actividades: {
+    key: string;
+    value: Record<string, unknown> & { _synced: boolean; _updated_at: number };
+  };
+  desempeno: {
     key: string;
     value: Record<string, unknown> & { _synced: boolean; _updated_at: number };
   };
@@ -41,7 +53,7 @@ async function getDB() {
 
   dbInstance = await openDB<OfflineDBSchema>(DB_NAME, DB_VERSION, {
     upgrade(db) {
-      (['desempeno', 'actividades', 'metadata'] as const).forEach(name => {
+      (['salas_aprendizaje', 'asignaturas', 'periodos', 'actividades', 'desempeno', 'metadata'] as const).forEach(name => {
         if (!db.objectStoreNames.contains(name)) {
           db.createObjectStore(name);
         }
@@ -56,7 +68,7 @@ async function getDB() {
 }
 
 export const offlineStore = {
-  async getAll<T extends Record<string, unknown>>(table: StoreTable): Promise<T[]> {
+  async getAll<T = Record<string, unknown>>(table: StoreTable): Promise<T[]> {
     try {
       const db = await getDB();
       const values = await db.getAll(table);
@@ -67,7 +79,7 @@ export const offlineStore = {
     }
   },
 
-  async getById<T extends Record<string, unknown>>(table: StoreTable, id: string): Promise<T | null> {
+  async getById<T = Record<string, unknown>>(table: StoreTable, id: string): Promise<T | null> {
     try {
       const db = await getDB();
       const value = await db.get(table, id);
