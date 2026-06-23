@@ -1,6 +1,8 @@
 import { openDB } from 'idb';
 import type { DBSchema, IDBPDatabase } from 'idb';
 
+export type StoreTable = 'desempeno' | 'actividades' | 'sync_queue' | 'metadata';
+
 const DB_NAME = 'sgja-offline';
 const DB_VERSION = 1;
 
@@ -39,15 +41,13 @@ async function getDB() {
 
   dbInstance = await openDB<OfflineDBSchema>(DB_NAME, DB_VERSION, {
     upgrade(db) {
-      const tables = ['desempeno', 'actividades', 'metadata'];
-      for (const table of tables) {
-        if (!db.objectStoreNames.contains(table)) {
-          db.createObjectStore(table);
+      (['desempeno', 'actividades', 'metadata'] as const).forEach(name => {
+        if (!db.objectStoreNames.contains(name)) {
+          db.createObjectStore(name);
         }
-      }
+      });
       if (!db.objectStoreNames.contains('sync_queue')) {
-        const queue = db.createObjectStore('sync_queue', { keyPath: 'id', autoIncrement: true });
-        queue.createIndex('created_at', 'created_at');
+        db.createObjectStore('sync_queue', { keyPath: 'id', autoIncrement: true });
       }
     },
   });
@@ -56,7 +56,7 @@ async function getDB() {
 }
 
 export const offlineStore = {
-  async getAll<T extends Record<string, unknown>>(table: string): Promise<T[]> {
+  async getAll<T extends Record<string, unknown>>(table: StoreTable): Promise<T[]> {
     try {
       const db = await getDB();
       const values = await db.getAll(table);
@@ -67,7 +67,7 @@ export const offlineStore = {
     }
   },
 
-  async getById<T extends Record<string, unknown>>(table: string, id: string): Promise<T | null> {
+  async getById<T extends Record<string, unknown>>(table: StoreTable, id: string): Promise<T | null> {
     try {
       const db = await getDB();
       const value = await db.get(table, id);
@@ -78,7 +78,7 @@ export const offlineStore = {
     }
   },
 
-  async put(table: string, id: string, data: Record<string, unknown>) {
+  async put(table: StoreTable, id: string, data: Record<string, unknown>) {
     try {
       const db = await getDB();
       const record = { ...data, _synced: false, _updated_at: Date.now() };
@@ -96,7 +96,7 @@ export const offlineStore = {
     }
   },
 
-  async remove(table: string, id: string) {
+  async remove(table: StoreTable, id: string) {
     try {
       const db = await getDB();
       await db.delete(table, id);
@@ -113,7 +113,7 @@ export const offlineStore = {
     }
   },
 
-  async clear(table: string) {
+  async clear(table: StoreTable) {
     try {
       const db = await getDB();
       await db.clear(table);

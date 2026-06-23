@@ -1,6 +1,6 @@
 import { IndicadorConexion } from './IndicadorConexion';
 import NotificacionCampana from './NotificacionCampana';
-import { Moon, Sun, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { Moon, Sun, RefreshCw } from 'lucide-react';
 import { Rol } from '../types';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 

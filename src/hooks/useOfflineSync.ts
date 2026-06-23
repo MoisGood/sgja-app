@@ -10,7 +10,7 @@ export function useOfflineSync() {
 
   useEffect(() => {
     const unsub = syncEngine.subscribe(setStatus);
-    return unsub;
+    return () => unsub();
   }, []);
 
   useEffect(() => {

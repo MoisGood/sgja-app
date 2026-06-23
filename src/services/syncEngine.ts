@@ -18,7 +18,7 @@ export const syncEngine = {
   subscribe(fn: (s: SyncStatus) => void) {
     listeners.add(fn);
     fn(status);
-    return () => listeners.delete(fn);
+    return () => { listeners.delete(fn); };
   },
 
   async processQueue() {
