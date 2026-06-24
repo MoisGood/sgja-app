@@ -119,4 +119,26 @@ export const catalogoService = {
   async removePeriodo(id: string): Promise<boolean> {
     return removeFromTable('periodos', id);
   },
+
+  async precacheCatalogs(): Promise<void> {
+    const tables: { name: CatalogTable; key: string }[] = [
+      { name: 'salas_aprendizaje', key: 'salas_aprendizaje_list' },
+      { name: 'asignaturas', key: 'asignaturas_list' },
+      { name: 'periodos', key: 'periodos_list' },
+    ];
+    for (const table of tables) {
+      const existing = await offlineStore.getAll<Record<string, unknown>>(table.name);
+      if (existing.length > 0) continue;
+      try {
+        const { data, error } = await supabase.from(table.name).select('*').eq('activo', true);
+        if (error) throw error;
+        for (const record of (data || []) as Record<string, unknown>[]) {
+          const id = record.id as string;
+          await offlineStore.putSilent(table.name, id, record);
+        }
+      } catch (error) {
+        console.warn(`catalogo.precacheCatalogs(${table.name}):`, error);
+      }
+    }
+  },
 };

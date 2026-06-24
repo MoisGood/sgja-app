@@ -108,6 +108,16 @@ export const offlineStore = {
     }
   },
 
+  async putSilent(table: StoreTable, id: string, data: Record<string, unknown>) {
+    try {
+      const db = await getDB();
+      const record = { ...data, _synced: true, _updated_at: Date.now() };
+      await db.put(table, record, id);
+    } catch (error) {
+      console.error(`offlineStore.putSilent(${table}, ${id}):`, error);
+    }
+  },
+
   async remove(table: StoreTable, id: string) {
     try {
       const db = await getDB();
