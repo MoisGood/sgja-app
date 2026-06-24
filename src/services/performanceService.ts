@@ -107,15 +107,23 @@ export const performanceService = {
     }
   },
 
-  async calcularPromedio(estudianteId: string, asignaturaId: string, periodoId: string): Promise<Promedio | null> {
+  async calcularPromedio(
+    estudianteId: string,
+    asignaturaId: string,
+    periodoId: string,
+    actividadesOverride?: { id: string; ponderacion: number }[]
+  ): Promise<Promedio | null> {
     try {
-      const { data: actividades, error: errAct } = await supabase
-        .from('actividades')
-        .select('id, ponderacion')
-        .eq('id_asignatura', asignaturaId)
-        .eq('id_periodo', periodoId)
-        .eq('activo', true);
-      if (errAct) throw errAct;
+      const actividades = actividadesOverride ?? await (async () => {
+        const { data, error: errAct } = await supabase
+          .from('actividades')
+          .select('id, ponderacion')
+          .eq('id_asignatura', asignaturaId)
+          .eq('id_periodo', periodoId)
+          .eq('activo', true);
+        if (errAct) throw errAct;
+        return data;
+      })();
       if (!actividades || actividades.length === 0) return null;
       const actividadIds = actividades.map(a => a.id);
       const all = await this.getDesempenoByEstudiante(estudianteId);
