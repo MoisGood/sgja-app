@@ -2,7 +2,7 @@
 
 > **Decisión:** Offline-first desde el inicio del módulo académico
 > **Enfoque:** Paso a paso, no todo de una vez
-> **Fecha:** 22 Jun 2026 — Última actualización: 24 Jun 2026
+> **Fecha:** 22 Jun 2026 — Última actualización: 25 Jun 2026
 
 ---
 
@@ -12,9 +12,11 @@
 2. [Paso 1: Capa de sincronización base](#2-paso-1-capa-de-sincronización-base)
 3. [Paso 2: Migrar tabla desempeño a offline-first](#3-paso-2-migrar-tabla-desempeño-a-offline-first)
 4. [Paso 3: Migrar actividades y catálogos](#4-paso-3-migrar-actividades-y-catálogos)
-5. [Paso 4: Evaluaciones QR offline](#5-paso-4-evaluaciones-qr-offline)
-6. [Paso 5: Migrar módulos existentes (opcional)](#6-paso-5-migrar-módulos-existentes-opcional)
-7. [Pauta de Implementación](#7-pauta-de-implementación)
+5. [Módulo de Ayuda (semi-offline)](#5-módulo-de-ayuda-arquitectura-semi-offline)
+6. [Paso 4: Evaluaciones QR offline](#6-paso-4-evaluaciones-qr-offline)
+7. [Paso 5: Migrar módulos existentes (opcional)](#7-paso-5-migrar-módulos-existentes-opcional)
+8. [Pauta de Implementación](#8-pauta-de-implementación)
+9. [Próximas decisiones pendientes](#9-próximas-decisiones-pendientes-antes-de-escribir-ui)
 
 ---
 
@@ -207,7 +209,31 @@ Migration `027_create_tablas_academicas.sql` aplicada en Supabase:
 
 ---
 
-## 5. Paso 4: Evaluaciones QR offline
+## 5. Módulo de Ayuda (arquitectura semi-offline)
+
+El módulo ayuda usa una arquitectura **semi-offline**: cacheService (IndexedDB `sgja-cache`) + Supabase directo, sin sync_queue.
+
+| Tabla | Tipo | Offline |
+|-------|------|---------|
+| `ayuda_faq` | Catálogo (cambia poco) | ✅ Cacheado con TTL 10 min |
+| `ayuda_catalogo_errores` | Catálogo (cambia poco) | ✅ Cacheado con TTL 10 min |
+| `ayuda_tickets` | Operacional | ❌ Solo online (creación directa a Supabase) |
+| `ayuda_tutoriales` | Catálogo | ❌ Sin cache (futuro) |
+| `ayuda_logs_errores` | Operacional | ❌ Solo online |
+
+### Motivo
+El módulo ayuda se agregó después de la decisión offline-first. Como los datos son catálogos de lectura frecuente que cambian poco (FAQ, errores), se optó por cache liviano en vez de integrarlos al sync engine. Si en el futuro se requiere crear tickets offline, se migrarán a offlineStore completo.
+
+### Archivos
+- `src/services/ayuda.service.ts` — cache + Supabase
+- `src/pages/AdminAyuda.tsx` — panel admin unificado
+- `src/components/Ayuda/FlotanteAyuda.tsx` — botón "?" flotante
+- `src/components/Ayuda/CentroDeAyuda.tsx` — modal con FAQ hardcodeadas
+- `src/pages/AyudaPage.tsx` — página `/ayuda` con FAQ + tickets
+
+---
+
+## 6. Paso 4: Evaluaciones QR offline
 
 *Sin cambios — cuando llegue a Fase 2 (QR)*
 
@@ -228,7 +254,7 @@ Migration `027_create_tablas_academicas.sql` aplicada en Supabase:
 
 ---
 
-## 6. Paso 5: Migrar módulos existentes (opcional)
+## 7. Paso 5: Migrar módulos existentes (opcional)
 
 | Módulo | Prioridad | Dependencia offline |
 |--------|-----------|---------------------|
@@ -240,7 +266,7 @@ Migration `027_create_tablas_academicas.sql` aplicada en Supabase:
 
 ---
 
-## 7. Pauta de Implementación
+## 8. Pauta de Implementación
 
 ### Orden sugerido
 
@@ -252,6 +278,7 @@ Paso 3: Actividades + catálogos        ✅ services + tests (10) + SQL
      └── Falta: integración UI + precache automático
 Paso 4: Evaluaciones QR                ⏳ Q4 2026
 Paso 5: Módulos existentes             ⏳ Q1 2027
+Módulo Ayuda (semi-offline)            ✅ cache + Supabase
 ```
 
 ### Reglas de oro
@@ -272,7 +299,7 @@ Paso 5: Módulos existentes             ⏳ Q1 2027
 
 ---
 
-## 8. Próximas decisiones pendientes (antes de escribir UI)
+## 9. Próximas decisiones pendientes (antes de escribir UI)
 
 1. ¿El registro de desempeño debe tener captura de datos offline desde el inicio? → **Sí, offline-first**
 2. ¿El monitor registra uno por uno o necesita una vista tipo planilla?
@@ -283,5 +310,5 @@ Paso 5: Módulos existentes             ⏳ Q1 2027
 
 ---
 
-*Documento actualizado el 24 Jun 2026.*
+*Documento actualizado el 25 Jun 2026.*
 *Próxima acción: responder preguntas pendientes antes de escribir UI.*
