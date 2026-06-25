@@ -1,16 +1,7 @@
-// src/components/AdminAyudaMantenedor.tsx
-// Acordeón de administración de ayuda (FAQ, Tutoriales, Errores)
-// Se renderiza dentro de Configuración > Mantenedores
-
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-
-// Datos FAQ de ejemplo
-const FAQ_EJEMPLO = [
-  { categoria: 'Ausencias', titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar.' },
-  { categoria: 'Pases', titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Justificaciones > Gestión de Pases.' },
-  { categoria: 'Cuenta', titulo: '¿Dónde veo mi información?', contenido: 'En el menú de configuración.' },
-];
+import { HelpCircle, BugPlay, GraduationCap, Plus, Pencil, Trash2, ChevronDown } from 'lucide-react';
+import { ayudaService } from '../services/ayuda.service';
+import type { AyudaFAQ, AyudaCatalogoError } from '../types';
 
 const AdminAyudaMantenedor = () => {
   const [seccion, setSeccion] = useState<string | null>(null);
@@ -18,7 +9,9 @@ const AdminAyudaMantenedor = () => {
   return (
     <div style={{ maxWidth: '960px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: 20, fontWeight: 700 }}>+</div>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
+          <HelpCircle size={20} />
+        </div>
         <div>
           <h3 style={{ fontSize: 16, fontWeight: 600, color: '#1F2937', margin: 0 }}>Módulo de Ayuda</h3>
           <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Administra FAQ, Tutoriales y Errores del sistema</p>
@@ -28,7 +21,7 @@ const AdminAyudaMantenedor = () => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <AcordeonItem
           titulo="FAQ - Preguntas Frecuentes"
-          icono="📝"
+          icono={<HelpCircle size={18} />}
           abierto={seccion === 'faq'}
           onClick={() => setSeccion(seccion === 'faq' ? null : 'faq')}
         >
@@ -37,7 +30,7 @@ const AdminAyudaMantenedor = () => {
 
         <AcordeonItem
           titulo="Tutoriales"
-          icono="🎯"
+          icono={<GraduationCap size={18} />}
           abierto={seccion === 'tutoriales'}
           onClick={() => setSeccion(seccion === 'tutoriales' ? null : 'tutoriales')}
         >
@@ -46,7 +39,7 @@ const AdminAyudaMantenedor = () => {
 
         <AcordeonItem
           titulo="Errores - Catálogo del sistema"
-          icono="⚠️"
+          icono={<BugPlay size={18} />}
           abierto={seccion === 'errores'}
           onClick={() => setSeccion(seccion === 'errores' ? null : 'errores')}
         >
@@ -57,53 +50,48 @@ const AdminAyudaMantenedor = () => {
   );
 };
 
-// ===== Acordeón =====
-const AcordeonItem = ({ titulo, icono, abierto, onClick, children }: { titulo: string; icono: string; abierto: boolean; onClick: () => void; children: React.ReactNode }) => (
+const AcordeonItem = ({ titulo, icono, abierto, onClick, children }: { titulo: string; icono: React.ReactNode; abierto: boolean; onClick: () => void; children: React.ReactNode }) => (
   <div style={{ border: '1px solid #E5E7EB', borderRadius: 10, overflow: 'hidden' }}>
     <button onClick={onClick} style={{
       width: '100%', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10,
       border: 'none', background: abierto ? '#F8FAFC' : '#FFF', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#374151', textAlign: 'left',
     }}>
-      <span style={{ fontSize: 18 }}>{icono}</span>
+      {icono}
       <span style={{ flex: 1 }}>{titulo}</span>
-      <svg style={{ transform: abierto ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} width="16" height="16" fill="none" stroke="#9CA3AF" strokeWidth={2} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-      </svg>
+      <ChevronDown size={16} color="#9CA3AF" style={{ transform: abierto ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
     </button>
     {abierto && <div style={{ borderTop: '1px solid #E5E7EB', padding: 16 }}>{children}</div>}
   </div>
 );
 
-// ===== Sección FAQ =====
 const SeccionFAQ = () => {
-  const [faqs, setFaqs] = useState<any[]>(FAQ_EJEMPLO);
+  const [faqs, setFaqs] = useState<AyudaFAQ[]>([]);
   const [formVisible, setFormVisible] = useState(false);
-  const [editando, setEditando] = useState<any | null>(null);
+  const [editando, setEditando] = useState<AyudaFAQ | null>(null);
   const [categoria, setCategoria] = useState('General');
   const [titulo, setTitulo] = useState('');
   const [contenido, setContenido] = useState('');
 
-  useEffect(() => {
-    supabase.from('ayuda_faq').select('*').order('categoria').then(({ data }) => {
-      if (data && data.length > 0) setFaqs(data);
-    }).catch(() => {});
-  }, []);
+  useEffect(() => { ayudaService.getFAQs().then(setFaqs); }, []);
 
   const guardar = async () => {
     if (!titulo.trim()) return;
-    const obj = { categoria, titulo: titulo.trim(), contenido: contenido.trim(), activo: true };
-    try {
-      if (editando) await supabase.from('ayuda_faq').update(obj).eq('id', editando.id);
-      else await supabase.from('ayuda_faq').insert(obj);
-      setFormVisible(false);
-      const { data } = await supabase.from('ayuda_faq').select('*').order('categoria');
-      if (data) setFaqs(data);
-    } catch (err) { console.error(err); }
+    const obj = { rol: ['PROFESOR', 'INSPECTOR', 'ESTUDIANTE'], modulo: 'general', categoria: categoria.trim(), titulo: titulo.trim(), contenido: contenido.trim(), orden: 0, activo: true };
+    if (editando) {
+      await ayudaService.updateFAQ(editando.id, { categoria: categoria.trim(), titulo: titulo.trim(), contenido: contenido.trim() });
+    } else {
+      await ayudaService.saveFAQ(obj);
+    }
+    setFormVisible(false);
+    setEditando(null);
+    setCategoria('General'); setTitulo(''); setContenido('');
+    const updated = await ayudaService.getFAQs();
+    setFaqs(updated);
   };
 
   const eliminar = async (id: string) => {
-    try { await supabase.from('ayuda_faq').update({ activo: false }).eq('id', id); setFaqs(prev => prev.filter(f => f.id !== id)); }
-    catch (err) { console.error(err); }
+    await ayudaService.deleteFAQ(id);
+    setFaqs(prev => prev.filter(f => f.id !== id));
   };
 
   return (
@@ -111,8 +99,8 @@ const SeccionFAQ = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
         <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>{faqs.length} preguntas</p>
         <button onClick={() => { setEditando(null); setCategoria('General'); setTitulo(''); setContenido(''); setFormVisible(true); }}
-          style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: '#059669', color: '#FFF', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-          + Nueva
+          style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: '#059669', color: '#FFF', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Plus size={14} /> Nueva
         </button>
       </div>
 
@@ -144,9 +132,13 @@ const SeccionFAQ = () => {
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
               <button onClick={() => { setEditando(f); setCategoria(f.categoria); setTitulo(f.titulo); setContenido(f.contenido); setFormVisible(true); }}
-                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #D1D5DB', background: '#FFF', cursor: 'pointer', fontSize: 12 }}>✏️</button>
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #D1D5DB', background: '#FFF', cursor: 'pointer' }}>
+                <Pencil size={14} color="#6B7280" />
+              </button>
               <button onClick={() => eliminar(f.id)}
-                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #FCA5A5', background: '#FFF', cursor: 'pointer', fontSize: 12 }}>🗑️</button>
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #FCA5A5', background: '#FFF', cursor: 'pointer' }}>
+                <Trash2 size={14} color="#EF4444" />
+              </button>
             </div>
           </div>
         ))}
@@ -155,42 +147,43 @@ const SeccionFAQ = () => {
   );
 };
 
-// ===== Sección Tutoriales (placeholder) =====
 const SeccionTutoriales = () => (
   <div style={{ textAlign: 'center', padding: 32, background: '#F9FAFB', borderRadius: 8 }}>
-    <p style={{ fontSize: 32, margin: '0 0 8px' }}>🎯</p>
+    <GraduationCap size={32} style={{ margin: '0 auto 8px', color: '#D1D5DB' }} />
     <p style={{ color: '#9CA3AF', fontSize: 14 }}>Próximamente: creación de tutoriales paso a paso.</p>
   </div>
 );
 
-// ===== Sección Errores (Catálogo) =====
 const SeccionErrores = () => {
-  const [errores, setErrores] = useState<any[]>([]);
+  const [errores, setErrores] = useState<AyudaCatalogoError[]>([]);
   const [formVisible, setFormVisible] = useState(false);
-  const [editando, setEditando] = useState<any | null>(null);
+  const [editando, setEditando] = useState<AyudaCatalogoError | null>(null);
   const [categoria, setCategoria] = useState('General');
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
 
   const cargar = async () => {
-    const { data } = await supabase.from('ayuda_catalogo_errores').select('*').order('categoria').order('titulo');
-    if (data) setErrores(data);
+    const data = await ayudaService.getCatalogoErrores();
+    setErrores(data);
   };
   useEffect(() => { cargar(); }, []);
 
   const guardar = async () => {
     if (!titulo.trim()) return;
-    try {
-      if (editando) await supabase.from('ayuda_catalogo_errores').update({ categoria, titulo: titulo.trim(), descripcion: descripcion.trim(), actualizado_en: new Date().toISOString() }).eq('id', editando.id);
-      else await supabase.from('ayuda_catalogo_errores').insert({ categoria, titulo: titulo.trim(), descripcion: descripcion.trim() });
-      setFormVisible(false);
-      cargar();
-    } catch (err) { console.error(err); }
+    if (editando) {
+      await ayudaService.updateError(editando.id, { categoria: categoria.trim(), titulo: titulo.trim(), descripcion: descripcion.trim() });
+    } else {
+      await ayudaService.saveError({ categoria: categoria.trim(), titulo: titulo.trim(), descripcion: descripcion.trim() });
+    }
+    setFormVisible(false);
+    setEditando(null);
+    setCategoria('General'); setTitulo(''); setDescripcion('');
+    cargar();
   };
 
   const eliminar = async (id: string) => {
-    try { await supabase.from('ayuda_catalogo_errores').update({ activo: false }).eq('id', id); cargar(); }
-    catch (err) { console.error(err); }
+    await ayudaService.deleteError(id);
+    cargar();
   };
 
   const cats = [...new Set(errores.map(e => e.categoria))];
@@ -200,8 +193,8 @@ const SeccionErrores = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
         <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>{errores.length} errores</p>
         <button onClick={() => { setEditando(null); setCategoria('General'); setTitulo(''); setDescripcion(''); setFormVisible(true); }}
-          style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: '#059669', color: '#FFF', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-          + Nuevo
+          style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: '#059669', color: '#FFF', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Plus size={14} /> Nuevo
         </button>
       </div>
 
@@ -234,9 +227,13 @@ const SeccionErrores = () => {
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
               <button onClick={() => { setEditando(e); setCategoria(e.categoria); setTitulo(e.titulo); setDescripcion(e.descripcion || ''); setFormVisible(true); }}
-                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #D1D5DB', background: '#FFF', cursor: 'pointer', fontSize: 12 }}>✏️</button>
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #D1D5DB', background: '#FFF', cursor: 'pointer' }}>
+                <Pencil size={14} color="#6B7280" />
+              </button>
               <button onClick={() => eliminar(e.id)}
-                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #FCA5A5', background: '#FFF', cursor: 'pointer', fontSize: 12 }}>🗑️</button>
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #FCA5A5', background: '#FFF', cursor: 'pointer' }}>
+                <Trash2 size={14} color="#EF4444" />
+              </button>
             </div>
           </div>
         ))}

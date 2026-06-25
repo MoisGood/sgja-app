@@ -65,9 +65,7 @@ import { SkinProvider } from './contexts/SkinContext';
 import QrRedirect from './pages/QrRedirect';
 import Configurar2FA from './pages/Configurar2FA';
 import AyudaPage from './pages/AyudaPage';
-import AdminFaq from './pages/AdminFaq';
-import AdminTutoriales from './pages/AdminTutoriales';
-import AdminTickets from './pages/AdminTickets';
+import AdminAyuda from './pages/AdminAyuda';
 
 export default function AppContent() {
   const { uid, rol, idEstablecimiento, cargando, autorizado, usuarioInactivo, documentoExiste, nombre, apellidos, email, datosPendientes, mantenimientoBloqueo, mttoHorario } = useAuth();
@@ -612,9 +610,7 @@ export default function AppContent() {
           <Route path="/tecnico/m/accesos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <AccesosRapidos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/configuracion" element={puedeVer('/tecnico', 'ADMIN') ? <ConfiguracionTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/ayuda" element={<AyudaPage />} />
-          <Route path="/ayuda/faq" element={rol === 'ADMIN' ? <AdminFaq /> : <AyudaPage />} />
-          <Route path="/ayuda/tutoriales" element={rol === 'ADMIN' ? <AdminTutoriales /> : <AyudaPage />} />
-          <Route path="/ayuda/tickets" element={rol === 'ADMIN' ? <AdminTickets /> : <AyudaPage />} />
+          <Route path="/ayuda/admin" element={rol === 'ADMIN' ? <AdminAyuda /> : <AyudaPage />} />
           <Route path="*" element={renderRoleDashboard()} />
         </Routes>
       </Layout>

@@ -555,3 +555,38 @@ export interface Promedio {
   created_at: string;
   updated_at: string;
 }
+
+export interface AyudaFAQ {
+  id: string;
+  rol: string[];
+  modulo: string;
+  categoria: string;
+  titulo: string;
+  contenido: string;
+  orden: number;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+export interface AyudaTicket {
+  id: string;
+  usuario_id: string;
+  titulo: string;
+  descripcion?: string;
+  estado: 'abierto' | 'en_progreso' | 'resuelto' | 'cerrado';
+  prioridad: 'baja' | 'media' | 'alta' | 'critica';
+  creado_en: string;
+  actualizado_en: string;
+}
+
+export interface AyudaCatalogoError {
+  id: string;
+  categoria: string;
+  titulo: string;
+  descripcion?: string;
+  solucion?: string;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}

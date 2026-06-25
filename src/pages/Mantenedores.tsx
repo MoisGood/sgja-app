@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Clock, ClipboardList, Users, UserCheck, Building2, LifeBuoy } from 'lucide-react';
 import BloqueHorario from './BloqueHorario';
 import MantenedorMotivos from './MantenedorMotivos';
 import MantenedorEstudiantes from './MantenedorEstudiantes';
@@ -8,15 +9,15 @@ import AdminAyudaMantenedor from '../components/AdminAyudaMantenedor';
 
 interface Props { idEstablecimiento: string }
 
-interface TabDef { key: string; icono: string; tooltip: string; lazy: boolean }
+interface TabDef { key: string; icono: React.ReactNode; tooltip: string; lazy: boolean }
 
 const TABS: TabDef[] = [
-  { key: 'horarios',    icono: '🗓️', tooltip: 'Mantenedor de Horarios',        lazy: true },
-  { key: 'justifs',     icono: '📋', tooltip: 'Mantenedor de Justificaciones',  lazy: true },
-  { key: 'estudiantes', icono: '👨‍🎓', tooltip: 'Mantenedor de Estudiantes',      lazy: true },
-  { key: 'roles',       icono: '👥', tooltip: 'Mantenedor de Roles',           lazy: false },
-  { key: 'establec',    icono: '🏫', tooltip: 'Mantenedor Establecimiento',     lazy: false },
-  { key: 'ayuda',       icono: '➕', tooltip: 'Módulo de Ayuda (FAQ, Tutoriales, Errores)', lazy: false },
+  { key: 'horarios',    icono: <Clock size={20} />,         tooltip: 'Mantenedor de Horarios',        lazy: true },
+  { key: 'justifs',     icono: <ClipboardList size={20} />, tooltip: 'Mantenedor de Justificaciones',  lazy: true },
+  { key: 'estudiantes', icono: <Users size={20} />,         tooltip: 'Mantenedor de Estudiantes',      lazy: true },
+  { key: 'roles',       icono: <UserCheck size={20} />,     tooltip: 'Mantenedor de Roles',           lazy: false },
+  { key: 'establec',    icono: <Building2 size={20} />,     tooltip: 'Mantenedor Establecimiento',     lazy: false },
+  { key: 'ayuda',       icono: <LifeBuoy size={20} />,      tooltip: 'Módulo de Ayuda (FAQ, Tutoriales, Errores)', lazy: false },
 ];
 
 function LazyTable({ children, label }: { children: React.ReactNode; label: string }) {
@@ -47,9 +48,10 @@ export default function Mantenedores({ idEstablecimiento }: Props) {
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} title={t.tooltip}
             style={{
-              padding: '8px 16px', borderRadius: 8, border: 'none', fontSize: 20, cursor: 'pointer',
+              padding: '8px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', lineHeight: 1,
               background: tab === t.key ? '#e0e7ff' : 'transparent',
               borderBottom: tab === t.key ? '3px solid #3b82f6' : '3px solid transparent',
+              color: tab === t.key ? '#3b82f6' : '#64748b',
             }}
           >
             {t.icono}

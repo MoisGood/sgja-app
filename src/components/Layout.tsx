@@ -17,17 +17,8 @@ import DatosPersonalesModal from './DatosPersonalesModal';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { handleError } from '../utils/errorHandler';
-import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen } from 'lucide-react';
-import {
-  LayoutDashboard,
-  ClipboardList,
-  Users,
-  BookOpen,
-  Settings,
-  Shield,
-  Mail,
-  HelpCircle,
-} from 'lucide-react';
+import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen, LayoutDashboard, ClipboardList, Users, BookOpen, Settings, Shield, Mail, HelpCircle } from 'lucide-react';
+import FlotanteAyuda from './Ayuda/FlotanteAyuda';
 
 interface Props {
   children:             React.ReactNode;
@@ -366,6 +357,8 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
           </div>
         </div>
       )}
+
+      <FlotanteAyuda />
     </div>
   );
 }

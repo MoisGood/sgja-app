@@ -1,56 +1,48 @@
 ﻿// src/pages/AyudaPage.tsx
-// PÃ¡gina de ayuda - versiÃ³n desktop (todos los roles)
+// Página de ayuda - versión desktop (todos los roles)
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 
 // =============== FAQ ===============
-const FAQ_DATA: Record<string, { categoria: string; items: { titulo: string; contenido: string }[] }[]> = {
-  PROFESOR: [
-    {
-      categoria: 'Ausencias',
-      items: [
-        { titulo: 'Â¿CÃ³mo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
-        { titulo: 'Â¿Puedo registrar de dÃ­as anteriores?', contenido: 'SÃ­, puedes seleccionar una fecha anterior en el calendario antes de registrar.' },
-      ],
-    },
-    {
-      categoria: 'Pases',
-      items: [
-        { titulo: 'Â¿CÃ³mo gestionar un pase?', contenido: 'Ve a Justificaciones > GestiÃ³n de Pases. AhÃ­ puedes crear o aprobar pases de estudiantes.' },
-      ],
-    },
-  ],
-  INSPECTOR: [
-    {
-      categoria: 'Justificaciones',
-      items: [
-        { titulo: 'Â¿CÃ³mo revisar justificaciones?', contenido: 'Ve a Justificaciones > Ver Justificaciones. Filtra por fecha, curso o estado.' },
-        { titulo: 'Â¿QuÃ© significa cada estado?', contenido: 'Injustificada = sin documento. Justificada = con documento aprobado.' },
-      ],
-    },
-  ],
-  ESTUDIANTE: [
-    {
-      categoria: 'Mi cuenta',
-      items: [
-        { titulo: 'Â¿DÃ³nde veo mis justificaciones?', contenido: 'En tu panel principal puedes ver el historial de ausencias y justificaciones.' },
-      ],
-    },
-  ],
-  ADMIN: [],
-};
+const FAQ_DATA: { categoria: string; items: { titulo: string; contenido: string }[] }[] = [
+  {
+    categoria: 'Ausencias',
+    items: [
+      { titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
+      { titulo: '¿Puedo registrar de días anteriores?', contenido: 'Sí, puedes seleccionar una fecha anterior en el calendario antes de registrar.' },
+    ],
+  },
+  {
+    categoria: 'Pases',
+    items: [
+      { titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Justificaciones > Gestión de Pases. Ahí puedes crear o aprobar pases de estudiantes.' },
+    ],
+  },
+  {
+    categoria: 'Justificaciones',
+    items: [
+      { titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Justificaciones > Ver Justificaciones. Filtra por fecha, curso o estado.' },
+      { titulo: '¿Qué significa cada estado?', contenido: 'Injustificada = sin documento. Justificada = con documento aprobado.' },
+    ],
+  },
+  {
+    categoria: 'Mi cuenta',
+    items: [
+      { titulo: '¿Dónde veo mis justificaciones?', contenido: 'En tu panel principal puedes ver el historial de ausencias y justificaciones.' },
+    ],
+  },
+];
 
-// =============== PÃGINA PRINCIPAL ===============
+// =============== PÁGINA PRINCIPAL ===============
 const AyudaPage = () => {
-  const { rol } = useAuth();
   const [busqueda, setBusqueda] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null);
   const [pestana, setPestana] = useState<'ayuda' | 'tickets'>('ayuda');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const faqs = FAQ_DATA[rol as keyof typeof FAQ_DATA] || [];
+  const faqs = FAQ_DATA;
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 100); }, []);
 
@@ -124,7 +116,7 @@ const AyudaPage = () => {
 
           {categoriaActiva && !busqueda && (
             <div style={{ marginBottom: 16, fontSize: 13, color: '#6B7280' }}>
-              <span style={{ color: '#2563EB', cursor: 'pointer' }} onClick={() => setCategoriaActiva(null)}>Todas las categorÃ­as</span>
+              <span style={{ color: '#2563EB', cursor: 'pointer' }} onClick={() => setCategoriaActiva(null)}>Todas las categorías</span>
               <span style={{ margin: '0 8px' }}>/</span>
               <span style={{ fontWeight: 600, color: '#374151' }}>{categoriaActiva}</span>
             </div>
@@ -132,7 +124,7 @@ const AyudaPage = () => {
 
           {categoriasVisibles.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>ðŸ”</div>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
               <p style={{ color: '#6B7280', fontSize: 15 }}>No encontramos resultados para <strong>&quot;{busqueda}&quot;</strong></p>
               <p style={{ color: '#9CA3AF', fontSize: 13, marginTop: 4 }}>Prueba con otras palabras clave</p>
             </div>
@@ -159,7 +151,7 @@ const AyudaPage = () => {
                 <h3 style={{ fontSize: 13, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Tutoriales disponibles</h3>
               </div>
               <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 12, padding: '24px', textAlign: 'center' }}>
-                <p style={{ color: '#92400E', fontSize: 14, fontWeight: 500, margin: '0 0 4px' }}>PrÃ³ximamente</p>
+                <p style={{ color: '#92400E', fontSize: 14, fontWeight: 500, margin: '0 0 4px' }}>Próximamente</p>
                 <p style={{ color: '#B45309', fontSize: 13, margin: 0 }}>Tutoriales guiados paso a paso con resaltado visual.</p>
               </div>
             </div>
@@ -172,7 +164,7 @@ const AyudaPage = () => {
   );
 };
 
-// =============== COMPONENTES PEQUEÃ‘OS ===============
+// =============== COMPONENTES PEQUEÑOS ===============
 const TabButton = ({ activo, onClick, children }: { activo: boolean; onClick: () => void; children: React.ReactNode }) => (
   <button onClick={onClick}
     style={{ padding: '10px 24px', border: 'none', background: 'none', color: activo ? '#2563EB' : '#6B7280', fontWeight: activo ? 600 : 400, fontSize: 14, cursor: 'pointer', borderBottom: activo ? '2px solid #2563EB' : '2px solid transparent', marginBottom: -2, transition: 'all 0.15s' }}>
@@ -200,7 +192,7 @@ const FaqCard = ({ titulo, contenido }: { titulo: string; contenido: string }) =
   );
 };
 
-// =============== SISTEMA DE TICKETS (con catÃ¡logo de errores) ===============
+// =============== SISTEMA DE TICKETS (con catálogo de errores) ===============
 const SistemaTickets = () => {
   const { uid, rol } = useAuth();
   const [tickets, setTickets] = useState<any[]>([]);
@@ -258,7 +250,7 @@ const SistemaTickets = () => {
     }
   };
 
-  // Agrupar catÃ¡logo por categorÃ­a
+  // Agrupar catálogo por categoría
   const categorias = catalogo.reduce<Record<string, any[]>>((acc, e) => {
     if (!acc[e.categoria]) acc[e.categoria] = [];
     acc[e.categoria].push(e);
@@ -274,7 +266,7 @@ const SistemaTickets = () => {
         <div>
           <h3 style={{ fontSize: 15, fontWeight: 600, color: '#374151', margin: 0 }}>Tickets de Soporte</h3>
           <p style={{ fontSize: 13, color: '#6B7280', margin: '4px 0 0' }}>
-            {esAdmin ? 'Gestiona los tickets de los usuarios' : 'Selecciona el error que describes y envÃ­alo'}
+            {esAdmin ? 'Gestiona los tickets de los usuarios' : 'Selecciona el error que describes y envíalo'}
           </p>
         </div>
         {(
@@ -322,7 +314,7 @@ const SistemaTickets = () => {
               ))}
           </div>
 
-          {/* BotÃ³n enviar (aparece al seleccionar un error) */}
+          {/* Botón enviar (aparece al seleccionar un error) */}
           {errorSeleccionado && (
             <button onClick={crearTicket}
               style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#059669', color: '#FFF', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginTop: 12 }}>
@@ -337,9 +329,9 @@ const SistemaTickets = () => {
         <p style={{ color: '#9CA3AF', fontSize: 14, textAlign: 'center', padding: 32 }}>Cargando tickets...</p>
       ) : ticketsVisibles.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 48, background: '#F9FAFB', borderRadius: 12 }}>
-          <p style={{ fontSize: 32, margin: '0 0 8px' }}>ðŸŽ«</p>
-          <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>No hay tickets aÃºn</p>
-          <p style={{ color: '#9CA3AF', fontSize: 13, marginTop: 4 }}>{esAdmin ? 'Los usuarios enviarÃ¡n tickets desde aquÃ­' : 'Selecciona un error de la lista y crea un ticket'}</p>
+          <p style={{ fontSize: 32, margin: '0 0 8px' }}>🎫</p>
+          <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>No hay tickets aún</p>
+          <p style={{ color: '#9CA3AF', fontSize: 13, marginTop: 4 }}>{esAdmin ? 'Los usuarios enviarán tickets desde aquí' : 'Selecciona un error de la lista y crea un ticket'}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
