@@ -6,7 +6,6 @@ interface Props { idEstablecimiento: string }
 export default function MantenedorEstablecimiento({ idEstablecimiento }: Props) {
   const [nombre, setNombre] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
-  const [lugares, setLugares] = useState<{ piso: number; nombre: string }[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState('');
@@ -14,19 +13,13 @@ export default function MantenedorEstablecimiento({ idEstablecimiento }: Props) 
 
   useEffect(() => {
     (async () => {
-      const [estabRes, lugRes] = await Promise.all([
-        supabase.from('establecimientos').select('*').eq('id', idEstablecimiento).single(),
-        supabase.from('lugares').select('piso,nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('piso').order('nombre'),
-      ]);
-      if (estabRes.data) {
-        setNombre(estabRes.data.nombre || '');
-        setLogoUrl(estabRes.data.logo_url || '');
+      const { data } = await supabase.from('establecimientos').select('*').eq('id', idEstablecimiento).single();
+      if (data) {
+        setNombre(data.nombre || '');
+        setLogoUrl(data.logo_url || '');
       }
-      if (lugRes.data) setLugares(lugRes.data);
     })();
   }, [idEstablecimiento]);
-
-  const pisos = [...new Set(lugares.map(l => l.piso))].sort((a, b) => a - b);
 
   async function subirLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -131,32 +124,6 @@ export default function MantenedorEstablecimiento({ idEstablecimiento }: Props) 
           }}>
           {guardando ? '⏳ Guardando…' : '💾 Guardar'}
         </button>
-      </div>
-
-      <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 12, padding: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', margin: '0 0 16px' }}>
-          🗺️ Lugares en el Mapa ({lugares.length} total)
-        </h2>
-        {pisos.map(piso => {
-          const items = lugares.filter(l => l.piso === piso);
-          return (
-            <div key={piso} style={{ marginBottom: 12 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 600, color: '#93c5fd', margin: '0 0 6px' }}>
-                Piso {piso} ({items.length})
-              </h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {items.map((l, i) => (
-                  <span key={i} style={{
-                    background: '#1e293b', color: '#cbd5e1', padding: '3px 10px',
-                    borderRadius: 12, fontSize: 12, border: '1px solid #334155',
-                  }}>
-                    {l.nombre}
-                  </span>
-                ))}
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
