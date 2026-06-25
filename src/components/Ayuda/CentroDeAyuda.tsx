@@ -1,34 +1,22 @@
 // src/components/Ayuda/CentroDeAyuda.tsx
 import { useState, useRef, useEffect } from 'react';
+import { ayudaService } from '../../services/ayuda.service';
 
-// =============== FAQ data (temporal: hardcoded) ===============
-const FAQ_DATA = [
-  {
-    categoria: 'Ausencias',
-    items: [
-      { id: '1', titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
-      { id: '2', titulo: '¿Puedo registrar ausencias de días anteriores?', contenido: 'Sí, puedes seleccionar una fecha anterior en el calendario antes de registrar.' },
-    ],
-  },
-  {
-    categoria: 'Justificaciones',
-    items: [
-      { id: '3', titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Justificaciones > Ver Justificaciones. Puedes filtrar por fecha, curso o estado.' },
-      { id: '4', titulo: '¿Qué significa cada estado?', contenido: 'Injustificada = sin documento. Justificada = con documento aprobado. Pendiente = en revisión.' },
-    ],
-  },
-  {
-    categoria: 'Pases',
-    items: [
-      { id: '5', titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Justificaciones > Gestión de Pases. Ahí puedes crear, aprobar o rechazar pases de estudiantes.' },
-    ],
-  },
-  {
-    categoria: 'Cuenta',
-    items: [
-      { id: '6', titulo: '¿Dónde veo mi información?', contenido: 'Tu perfil está disponible en el menú de configuración. Puedes actualizar tus datos personales.' },
-    ],
-  },
+const FALLBACK_HARDCODED: { categoria: string; items: { titulo: string; contenido: string }[] }[] = [
+  { categoria: 'Ausencias', items: [
+    { titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
+    { titulo: '¿Puedo registrar ausencias de días anteriores?', contenido: 'Sí, puedes seleccionar una fecha anterior en el calendario antes de registrar.' },
+  ]},
+  { categoria: 'Justificaciones', items: [
+    { titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Justificaciones > Ver Justificaciones. Puedes filtrar por fecha, curso o estado.' },
+    { titulo: '¿Qué significa cada estado?', contenido: 'Injustificada = sin documento. Justificada = con documento aprobado. Pendiente = en revisión.' },
+  ]},
+  { categoria: 'Pases', items: [
+    { titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Justificaciones > Gestión de Pases. Ahí puedes crear, aprobar o rechazar pases de estudiantes.' },
+  ]},
+  { categoria: 'Cuenta', items: [
+    { titulo: '¿Dónde veo mi información?', contenido: 'Tu perfil está disponible en el menú de configuración. Puedes actualizar tus datos personales.' },
+  ]},
 ];
 
 // =============== COMPONENTE PRINCIPAL ===============
@@ -40,6 +28,7 @@ interface CentroDeAyudaProps {
 const CentroDeAyuda = ({ isOpen, onClose }: CentroDeAyudaProps) => {
   const [busqueda, setBusqueda] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null);
+  const [faqs, setFaqs] = useState<{ categoria: string; items: { titulo: string; contenido: string }[] }[]>(FALLBACK_HARDCODED);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -50,10 +39,22 @@ const CentroDeAyuda = ({ isOpen, onClose }: CentroDeAyudaProps) => {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    ayudaService.getFAQs().then(data => {
+      if (data.length > 0) {
+        const grouped = data.reduce<Record<string, { titulo: string; contenido: string }[]>>((acc, f) => {
+          if (!acc[f.categoria]) acc[f.categoria] = [];
+          acc[f.categoria].push({ titulo: f.titulo, contenido: f.contenido });
+          return acc;
+        }, {});
+        setFaqs(Object.entries(grouped).map(([categoria, items]) => ({ categoria, items })));
+      }
+    });
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  // Filtrar por búsqueda
-  const categoriasFiltradas = FAQ_DATA.map(cat => ({
+  const categoriasFiltradas = faqs.map(cat => ({
     ...cat,
     items: cat.items.filter(i =>
       i.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -61,7 +62,6 @@ const CentroDeAyuda = ({ isOpen, onClose }: CentroDeAyudaProps) => {
     ),
   })).filter(cat => cat.items.length > 0);
 
-  // Categoría a mostrar
   const categoriasVisibles = categoriaActiva
     ? categoriasFiltradas.filter(c => c.categoria === categoriaActiva)
     : categoriasFiltradas;
@@ -114,7 +114,7 @@ const CentroDeAyuda = ({ isOpen, onClose }: CentroDeAyudaProps) => {
         {/* Categorías (píldoras) */}
         {!busqueda && !categoriaActiva && (
           <div className="px-6 pt-4 pb-2 flex gap-2 overflow-x-auto">
-            {FAQ_DATA.map(cat => (
+            {faqs.map(cat => (
               <button
                 key={cat.categoria}
                 onClick={() => setCategoriaActiva(cat.categoria)}
@@ -160,7 +160,7 @@ const CentroDeAyuda = ({ isOpen, onClose }: CentroDeAyudaProps) => {
                 </h3>
                 <div className="space-y-1.5">
                   {cat.items.map(item => (
-                    <FaqItem key={item.id} titulo={item.titulo} contenido={item.contenido} />
+                    <FaqItem key={item.titulo} titulo={item.titulo} contenido={item.contenido} />
                   ))}
                 </div>
               </div>

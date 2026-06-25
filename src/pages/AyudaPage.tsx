@@ -2,37 +2,24 @@
 // Página de ayuda - versión desktop (todos los roles)
 
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { ayudaService } from '../services/ayuda.service';
 
-// =============== FAQ ===============
-const FAQ_DATA: { categoria: string; items: { titulo: string; contenido: string }[] }[] = [
-  {
-    categoria: 'Ausencias',
-    items: [
-      { titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
-      { titulo: '¿Puedo registrar de días anteriores?', contenido: 'Sí, puedes seleccionar una fecha anterior en el calendario antes de registrar.' },
-    ],
-  },
-  {
-    categoria: 'Pases',
-    items: [
-      { titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Justificaciones > Gestión de Pases. Ahí puedes crear o aprobar pases de estudiantes.' },
-    ],
-  },
-  {
-    categoria: 'Justificaciones',
-    items: [
-      { titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Justificaciones > Ver Justificaciones. Filtra por fecha, curso o estado.' },
-      { titulo: '¿Qué significa cada estado?', contenido: 'Injustificada = sin documento. Justificada = con documento aprobado.' },
-    ],
-  },
-  {
-    categoria: 'Mi cuenta',
-    items: [
-      { titulo: '¿Dónde veo mis justificaciones?', contenido: 'En tu panel principal puedes ver el historial de ausencias y justificaciones.' },
-    ],
-  },
+const FALLBACK_FAQ: { categoria: string; items: { titulo: string; contenido: string }[] }[] = [
+  { categoria: 'Ausencias', items: [
+    { titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
+    { titulo: '¿Puedo registrar de días anteriores?', contenido: 'Sí, puedes seleccionar una fecha anterior en el calendario antes de registrar.' },
+  ]},
+  { categoria: 'Pases', items: [
+    { titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Justificaciones > Gestión de Pases. Ahí puedes crear o aprobar pases de estudiantes.' },
+  ]},
+  { categoria: 'Justificaciones', items: [
+    { titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Justificaciones > Ver Justificaciones. Filtra por fecha, curso o estado.' },
+    { titulo: '¿Qué significa cada estado?', contenido: 'Injustificada = sin documento. Justificada = con documento aprobado.' },
+  ]},
+  { categoria: 'Mi cuenta', items: [
+    { titulo: '¿Dónde veo mis justificaciones?', contenido: 'En tu panel principal puedes ver el historial de ausencias y justificaciones.' },
+  ]},
 ];
 
 // =============== PÁGINA PRINCIPAL ===============
@@ -40,9 +27,21 @@ const AyudaPage = () => {
   const [busqueda, setBusqueda] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null);
   const [pestana, setPestana] = useState<'ayuda' | 'tickets'>('ayuda');
+  const [faqs, setFaqs] = useState<{ categoria: string; items: { titulo: string; contenido: string }[] }[]>(FALLBACK_FAQ);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const faqs = FAQ_DATA;
+  useEffect(() => {
+    ayudaService.getFAQs().then(data => {
+      if (data.length > 0) {
+        const grouped = data.reduce<Record<string, { titulo: string; contenido: string }[]>>((acc, f) => {
+          if (!acc[f.categoria]) acc[f.categoria] = [];
+          acc[f.categoria].push({ titulo: f.titulo, contenido: f.contenido });
+          return acc;
+        }, {});
+        setFaqs(Object.entries(grouped).map(([categoria, items]) => ({ categoria, items })));
+      }
+    });
+  }, []);
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 100); }, []);
 
@@ -205,12 +204,12 @@ const SistemaTickets = () => {
   const cargarDatos = async () => {
     setCargando(true);
     try {
-      const [ticketsRes, catalogoRes] = await Promise.all([
-        supabase.from('ayuda_tickets').select('*').order('creado_en', { ascending: false }),
-        supabase.from('ayuda_catalogo_errores').select('*').eq('activo', true).order('categoria').order('titulo'),
+      const [ticketsData, catalogoData] = await Promise.all([
+        ayudaService.getTickets(),
+        ayudaService.getCatalogoErrores(),
       ]);
-      setTickets(ticketsRes.data || []);
-      setCatalogo(catalogoRes.data || []);
+      setTickets(ticketsData);
+      setCatalogo(catalogoData);
     } catch {
       setTickets([]);
       setCatalogo([]);
@@ -225,13 +224,7 @@ const SistemaTickets = () => {
     if (!errorSeleccionado || !uid) return;
     const error = catalogo.find(e => e.id === errorSeleccionado);
     try {
-      await supabase.from('ayuda_tickets').insert({
-        usuario_id: uid,
-        titulo: error?.titulo || 'Error sin especificar',
-        descripcion: error?.descripcion || '',
-        estado: 'abierto',
-        prioridad: 'media',
-      });
+      await ayudaService.createTicket({ usuario_id: uid!, titulo: error?.titulo || 'Error sin especificar', descripcion: error?.descripcion || '' });
       setErrorSeleccionado(null);
       setFormVisible(false);
       cargarDatos();
@@ -243,7 +236,7 @@ const SistemaTickets = () => {
   const cambiarEstado = async (id: string, nuevoEstado: string) => {
     if (rol !== 'ADMIN') return;
     try {
-      await supabase.from('ayuda_tickets').update({ estado: nuevoEstado }).eq('id', id);
+      await ayudaService.updateTicketEstado(id, nuevoEstado);
       cargarDatos();
     } catch (err) {
       console.error('Error al actualizar ticket:', err);
@@ -329,7 +322,7 @@ const SistemaTickets = () => {
         <p style={{ color: '#9CA3AF', fontSize: 14, textAlign: 'center', padding: 32 }}>Cargando tickets...</p>
       ) : ticketsVisibles.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 48, background: '#F9FAFB', borderRadius: 12 }}>
-          <p style={{ fontSize: 32, margin: '0 0 8px' }}>🎫</p>
+          <p style={{ fontSize: 32, margin: '0 0 8px' }}>📋</p>
           <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>No hay tickets aún</p>
           <p style={{ color: '#9CA3AF', fontSize: 13, marginTop: 4 }}>{esAdmin ? 'Los usuarios enviarán tickets desde aquí' : 'Selecciona un error de la lista y crea un ticket'}</p>
         </div>
