@@ -4,6 +4,7 @@ import MantenedorMotivos from './MantenedorMotivos';
 import MantenedorEstudiantes from './MantenedorEstudiantes';
 import MantenedorRolesPage from './MantenedorRolesPage';
 import MantenedorEstablecimiento from './MantenedorEstablecimiento';
+import AdminAyudaMantenedor from '../components/AdminAyudaMantenedor';
 
 interface Props { idEstablecimiento: string }
 
@@ -15,6 +16,7 @@ const TABS: TabDef[] = [
   { key: 'estudiantes', icono: '👨‍🎓', tooltip: 'Mantenedor de Estudiantes',      lazy: true },
   { key: 'roles',       icono: '👥', tooltip: 'Mantenedor de Roles',           lazy: false },
   { key: 'establec',    icono: '🏫', tooltip: 'Mantenedor Establecimiento',     lazy: false },
+  { key: 'ayuda',       icono: '➕', tooltip: 'Módulo de Ayuda (FAQ, Tutoriales, Errores)', lazy: false },
 ];
 
 function LazyTable({ children, label }: { children: React.ReactNode; label: string }) {
@@ -66,6 +68,7 @@ export default function Mantenedores({ idEstablecimiento }: Props) {
       )}
       {tab === 'roles' && <MantenedorRolesPage idEstablecimiento={idEstablecimiento} />}
       {tab === 'establec' && <MantenedorEstablecimiento idEstablecimiento={idEstablecimiento} />}
+      {tab === 'ayuda' && <AdminAyudaMantenedor />}
     </div>
   );
 }

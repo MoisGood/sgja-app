@@ -27,6 +27,7 @@ import {
   Settings,
   Shield,
   Mail,
+  HelpCircle,
 } from 'lucide-react';
 
 interface Props {
@@ -122,7 +123,14 @@ const MENU_ITEMS: MenuItem[] = [
       { icono: <Shield size={20}/>, etiqueta: 'Asignar Accesos', ruta: '/asignar-permisos', roles: [Rol.ADMIN] },
       { icono: <Mail size={20}/>, etiqueta: 'Correos', ruta: '/correos', roles: [Rol.ADMIN] },
     ]
-  } 
+  },
+  // Otros roles: Ayuda simple (navega a /ayuda)
+  {
+    icono: <HelpCircle size={20}/>,
+    etiqueta: 'Ayuda',
+    ruta: '/ayuda',
+    roles: [Rol.INSPECTOR, Rol.PROFESOR, Rol.ESTUDIANTE, Rol.APODERADO],
+  }
 ];
 
 export default function Layout({ children, rol, nombre, email, usuarioId, idEstablecimiento }: Props) {

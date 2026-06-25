@@ -53,6 +53,10 @@ const JERARQUIA: GrupoPaginas[] = [
     titulo: 'Configuración',
     rutas: ['/configuracion', '/en-linea', '/gestion-usuarios', '/mantenedor-estudiantes', '/mantenedor-roles', '/mantenedor-motivos', '/solicitudes-registro', '/parametros', '/asignar-permisos', '/bloque-horario', '/reportes', '/mantenedor-cursos', '/correos', '/mantenedor-establecimiento'],
   },
+  {
+    titulo: 'Ayuda',
+    rutas: ['/ayuda'],
+  },
 ];
 
 function expandirRutasHijas(padre: string, permisos: string[]): string[] {

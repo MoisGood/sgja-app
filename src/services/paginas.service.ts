@@ -54,5 +54,6 @@ export function obtenerTodasLasPaginas(): PermisosPagina[] {
     { ruta: '/ticket', nombre: 'Ticket Técnico', descripcion: 'Crear y cerrar tickets de soporte' },
     { ruta: '/monitoreo-correos', nombre: 'Monitoreo Correos', descripcion: 'Monitoreo de envío de correos' },
     { ruta: '/monitoreo-fallos', nombre: 'Monitoreo Fallos', descripcion: 'Registro de fallos del sistema' },
+    { ruta: '/ayuda', nombre: 'Ayuda', descripcion: 'Centro de ayuda del sistema' },
   ];
 }
