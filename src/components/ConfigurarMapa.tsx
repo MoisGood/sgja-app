@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { Pencil, Check, X } from 'lucide-react';
 import type { Lugar } from '../types';
 
 interface Props {
@@ -15,6 +16,9 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
   const [verLista, setVerLista] = useState(false);
   const [filtroPiso, setFiltroPiso] = useState<number | null>(null);
   const [pagina, setPagina] = useState(1);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [editNombre, setEditNombre] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     const { data } = await supabase
@@ -47,6 +51,21 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
     const { error } = await supabase.from('lugares').update({ activo: nuevoActivo }).eq('id', lugar.id).eq('id_establecimiento', idEstablecimiento);
     if (error) { console.error('Error toggleActivo:', error); alert('Error al guardar Activo: ' + error.message); return; }
     setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, activo: nuevoActivo } : l));
+  }
+
+  function iniciarEdicion(lugar: Lugar) {
+    setEditNombre(lugar.nombre);
+    setEditandoId(lugar.id);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }
+
+  async function guardarNombre(lugar: Lugar) {
+    const nuevo = editNombre.trim();
+    if (!nuevo || nuevo === lugar.nombre) { setEditandoId(null); return; }
+    const { error } = await supabase.from('lugares').update({ nombre: nuevo }).eq('id', lugar.id).eq('id_establecimiento', idEstablecimiento);
+    if (error) { console.error('Error rename:', error); alert('Error al renombrar: ' + error.message); return; }
+    setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, nombre: nuevo } : l));
+    setEditandoId(null);
   }
 
   async function toggleSoporte(lugar: Lugar) {
@@ -121,14 +140,27 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
                   <th style={thS}>Piso</th>
                   <th style={{ ...thS, width: 70, textAlign: 'center' }}>Activo</th>
                   <th style={{ ...thS, width: 70, textAlign: 'center' }}>Soporte</th>
+                  <th style={{ ...thS, width: 60, textAlign: 'center' }}></th>
                 </tr>
               </thead>
               <tbody>
-                {paginados.map(l => (
-                  <tr key={l.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={tdS}>{l.nombre}</td>
-                    <td style={tdS}>{PISOS[l.piso + 1] || `Piso ${l.piso}`}</td>
-                    <td style={{ ...tdS, textAlign: 'center' }}>
+                  {paginados.map(l => (
+                    <tr key={l.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={tdS}>
+                        {editandoId === l.id ? (
+                          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                            <input ref={inputRef} value={editNombre} onChange={e => setEditNombre(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') guardarNombre(l); if (e.key === 'Escape') setEditandoId(null); }}
+                              style={{ flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid #3b82f6', fontSize: 13, outline: 'none', minWidth: 120 }} />
+                            <button onClick={() => guardarNombre(l)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22c55e', padding: 2 }}><Check size={16} /></button>
+                            <button onClick={() => setEditandoId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 2 }}><X size={16} /></button>
+                          </div>
+                        ) : (
+                          <span>{l.nombre}</span>
+                        )}
+                      </td>
+                      <td style={tdS}>{PISOS[l.piso + 1] || `Piso ${l.piso}`}</td>
+                      <td style={{ ...tdS, textAlign: 'center' }}>
                       <button
                         onClick={() => toggleActivo(l)}
                         style={{
@@ -154,11 +186,17 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
                         {l.soporte !== false ? 'Sí' : 'No'}
                       </button>
                     </td>
+                    <td style={{ ...tdS, textAlign: 'center' }}>
+                      <button onClick={() => iniciarEdicion(l)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4 }}>
+                        <Pencil size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                   {paginados.length === 0 && (
-                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: 32, color: '#9ca3af' }}>Sin ubicaciones</td></tr>
-                )}
+                    <tr><td colSpan={5} style={{ textAlign: 'center', padding: 32, color: '#9ca3af' }}>Sin ubicaciones</td></tr>
+                  )}
               </tbody>
             </table>
           </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import QRCode from 'qrcode';
 import Card from '../components/Common/Card';
@@ -79,6 +79,21 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
   const [editId, setEditId] = useState<string | null>(null);
   const [nombreDisp, setNombreDisp] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const ultimoCampoRef = useRef<'asunto' | 'cuerpo'>('cuerpo');
+  const cuerpoRef = useRef<HTMLTextAreaElement>(null);
+
+  const [plantillas, setPlantillas] = useState<any[]>([]);
+  const [editPlantillaId, setEditPlantillaId] = useState<string | null>(null);
+  const [formTitulo, setFormTitulo] = useState('');
+  const [formAsunto, setFormAsunto] = useState('');
+  const [formCuerpo, setFormCuerpo] = useState('');
+
+  const [mencionAbierto, setMencionAbierto] = useState(false);
+  const [mencionFiltradas, setMencionFiltradas] = useState<{ label: string; value: string; group: string }[]>([]);
+  const [mencionIdx, setMencionIdx] = useState(0);
+  const [mencionCursor, setMencionCursor] = useState(0);
+  const [mencionItems, setMencionItems] = useState<{ label: string; value: string; group: string }[]>([]);
 
   async function load() {
     setErrorMsg('');
@@ -168,6 +183,59 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
     if (data) setObservaciones(data);
   }
 
+  async function loadPlantillas() {
+    setErrorMsg('');
+    const [plantRes, lugRes, eqRes] = await Promise.all([
+      supabase.from('plantillas_correo_tecnico').select('id, titulo, asunto, cuerpo').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('titulo'),
+      supabase.from('lugares').select('id, nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
+      supabase.from('equipos').select('id, nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre'),
+    ]);
+    if (plantRes.error) { setErrorMsg('Plantillas: ' + plantRes.error.message); return; }
+    if (plantRes.data) setPlantillas(plantRes.data);
+    const items: { label: string; value: string; group: string }[] = [
+      { label: '{codigo}', value: '{codigo}', group: 'Variables' },
+      { label: '{usuario}', value: '{usuario}', group: 'Variables' },
+      { label: '{tipo}', value: '{tipo}', group: 'Variables' },
+      { label: '{fecha}', value: '{fecha}', group: 'Variables' },
+      { label: '{tecnico}', value: '{tecnico}', group: 'Variables' },
+      { label: '{lugar}', value: '{lugar}', group: 'Variables' },
+    ];
+    if (lugRes.data) lugRes.data.forEach(l => items.push({ label: l.nombre, value: `{${l.nombre}}`, group: '📍 Lugares' }));
+    if (eqRes.data) eqRes.data.forEach(e => items.push({ label: e.nombre, value: `{${e.nombre}}`, group: '🔧 Equipos' }));
+    setMencionItems(items);
+  }
+
+  function resetFormPlantilla() {
+    setEditPlantillaId(null);
+    setFormTitulo('');
+    setFormAsunto('');
+    setFormCuerpo('');
+  }
+
+  async function guardarPlantilla() {
+    const titulo = formTitulo.trim();
+    const asunto = formAsunto.trim();
+    const cuerpo = formCuerpo.trim();
+    if (!titulo || !cuerpo) { setErrorMsg('Nombre y cuerpo son obligatorios.'); return; }
+    setErrorMsg('');
+    if (editPlantillaId) {
+      const { error } = await supabase.from('plantillas_correo_tecnico').update({ titulo, asunto, cuerpo }).eq('id', editPlantillaId);
+      if (error) { setErrorMsg('Error al actualizar: ' + error.message); return; }
+    } else {
+      const { error } = await supabase.from('plantillas_correo_tecnico').insert({ id_establecimiento: idEstablecimiento, titulo, asunto, cuerpo });
+      if (error) { setErrorMsg('Error al guardar: ' + error.message); return; }
+    }
+    resetFormPlantilla();
+    loadPlantillas();
+  }
+
+  async function eliminarPlantilla(id: string) {
+    if (!confirm('¿Anular esta plantilla?')) return;
+    const { error } = await supabase.from('plantillas_correo_tecnico').update({ activo: false }).eq('id', id);
+    if (error) { setErrorMsg('Error al eliminar: ' + error.message); return; }
+    loadPlantillas();
+  }
+
   useEffect(() => {
     if (idEstablecimiento) {
       load();
@@ -176,6 +244,7 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
       loadSoluciones();
       loadObservaciones();
       loadQrCodes();
+      loadPlantillas();
     }
   }, [idEstablecimiento]);
 
@@ -621,12 +690,220 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
 
         {/* Tab: Correo */}
         {tab === 'correo' && (
-          <Card titulo="📧 Configuración de Correo" descripcion="Próximamente.">
-            <ul style={{ color: '#6B7280', fontSize: 13, margin: 0, paddingLeft: 20 }}>
-              <li style={{ marginBottom: 4 }}>Lista de correos predefinidos</li>
-              <li style={{ marginBottom: 4 }}>Checkbox al cerrar ticket: "Enviar correo"</li>
-              <li style={{ marginBottom: 4 }}>Selección manual de destinatarios</li>
-            </ul>
+          <Card titulo="📧 Plantillas de Correo" descripcion="Administra las plantillas para notificar avance/cierre de tickets. Variables disponibles:">
+            <div style={{ marginBottom: 16, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['{codigo}', '{usuario}', '{tipo}', '{fecha}', '{falla}', '{diagnostico}', '{solucion}', '{observaciones}', '{tecnico}', '{lugar}'].map(v => (
+                <code key={v}
+                  draggable
+                  onDragStart={e => e.dataTransfer.setData('text/plain', v)}
+                  style={{
+                    padding: '2px 8px', background: '#EEF2FF', color: '#4338CA', borderRadius: 4,
+                    fontSize: 12, fontWeight: 600, cursor: 'grab', userSelect: 'none',
+                  }} onClick={() => {
+                    if (ultimoCampoRef.current === 'asunto') {
+                      const inp = document.getElementById('asunto-plantilla') as HTMLInputElement;
+                      if (inp) {
+                        const start = inp.selectionStart || 0;
+                        const end = inp.selectionEnd || 0;
+                        setFormAsunto(prev => prev.slice(0, start) + v + prev.slice(end));
+                        requestAnimationFrame(() => { inp.selectionStart = inp.selectionEnd = start + v.length; inp.focus(); });
+                      } else { setFormAsunto(prev => prev + v); }
+                    } else {
+                      const ta = document.getElementById('cuerpo-plantilla') as HTMLTextAreaElement;
+                      if (ta) {
+                        const start = ta.selectionStart;
+                        const end = ta.selectionEnd;
+                        setFormCuerpo(prev => prev.slice(0, start) + v + prev.slice(end));
+                        requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = start + v.length; ta.focus(); });
+                      } else { setFormCuerpo(prev => prev + v); }
+                    }
+                  }}>{v}</code>
+              ))}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
+                  <label style={{ fontSize: 12, color: '#6B7280', fontWeight: 500 }}>Nombre de plantilla</label>
+                  <input
+                    value={formTitulo}
+                    onChange={e => setFormTitulo(e.target.value)}
+                    placeholder="Ej: Cierre de requerimiento"
+                    style={inputStyle}
+                    maxLength={200}
+                    list="lista-plantillas"
+                    onKeyDown={e => { if (e.key === 'Enter') guardarPlantilla(); }}
+                  />
+                  <datalist id="lista-plantillas">
+                    {plantillas.map(p => <option key={p.id} value={p.titulo} />)}
+                  </datalist>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <label style={{ fontSize: 12, color: '#6B7280', fontWeight: 500 }}>Asunto</label>
+                <input
+                  id="asunto-plantilla"
+                  value={formAsunto}
+                  onChange={e => setFormAsunto(e.target.value)}
+                  placeholder="Ej: Req. Cambio de teclado OK"
+                  style={inputStyle}
+                  maxLength={300}
+                  onFocus={() => { ultimoCampoRef.current = 'asunto'; }}
+                  onKeyDown={e => { if (e.key === 'Enter') guardarPlantilla(); }}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const v = e.dataTransfer.getData('text/plain');
+                    if (!v) return;
+                    const inp = e.currentTarget;
+                    const start = inp.selectionStart || 0;
+                    const end = inp.selectionEnd || 0;
+                    setFormAsunto(prev => prev.slice(0, start) + v + prev.slice(end));
+                    requestAnimationFrame(() => { inp.selectionStart = inp.selectionEnd = start + v.length; inp.focus(); });
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
+                <label style={{ fontSize: 12, color: '#6B7280', fontWeight: 500 }}>Mensaje</label>
+                <textarea
+                  id="cuerpo-plantilla"
+                  ref={cuerpoRef}
+                  value={formCuerpo}
+                  onChange={e => {
+                    const value = e.target.value;
+                    const cursor = e.target.selectionStart;
+                    setFormCuerpo(value);
+                    const before = value.slice(0, cursor);
+                    const atIdx = before.lastIndexOf('@');
+                    if (atIdx !== -1 && (atIdx === 0 || ' \n'.includes(before[atIdx - 1]))) {
+                      const q = before.slice(atIdx + 1).toLowerCase();
+                      setMencionCursor(atIdx);
+                      const filtradas = mencionItems.filter(i => i.label.toLowerCase().includes(q));
+                      setMencionFiltradas(filtradas);
+                      setMencionIdx(0);
+                      setMencionAbierto(filtradas.length > 0);
+                    } else {
+                      setMencionAbierto(false);
+                    }
+                  }}
+                  onKeyDown={e => {
+                    if (mencionAbierto) {
+                      if (e.key === 'ArrowDown') { e.preventDefault(); setMencionIdx(i => Math.min(i + 1, mencionFiltradas.length - 1)); return; }
+                      if (e.key === 'ArrowUp') { e.preventDefault(); setMencionIdx(i => Math.max(i - 1, 0)); return; }
+                      if (e.key === 'Enter' || e.key === 'Tab') {
+                        e.preventDefault();
+                        const item = mencionFiltradas[mencionIdx];
+                        if (item) {
+                          const before = formCuerpo.slice(0, mencionCursor);
+                          const after = formCuerpo.slice(mencionCursor);
+                          let end = 0;
+                          for (const ch of after) { if (ch === ' ' || ch === '\n' || ch === '\r') break; end++; }
+                          const nueva = before + item.value + after.slice(end);
+                          setFormCuerpo(nueva);
+                          setMencionAbierto(false);
+                          requestAnimationFrame(() => { const ta = cuerpoRef.current; if (ta) { const pos = before.length + item.value.length; ta.selectionStart = ta.selectionEnd = pos; ta.focus(); } });
+                        }
+                        return;
+                      }
+                      if (e.key === 'Escape') { setMencionAbierto(false); return; }
+                    }
+                  }}
+                  placeholder="Estimado {usuario}...
+        junto con saludar, informo que el {tipo} fue realizado el: {fecha}.
+
+        Saluda atentamente
+        {tecnico}
+        Intranet Soporte TI"
+                  rows={8}
+                  style={{
+                    width: 560, maxWidth: '100%', padding: '10px 12px', fontSize: 13, resize: 'vertical',
+                    border: '1px solid #D1D5DB', borderRadius: 8, color: '#1F2937',
+                    background: '#FFFFFF', outline: 'none', boxSizing: 'border-box',
+                    fontFamily: 'monospace', lineHeight: 1.5,
+                  }}
+                  onFocus={() => { ultimoCampoRef.current = 'cuerpo'; }}
+                  onBlur={() => { setTimeout(() => setMencionAbierto(false), 150); }}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const v = e.dataTransfer.getData('text/plain');
+                    if (!v) return;
+                    const ta = e.currentTarget;
+                    const start = ta.selectionStart;
+                    const end = ta.selectionEnd;
+                    setFormCuerpo(prev => prev.slice(0, start) + v + prev.slice(end));
+                    requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = start + v.length; ta.focus(); });
+                  }}
+                />
+                {mencionAbierto && (
+                  <div style={{
+                    position: 'absolute', zIndex: 1000, background: '#fff', border: '1px solid #D1D5DB',
+                    borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: 200, overflowY: 'auto',
+                    minWidth: 220, marginTop: 2,
+                  }}>
+                    {mencionFiltradas.map((item, i) => (
+                      <button
+                        key={item.value}
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          const before = formCuerpo.slice(0, mencionCursor);
+                          const after = formCuerpo.slice(mencionCursor);
+                          let end = 0;
+                          for (const ch of after) { if (ch === ' ' || ch === '\n' || ch === '\r') break; end++; }
+                          const nueva = before + item.value + after.slice(end);
+                          setFormCuerpo(nueva);
+                          setMencionAbierto(false);
+                          requestAnimationFrame(() => { const ta = cuerpoRef.current; if (ta) { const pos = before.length + item.value.length; ta.selectionStart = ta.selectionEnd = pos; ta.focus(); } });
+                        }}
+                        style={{
+                          display: 'block', width: '100%', textAlign: 'left', padding: '6px 12px', border: 'none',
+                          background: i === mencionIdx ? '#EEF2FF' : 'transparent', cursor: 'pointer', fontSize: 13,
+                          color: '#1F2937', borderBottom: i < mencionFiltradas.length - 1 ? '1px solid #F3F4F6' : 'none',
+                        }}
+                        onMouseEnter={() => setMencionIdx(i)}
+                      >
+                        <span style={{ fontSize: 11, color: '#6B7280', marginRight: 6 }}>{item.group}</span>
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Button tipo={editPlantillaId ? 'primario' : 'exito'} tamaño="pequeño" onClick={guardarPlantilla}>
+                  {editPlantillaId ? '💾 Actualizar' : '➕ Agregar'}
+                </Button>
+                {editPlantillaId && (
+                  <Button tipo="secundario" tamaño="pequeño" onClick={resetFormPlantilla}>
+                    ❌ Cancelar
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div style={{ marginTop: 20 }}>
+              {plantillas.length === 0 ? (
+                <p style={{ color: '#9CA3AF', fontSize: 13, fontStyle: 'italic' }}>Sin plantillas registradas.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {plantillas.map(p => (
+                    <div key={p.id} style={itemRowStyle}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ color: '#1F2937', fontSize: 14, fontWeight: 600 }}>{p.titulo}</span>
+                        {p.asunto && <span style={{ color: '#6B7280', fontSize: 12, marginLeft: 12 }}>Asunto: {p.asunto}</span>}
+                      </div>
+                      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                        <Button tamaño="pequeño" tipo="secundario" onClick={() => {
+                          setEditPlantillaId(p.id);
+                          setFormTitulo(p.titulo);
+                          setFormAsunto(p.asunto || '');
+                          setFormCuerpo(p.cuerpo);
+                        }}>✏️</Button>
+                        <Button tamaño="pequeño" tipo="peligro" onClick={() => eliminarPlantilla(p.id)}>🚫</Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </Card>
         )}
       </div>

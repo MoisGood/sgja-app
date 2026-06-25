@@ -3,12 +3,14 @@
 // src/App.tsx
 // ============================================================
 
+import { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { router } from './router';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { MonitorLecturas } from './components/MonitorLecturas';
 import { TestMonitor } from './components/TestMonitor';
+import { syncEngine } from './services/syncEngine';
 
 // Monitor desactivado por defecto; activar manualmente con SGJA_SHOW_MONITOR=true.
 const mostrarMonitor = localStorage.getItem('SGJA_SHOW_MONITOR') === 'true';
@@ -30,6 +32,11 @@ if (typeof window !== 'undefined') {
 }
 
 export default function App() {
+  useEffect(() => {
+    const stop = syncEngine.start();
+    return stop;
+  }, []);
+
   return (
     <ThemeProvider>
       <RouterProvider router={router} />

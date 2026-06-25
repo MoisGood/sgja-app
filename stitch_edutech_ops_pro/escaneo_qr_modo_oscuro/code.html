@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@100..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "primary-container": "#7a1f3d",
+                        "on-tertiary-fixed-variant": "#00468b",
+                        "on-primary-container": "#ff8ba8",
+                        "inverse-surface": "#2e3132",
+                        "outline-variant": "#dac0c4",
+                        "surface-container-low": "#f3f4f6",
+                        "primary-fixed-dim": "#ffb1c2",
+                        "background": "#f8f9fb",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#9f3c59",
+                        "tertiary-container": "#004182",
+                        "secondary": "#595f67",
+                        "on-surface": "#191c1e",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f0f1f3",
+                        "on-surface-variant": "#554245",
+                        "on-primary-fixed-variant": "#802442",
+                        "surface": "#f8f9fb",
+                        "secondary-fixed-dim": "#c1c7d0",
+                        "surface-dim": "#d9dadc",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#7dafff",
+                        "tertiary-fixed": "#d6e3ff",
+                        "inverse-primary": "#ffb1c2",
+                        "on-primary-fixed": "#3f0018",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#dde3ec",
+                        "on-secondary-fixed-variant": "#41474f",
+                        "outline": "#887275",
+                        "on-secondary-container": "#5f656d",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#a8c8ff",
+                        "surface-variant": "#e1e2e4",
+                        "on-background": "#191c1e",
+                        "primary": "#5c0427",
+                        "secondary-container": "#dde3ec",
+                        "surface-container-highest": "#e1e2e4",
+                        "surface-bright": "#f8f9fb",
+                        "primary-fixed": "#ffd9df",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeef0",
+                        "on-error": "#ffffff",
+                        "tertiary": "#002b5a",
+                        "on-secondary-fixed": "#161c23",
+                        "surface-container-high": "#e7e8ea",
+                        "on-tertiary-fixed": "#001b3d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "safe-margin": "16px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Roboto Flex"],
+                        "caption": ["Roboto Flex"],
+                        "display-lg": ["Roboto Flex"],
+                        "body-md": ["Roboto Flex"],
+                        "headline-md": ["Roboto Flex"],
+                        "label-caps": ["Roboto Flex"],
+                        "title-sm": ["Roboto Flex"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "display-lg": ["34px", {"lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .camera-overlay {
+            background: radial-gradient(circle, transparent 150px, rgba(0, 0, 0, 0.7) 150px);
+        }
+        .scan-line {
+            height: 2px;
+            background: #ff8ba8;
+            box-shadow: 0 0 15px #ff8ba8;
+            animation: scan 2.5s ease-in-out infinite;
+        }
+        @keyframes scan {
+            0%, 100% { transform: translateY(0); opacity: 0; }
+            10%, 90% { opacity: 1; }
+            50% { transform: translateY(300px); }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-on-surface text-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-4 h-14 w-full fixed top-0 z-50 bg-on-surface">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-primary-fixed-dim hover:bg-on-secondary-fixed-variant Active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary-fixed-dim">EduTech Support</h1>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-primary-fixed-dim hover:bg-on-secondary-fixed-variant Active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Main Content: QR Scanner Canvas -->
+<main class="relative min-h-screen w-full pt-14 pb-24 overflow-hidden bg-black">
+<!-- Simulated Camera Feed -->
+<div class="absolute inset-0 z-0">
+<img alt="Lab Interior" class="w-full h-full object-cover opacity-60" data-alt="A first-person perspective of a modern, dark-themed university computer laboratory seen through a camera lens. Rows of sleek desktop workstations with glowing peripheral lights are visible in the background. The lighting is low-key with cool blue and deep burgundy highlights reflecting off metallic surfaces. The overall aesthetic is high-tech, systematic, and professional, maintaining a clean and corporate atmosphere suitable for IT field support." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs12JIEPzCN-7e225zdoohB_GRijMQzniwD_tLBc76So-g1EMH2URPbZ5Mr4X-isXYyxECtmLOd_9vFfDe8nglcwBWwlZlnsxRdQQ0H6Gt7gNAprEVo9Gob6zi-QU7KFYsc7O5A8W03NvfiZkXzoepH51aSRBAz2c0UW9QZj8mJE_wRcB_E3HIQY9OkvAjpcb82Ih6I3fy8Ab22ftHiMJF_YljE_Cw-HcoUdPbr7zx0TtG4h1pMd3u_LKUFCI6ANGZ9euCj5hl94Y"/>
+</div>
+<!-- Scanning HUD Overlay -->
+<div class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+<div class="relative w-72 h-72 border-2 border-primary-fixed-dim/30 rounded-xl overflow-hidden">
+<!-- Corner Accents -->
+<div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary-fixed-dim rounded-tl-lg"></div>
+<div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary-fixed-dim rounded-tr-lg"></div>
+<div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary-fixed-dim rounded-bl-lg"></div>
+<div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary-fixed-dim rounded-br-lg"></div>
+<!-- Scanning Line -->
+<div class="scan-line absolute w-full top-0"></div>
+</div>
+<p class="mt-8 font-label-caps text-label-caps text-primary-fixed-dim uppercase tracking-widest bg-on-surface/80 px-4 py-2 rounded-full backdrop-blur-sm">
+                Alinee el código QR
+            </p>
+</div>
+<!-- Room Info Card (Glassmorphism / Dark Mode) -->
+<section class="absolute bottom-32 left-4 right-4 z-20">
+<div class="bg-on-surface/90 backdrop-blur-md border border-outline-variant/20 rounded-xl p-4 shadow-xl">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="font-label-caps text-label-caps text-on-tertiary-container bg-tertiary-container px-2 py-1 rounded mb-2 inline-block">EDIFICIO C - NIVEL 2</span>
+<h2 class="font-title-sm text-title-sm text-primary-fixed-dim">Laboratorio de Redes 204</h2>
+</div>
+<div class="flex -space-x-2">
+<img alt="Technician" class="w-8 h-8 rounded-full border-2 border-on-surface" data-alt="Close up portrait of a male IT professional with glasses, smiling confidently. The lighting is soft and studio-quality with a neutral background, conveying reliability and expertise in a corporate academic setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBybasIl-1HzpRZCreS3SZSv0lCTdD1nIEsZvNjNq00nz0c04h2KJ-70krCnPRBEM9irl6kFfjo-KXN-hIOS5bbfV4lveF4f-5EG31C_u7az_qikW6T0jeWA2gZthHhdoeggXWPfxNTDD48z12nYH-j6iNOwu5q4_nYZcByamL-vaIk4V5tIoMFQc6VZfRpfyqnJcSCkdtdnJ8phP0GpTZRoqJjFMe0GwygCA2izi4ESMti5TMquVD8_woTkJmbaWpSSUmeN6tFuaA"/>
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center border-2 border-on-surface text-[10px] font-bold text-on-secondary-container">+2</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface-container-highest/10 p-3 rounded-lg border border-outline-variant/10">
+<p class="font-label-caps text-[10px] text-outline-variant">EQUIPOS ACTIVOS</p>
+<p class="font-title-sm text-title-sm text-surface-bright">24 / 24</p>
+</div>
+<div class="bg-surface-container-highest/10 p-3 rounded-lg border border-outline-variant/10">
+<p class="font-label-caps text-[10px] text-outline-variant">TICKETS ABIERTOS</p>
+<p class="font-title-sm text-title-sm text-on-primary-container">03</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-on-primary font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:brightness-125 active:scale-95">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="font-body-md text-body-md">Crear Ticket</span>
+</button>
+<button class="w-14 h-14 bg-on-secondary-fixed-variant text-primary-fixed-dim flex items-center justify-center rounded-xl transition-all hover:bg-secondary-fixed-dim active:scale-95">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-2 bg-inverse-surface shadow-md rounded-t-xl border-t border-on-secondary-fixed-variant">
+<!-- Inicio -->
+<a class="flex flex-col items-center justify-center text-outline-variant px-4 py-1 hover:bg-secondary-fixed-variant Active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps">Inicio</span>
+</a>
+<!-- Historial -->
+<a class="flex flex-col items-center justify-center text-outline-variant px-4 py-1 hover:bg-secondary-fixed-variant Active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-caps text-label-caps">Historial</span>
+</a>
+<!-- QR (Active / Central) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 -mt-8 shadow-lg Active:scale-90 transition-all duration-200 ring-4 ring-on-surface" href="#">
+<span class="material-symbols-outlined" data-icon="qr_code_scanner" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+<span class="font-label-caps text-label-caps mt-1">QR</span>
+</a>
+<!-- Inventario -->
+<a class="flex flex-col items-center justify-center text-outline-variant px-4 py-1 hover:bg-secondary-fixed-variant Active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-caps text-label-caps">Inventario</span>
+</a>
+<!-- Configuración -->
+<a class="flex flex-col items-center justify-center text-outline-variant px-4 py-1 hover:bg-secondary-fixed-variant Active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">ConfiguraciÓn</span>
+</a>
+</nav>
+<!-- Side Navigation Drawer (Hidden by default) -->
+<aside class="fixed left-0 top-0 h-full w-80 bg-on-surface shadow-none rounded-r-xl z-[60] transform -translate-x-full transition-transform duration-300 ease-in-out border-r border-outline-variant/10" id="drawer">
+<div class="flex flex-col p-4 gap-4 h-full">
+<div class="flex items-center gap-4 p-4 mb-4 border-b border-outline-variant/10">
+<img alt="Technician Profile" class="w-12 h-12 rounded-full object-cover" data-alt="A professional headshot of a senior IT technician in a dark blue polo shirt. He has a friendly but focused expression. The background is a blurred academic office with books and certificates, signifying an educational environment and high authority in technical support." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBYsV6U956LCgvuUTovzwAsIJpKKqhbH6xTvECieMA8aJiEhPVmoIjx_o4A5O_GagN23ArOovQYh_YZDJ1uU6eX7zUgY-FOhfzTwyBTGCwvnVJt7ho1K-K1PUzuVtz0kXR0NQyAmsvakR-_YrarDRPvYKFJeMowbrp2nTHEktj8-xKdxBGvjp4JMiaqo4kSe2p6BKN5VzUuSF78ISZVs238WzWRC4brZVLKHswht6_Apa0FvirDv7kJJnCaC0kcgkJJq-oo2QZPdA"/>
+<div>
+<h3 class="font-title-sm text-title-sm text-primary-fixed-dim">IT Technician</h3>
+<p class="font-body-md text-[13px] text-outline-variant">Field Support Team</p>
+<span class="text-[11px] bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full mt-1 inline-block">Campus A</span>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-4 p-3 font-body-md text-body-md text-outline-variant hover:bg-surface-variant rounded-full transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                    Crear Ticket
+                </a>
+<a class="flex items-center gap-4 p-3 font-body-md text-body-md text-outline-variant hover:bg-surface-variant rounded-full transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+                    Diagnóstico
+                </a>
+<a class="flex items-center gap-4 p-3 bg-on-secondary-fixed-variant text-on-secondary-fixed font-bold rounded-full transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Solución
+                </a>
+</nav>
+<div class="mt-auto p-4 bg-primary-container/20 rounded-xl border border-primary-fixed-dim/20">
+<p class="font-label-caps text-label-caps text-primary-fixed-dim mb-1">PRÓXIMO MANTENIMIENTO</p>
+<p class="font-body-md text-surface-bright">Laboratorio 102 - Mañana</p>
+</div>
+</div>
+</aside>
+<!-- Overlay for Drawer -->
+<div class="fixed inset-0 bg-black/60 z-[55] hidden backdrop-blur-sm" id="drawer-overlay"></div>
+<script>
+        const menuBtn = document.querySelector('button[data-icon="menu"]').parentElement;
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('drawer-overlay');
+
+        function toggleDrawer() {
+            drawer.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        menuBtn.addEventListener('click', toggleDrawer);
+        overlay.addEventListener('click', toggleDrawer);
+
+        // Simple vibration/haptic feedback simulation on interactions
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                if (window.navigator.vibrate) {
+                    window.navigator.vibrate(10);
+                }
+            });
+        });
+    </script>
+</body></html>

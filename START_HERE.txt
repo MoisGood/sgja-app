@@ -1,194 +1,46 @@
 ╔════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                ║
-║           ✅ IMPLEMENTACIÓN DE CUSTOM CLAIMS - COMPLETADA                      ║
-║                                                                                ║
-║                    Sistema de Gestión de Justificaciones (SGJA)                ║
+║                          SGJA — Sistema de Gestión                            ║
+║                Justificaciones de Ausencias y Biblioteca                       ║
 ║                                                                                ║
 ╚════════════════════════════════════════════════════════════════════════════════╝
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 IMPACTO - EN NÚMEROS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Lee este archivo primero antes de hacer cualquier cambio.
 
-  Métrica                 Antes           Después         Mejora
-  ─────────────────────────────────────────────────────────────────
-  Lecturas/mes            250,000         50,000          -80% ✅
-  Costo/mes               $15             $0.30           -98% 💰
-  Latencia                150-200ms       50-100ms        200% 🚀
-  Ahorro/año              -               $176.40/año     📈
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📂 DOCUMENTACIÓN CONSOLIDADA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ ARCHIVOS CREADOS Y LISTOS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  → Abrir: MD2/INDEX.md
 
-📁 Scripts
-  ✅ scripts/setCustomClaimsLocal.js         (4,163 bytes)   ← Principal
-  ✅ scripts/syncCustomClaims.js             (352 bytes)     ← Alias
+  Ahí está TODO: stack, estado actual, módulo académico, plan de trabajo,
+  decisiones clave, infraestructura, onboarding, próximos pasos.
 
-📁 React Hooks
-  ✅ src/hooks/useCustomClaims.ts            (3,213 bytes)   ← Hook completo
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  NOTA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📁 Servicios
-  ✅ src/services/customClaimsService.ts     (Creado)        ← Auxiliar
+  Este archivo reemplaza al antiguo START_HERE.txt que documentaba Firebase
+  Custom Claims. Ese contenido está obsoleto — el proyecto migró a Supabase.
 
-📁 Reglas de Firestore
-  ✅ firestore.rules                         (Optimizado)    ← Sin getUser()
+  La carpeta MD_LEGACY/ contiene documentación de fases anteriores.
+  No usar como referencia. Todo lo vigente está en MD2/INDEX.md.
 
-📁 Documentación
-  ✅ CUSTOM_CLAIMS_SETUP.md                  Guía técnica
-  ✅ CUSTOM_CLAIMS_QUICK_START.md            Resumen rápido
-  ✅ IMPLEMENTACION_COMPLETADA.md            Estado actual
-  ✅ GUIA_PASO_A_PASO.md                     Tutorial visual
-  ✅ RESUMEN_FINAL.md                        Overview
-  ✅ DOCUMENTACION_INDEX.md                  Índice
-  ✅ README.md                               Documentación general
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 COMANDOS RÁPIDOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 PRÓXIMO PASO INMEDIATO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  npm run dev       → Iniciar desarrollo
+  npm run build     → Build de producción
+  npm run test      → Tests
+  npm run lint      → ESLint
 
-    Abre PowerShell en la carpeta del proyecto y ejecuta:
+  Más detalles en MD2/INDEX.md (sección 4 — Onboarding).
 
-    ┌─────────────────────────────────────────────────────────┐
-    │ $ node scripts/syncCustomClaims.js                      │
-    └─────────────────────────────────────────────────────────┘
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔗 REPOSITORIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    ⏱️  Tiempo: ~10 segundos
-    📊 Resultado esperado: "Configuración completada exitosamente"
-    ✅ Usuarios sincronizados: 15 (sin errores)
+  https://github.com/MoisGood/sgja-app.git
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📚 DOCUMENTACIÓN POR NIVEL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Necesito...                          Lee...
-  ──────────────────────────────────────────────────────────────
-  Entender qué se hizo                 RESUMEN_FINAL.md (10 min)
-  Instrucciones paso a paso             GUIA_PASO_A_PASO.md (5 min)
-  Guía técnica completa                 CUSTOM_CLAIMS_SETUP.md
-  Resumen ejecutivo                     CUSTOM_CLAIMS_QUICK_START.md
-  Overview del proyecto                 README.md
-  Encontrar cualquier cosa              DOCUMENTACION_INDEX.md
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 CÓMO FUNCIONA EN 30 SEGUNDOS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  1. Custom Claims = Datos de usuario en token JWT
-     
-     {
-       rol: "PROFESOR",
-       id_establecimiento: "est001",
-       nombre: "Juan García",
-       activo: true
-     }
-
-  2. Firestore Rules accede sin leer de la BD
-     
-     ✅ request.auth.token.rol  (0 lecturas)  ← Antes: 5 lecturas
-     
-  3. Resultado: -80% de lecturas = -$15/mes
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔐 CÓMO USAR EN TUS COMPONENTES REACT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  import { useIsAdmin, useCustomClaims } from '@/hooks/useCustomClaims';
-
-  export function Dashboard() {
-    const { hasRole: esAdmin } = useIsAdmin();
-    const { claims } = useCustomClaims();
-
-    return (
-      <>
-        <p>{claims?.nombre}</p>
-        {esAdmin && <AdminPanel />}
-      </>
-    );
-  }
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ CHECKLIST DE VERIFICACIÓN POST-SETUP
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Paso 1: Setup
-    ☐ Ejecuté: node scripts/syncCustomClaims.js
-    ☐ Sin errores (mostró tabla de usuarios)
-    ☐ "Configuración completada exitosamente"
-
-  Paso 2: Testing
-    ☐ Cerré sesión en la app
-    ☐ Abrí sesión de nuevo
-    ☐ App funciona normalmente
-    ☐ Menú Configuración visible
-
-  Paso 3: Verificación
-    ☐ Firebase Console → Authentication → Custom Claims
-    ☐ Veo los datos del usuario (rol, establecimiento)
-    ☐ Todo coincide con lo esperado
-
-  Paso 4: Performance
-    ☐ Firebase Console → Firestore → Usage
-    ☐ Después de 1 hora: reducción visible de reads
-    ☐ De 250K a 50K (80% menos)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚨 SI ALGO FALLA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Error                               Solución
-  ──────────────────────────────────────────────────────────────
-  "serviceAccountKey not found"       Descargar desde Firebase Console
-  "Cannot find module"                npm install firebase-admin
-  "Failed to set custom claims"       Usuario no existe en Firebase Auth
-  "Custom Claims no aparecen"         Cerrar/abrir sesión nuevamente
-  Script se ejecuta pero sin cambios  Ver GUIA_PASO_A_PASO.md
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎉 RESULTADO FINAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  ✅ Implementación completada
-  ✅ Documentación lista
-  ✅ Scripts funcionales
-  ✅ Plan Spark compatible
-  
-  Solo necesitas ejecutar:
-    → node scripts/syncCustomClaims.js
-  
-  Y disfrutar de:
-    → 80% menos lecturas de Firestore
-    → 200% más rápido
-    → $176.40 de ahorro anual
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📞 REFERENCIA RÁPIDA
-
-  Archivos importantes:
-    • scripts/setCustomClaimsLocal.js - El script principal
-    • src/hooks/useCustomClaims.ts - Hook para React
-    • firestore.rules - Reglas optimizadas
-
-  Comandos frecuentes:
-    • npm run dev - Iniciar desarrollo
-    • npm run build - Build de producción
-    • node scripts/syncCustomClaims.js - Sincronizar usuarios
-    • firebase deploy --only hosting - Deploy a Firebase
-
-  Documentación:
-    • RESUMEN_FINAL.md - Leer primero
-    • GUIA_PASO_A_PASO.md - Tutorial
-    • CUSTOM_CLAIMS_SETUP.md - Detalles técnicos
-    • DOCUMENTACION_INDEX.md - Índice de todo
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Implementado: 2026-04-07
-Status: ✅ Producción
-Versión: 1.0.0
-Plan: Spark (Gratuito) ✅
-
-╔════════════════════════════════════════════════════════════════════════════════╗
-║                  ¡Listo para usar! Ejecuta el script ahora.                    ║
-╚════════════════════════════════════════════════════════════════════════════════╝
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

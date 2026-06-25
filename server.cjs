@@ -1,4 +1,6 @@
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const nodemailer = require('nodemailer');
 
 const PORT = 3001;
@@ -12,6 +14,25 @@ const server = http.createServer(async (req, res) => {
 
   // Handle preflight
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
+
+  // Save plano_edificio.json
+  if (req.url.startsWith('/api/save-plano')) {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const filePath = path.join(__dirname, 'public', 'plano_edificio.json');
+        fs.writeFileSync(filePath, body, 'utf-8');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true }));
+        console.log('💾 plano_edificio.json guardado');
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
 
   // Accept all methods to /api/send-email
   if (!req.url.startsWith('/api/send-email')) {

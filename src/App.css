@@ -19,19 +19,19 @@ html[data-theme="dark"] body {
 
 /* Aplicar tema oscuro a elementos generales */
 html[data-theme="dark"] {
-  --background: #111827;
+  --background: var(--md-inverse-surface);
   --surface: #1f2937;
-  --text: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --border: #374151;
+  --text: var(--md-inverse-on-surface);
+  --text-secondary: var(--md-outline);
+  --border: #4b5563;
 }
 
 html[data-theme="light"] {
-  --background: #ffffff;
-  --surface: #f9fafb;
-  --text: #1f2937;
-  --text-secondary: #6b7280;
-  --border: #e5e7eb;
+  --background: var(--md-surface);
+  --surface: var(--md-surface-container-low);
+  --text: var(--md-on-surface);
+  --text-secondary: var(--md-on-surface-variant);
+  --border: var(--md-outline-variant);
 }
 
 .counter {

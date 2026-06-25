@@ -4,7 +4,7 @@ export function createMockSupabase() {
   let _result: any = { data: null, error: null };
 
   const methods: Record<string, any> = {};
-  const chainable = ['select', 'insert', 'update', 'delete', 'eq', 'neq', 'in', 'ilike', 'order', 'limit', 'range', 'not'];
+  const chainable = ['select', 'insert', 'update', 'delete', 'eq', 'neq', 'in', 'ilike', 'order', 'limit', 'range', 'not', 'is'];
 
   for (const m of chainable) {
     methods[m] = vi.fn(() => chain);
@@ -41,6 +41,11 @@ export function createMockSupabase() {
     reset() {
       _result = { data: null, error: null };
       currentFrom = defaultFrom;
+      for (const m of chainable) {
+        methods[m].mockImplementation(() => chain);
+      }
+      methods.single.mockImplementation(() => Promise.resolve(_result));
+      methods.maybeSingle.mockImplementation(() => Promise.resolve(_result));
     },
     get from() { return currentFrom; },
     set from(v: any) { currentFrom = v; },

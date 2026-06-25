@@ -1,0 +1,705 @@
+/* ============================================================
+   Mobile QR Scanner – Academic IT Operations
+   ============================================================ */
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--md-surface, #f8f9fb);
+  padding-bottom: 72px;
+}
+
+/* ─── TopAppBar ─── */
+.topAppBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--md-surface, #f8f9fb);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topAppBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topAppBarRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--md-primary, #5c0427);
+  transition: background 0.15s;
+}
+
+.iconBtn:hover {
+  background: var(--md-surface-container-high, #e7e8ea);
+}
+
+.appTitle {
+  font: var(--text-title-sm, 600 18px/24px var(--font-body));
+  color: var(--md-on-surface, #191c1e);
+  margin: 0;
+}
+
+/* ─── Camera Viewfinder ─── */
+.viewfinder {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #000;
+}
+
+.cameraFeed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ─── Overlay con efecto de oscurecimiento ─── */
+.overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.overlayDark {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── QR Frame ─── */
+.qrFrame {
+  position: relative;
+  width: 256px;
+  height: 256px;
+  z-index: 2;
+}
+
+.qrFrameBorder {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+}
+
+/* Corner accents */
+.corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: var(--md-primary-fixed-dim, #ffb1c2);
+  border-style: solid;
+  border-width: 0;
+}
+
+.cornerTl {
+  top: -2px; left: -2px;
+  border-top-width: 4px;
+  border-left-width: 4px;
+  border-radius: 4px 0 0 0;
+}
+
+.cornerTr {
+  top: -2px; right: -2px;
+  border-top-width: 4px;
+  border-right-width: 4px;
+  border-radius: 0 4px 0 0;
+}
+
+.cornerBl {
+  bottom: -2px; left: -2px;
+  border-bottom-width: 4px;
+  border-left-width: 4px;
+  border-radius: 0 0 0 4px;
+}
+
+.cornerBr {
+  bottom: -2px; right: -2px;
+  border-bottom-width: 4px;
+  border-right-width: 4px;
+  border-radius: 0 0 4px 0;
+}
+
+/* ─── Scan Line ─── */
+.scanLine {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--md-primary-fixed-dim, #ffb1c2), transparent);
+  animation: scanMove 3s ease-in-out infinite;
+  z-index: 3;
+}
+
+@keyframes scanMove {
+  0% { top: 8px; }
+  50% { top: calc(100% - 8px); }
+  100% { top: 8px; }
+}
+
+/* ─── Scan hint text ─── */
+.scanHint {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  padding: 8px 20px;
+  border-radius: 9999px;
+  color: #fff;
+  font: var(--text-caption, 400 12px/16px var(--font-body));
+  z-index: 3;
+  white-space: nowrap;
+}
+
+/* ─── Focus controls ─── */
+.focusControls {
+  position: absolute;
+  bottom: 24px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 3;
+}
+
+.focusBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.15s;
+}
+
+.focusBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ─── Info Card (bento style) ─── */
+.infoCard {
+  margin: -24px 16px 0;
+  position: relative;
+  z-index: 10;
+  background: var(--md-surface-container-lowest, #ffffff);
+  border: 1px solid var(--md-outline-variant, #dac0c4);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.infoCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.infoCardLabel {
+  font: var(--text-caption, 400 12px/16px var(--font-body));
+  color: var(--md-on-surface-variant, #554245);
+  margin: 0 0 2px;
+}
+
+.infoCardLocation {
+  font: var(--text-title-sm, 600 18px/24px var(--font-body));
+  color: var(--md-on-surface, #191c1e);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.infoCardSublabel {
+  font: var(--text-caption, 400 12px/16px var(--font-body));
+  color: var(--md-on-surface-variant, #554245);
+  margin: 4px 0 0;
+}
+
+.infoBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.infoBadgeError {
+  composes: infoBadge;
+  background: var(--md-error-container, #ffdad6);
+  color: var(--md-on-error-container, #93000a);
+  animation: borderPulse 2s infinite;
+}
+
+.infoBadgeSuccess {
+  composes: infoBadge;
+  background: var(--md-primary-fixed, #ffd9df);
+  color: var(--md-on-primary-fixed, #3f0018);
+}
+
+@keyframes borderPulse {
+  0% { border-color: rgba(186, 26, 26, 0.4); }
+  50% { border-color: rgba(186, 26, 26, 1); }
+  100% { border-color: rgba(186, 26, 26, 0.4); }
+}
+
+.infoStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.infoStat {
+  background: var(--md-surface-container, #edeef0);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.infoStatTickets {
+  background: var(--md-tertiary-container, #004182);
+  background: rgba(0, 65, 130, 0.08);
+  border: 1px solid rgba(0, 65, 130, 0.15);
+}
+
+.infoStatValue {
+  font: var(--text-display-lg-mobile, 700 28px/34px var(--font-display));
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--md-on-surface, #191c1e);
+  margin: 0;
+}
+
+.infoStatLabel {
+  font: var(--text-caption, 400 12px/16px var(--font-body));
+  color: var(--md-on-surface-variant, #554245);
+  margin: 2px 0 0;
+}
+
+/* ─── Tickets List ─── */
+.ticketsList {
+  margin-bottom: 16px;
+}
+
+.ticketsLabel {
+  font: var(--text-label-caps, 700 12px/16px var(--font-body));
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--md-on-surface-variant, #554245);
+  margin: 0 0 8px;
+}
+
+.ticketItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--md-surface-container-low, #f3f4f6);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ticketItem:hover {
+  background: var(--md-surface-container-high, #e7e8ea);
+}
+
+.ticketItem:active {
+  transform: scale(0.98);
+}
+
+.ticketItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ticketItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.ticketItemTitle {
+  font: var(--text-body-md, 400 14px/20px var(--font-body));
+  font-weight: 600;
+  color: var(--md-on-surface, #191c1e);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ticketItemDesc {
+  font: var(--text-caption, 400 12px/16px var(--font-body));
+  color: var(--md-on-surface-variant, #554245);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ticketBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ticketBadgeProceso {
+  background: var(--md-tertiary-fixed, #d6e3ff);
+  color: var(--md-on-tertiary-fixed-variant, #00468b);
+}
+
+.ticketBadgePendiente {
+  background: var(--md-error-container, #ffdad6);
+  color: var(--md-on-error-container, #93000a);
+}
+
+/* ─── Actions ─── */
+.infoActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btnPrimary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: var(--md-primary, #5c0427);
+  color: var(--md-on-primary, #ffffff);
+  font: var(--text-body-md, 400 14px/20px var(--font-body));
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(92, 4, 39, 0.2);
+}
+
+.btnPrimary:active {
+  transform: scale(0.97);
+}
+
+.btnSecondary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--md-outline-variant, #dac0c4);
+  background: transparent;
+  color: var(--md-on-surface, #191c1e);
+  font: var(--text-body-md, 400 14px/20px var(--font-body));
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btnSecondary:active {
+  transform: scale(0.97);
+}
+
+/* ─── Technician Context ─── */
+.techContext {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 16px 16px 0;
+  background: var(--md-surface-container-low, #f3f4f6);
+  border-radius: 12px;
+}
+
+.techAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: var(--md-primary-container, #7a1f3d);
+  color: var(--md-on-primary-container, #ff8ba8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.techInfo {
+  flex: 1;
+}
+
+.techName {
+  font: var(--text-body-md, 400 14px/20px var(--font-body));
+  font-weight: 600;
+  color: var(--md-on-surface, #191c1e);
+  margin: 0;
+}
+
+.techStatus {
+  font: var(--text-caption, 400 12px/16px var(--font-body));
+  color: var(--md-on-surface-variant, #554245);
+  margin: 0;
+}
+
+.techBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--md-secondary-container, #dde3ec);
+  color: var(--md-on-secondary-container, #5f656d);
+}
+
+/* ─── Scanner wrapper ─── */
+.scannerWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.scannerInner {
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── Error / Detenido ─── */
+.errorState {
+  padding: 24px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.errorIcon {
+  font-size: 48px;
+  color: var(--md-error, #ba1a1a);
+  line-height: 1;
+}
+
+.errorText {
+  font: var(--text-body-md, 400 14px/20px var(--font-body));
+  color: var(--md-error, #ba1a1a);
+  margin: 0;
+}
+
+.errorActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btnRetry {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--md-primary, #5c0427);
+  color: var(--md-on-primary, #ffffff);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btnBack {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--md-outline-variant, #dac0c4);
+  background: transparent;
+  color: var(--md-on-surface, #191c1e);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ─── Success State ─── */
+.successState {
+  padding: 24px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.successIcon {
+  font-size: 48px;
+  color: var(--md-primary, #5c0427);
+  line-height: 1;
+}
+
+.successText {
+  font: var(--text-body-md, 400 14px/20px var(--font-body));
+  color: var(--md-primary, #5c0427);
+  margin: 0;
+}
+
+/* ─── Loading ─── */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 16px;
+  color: var(--md-on-surface-variant, #554245);
+}
+
+/* ─── Dark Mode ─── */
+:global(html[data-theme="dark"]) .container {
+  background: #111827;
+}
+
+:global(html[data-theme="dark"]) .topAppBar {
+  background: #111827;
+}
+
+:global(html[data-theme="dark"]) .appTitle {
+  color: #f3f4f6;
+}
+
+:global(html[data-theme="dark"]) .iconBtn {
+  color: #ffb1c2;
+}
+
+:global(html[data-theme="dark"]) .iconBtn:hover {
+  background: #1f2937;
+}
+
+:global(html[data-theme="dark"]) .infoCard {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+:global(html[data-theme="dark"]) .infoCardLabel {
+  color: #9ca3af;
+}
+
+:global(html[data-theme="dark"]) .infoCardLocation {
+  color: #f3f4f6;
+}
+
+:global(html[data-theme="dark"]) .infoCardSublabel {
+  color: #9ca3af;
+}
+
+:global(html[data-theme="dark"]) .infoStat {
+  background: #374151;
+}
+
+:global(html[data-theme="dark"]) .infoStatValue {
+  color: #f3f4f6;
+}
+
+:global(html[data-theme="dark"]) .infoStatLabel {
+  color: #9ca3af;
+}
+
+:global(html[data-theme="dark"]) .infoStatTickets {
+  background: rgba(0, 65, 130, 0.15);
+  border-color: rgba(0, 65, 130, 0.3);
+}
+
+:global(html[data-theme="dark"]) .btnPrimary {
+  background: #5c0427;
+}
+
+:global(html[data-theme="dark"]) .btnSecondary {
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+:global(html[data-theme="dark"]) .techContext {
+  background: #1f2937;
+}
+
+:global(html[data-theme="dark"]) .techName {
+  color: #f3f4f6;
+}
+
+:global(html[data-theme="dark"]) .techStatus {
+  color: #9ca3af;
+}
+
+:global(html[data-theme="dark"]) .techBadge {
+  background: #374151;
+  color: #d1d5db;
+}
+
+:global(html[data-theme="dark"]) .ticketsLabel {
+  color: #9ca3af;
+}
+
+:global(html[data-theme="dark"]) .ticketItem {
+  background: #374151;
+}
+
+:global(html[data-theme="dark"]) .ticketItem:hover {
+  background: #4b5563;
+}
+
+:global(html[data-theme="dark"]) .ticketItemTitle {
+  color: #f3f4f6;
+}
+
+:global(html[data-theme="dark"]) .ticketItemDesc {
+  color: #9ca3af;
+}
+
+:global(html[data-theme="dark"]) .loading {
+  color: #9ca3af;
+}

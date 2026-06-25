@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flujo - Rol Técnico | SGJA</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      padding: 24px 12px;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+      padding: 28px 20px;
+    }
+    h1 { font-size: 22px; font-weight: 700; color: #1A3C6B; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+    .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 16px; border-left: 4px solid #1A3C6B; padding-left: 12px; }
+    .diagram-wrapper {
+      background: #fafbfc; border-radius: 10px; border: 1px solid #e5e7eb;
+      padding: 8px 0; display: flex; justify-content: center;
+    }
+    .diagram-wrapper svg { width: 100%; height: auto; max-width: 700px; }
+    .legend { display: flex; gap: 16px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #4b5563; }
+    .legend-item .dot { width: 11px; height: 11px; border-radius: 3px; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 20px; }
+    .step-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; }
+    .step-card .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #1A3C6B; color: #fff; font-size: 11px; font-weight: 700; margin-bottom: 4px;
+    }
+    .step-card h3 { font-size: 12px; font-weight: 600; color: #1f2937; margin-bottom: 2px; }
+    .step-card p { font-size: 11px; color: #6b7280; line-height: 1.4; }
+    .step-card.leaf { border-left: 4px solid #8b5cf6; }
+    .step-card.action { border-left: 4px solid #3b82f6; }
+    .step-card.decision { border-left: 4px solid #f59e0b; }
+    .step-card.endpoint { border-left: 4px solid #10b981; }
+    .footer { margin-top: 14px; text-align: center; font-size: 11px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🔧 Flujo del Rol Técnico v2</h1>
+  <div class="subtitle">Registro, resolución y cierre de requerimientos — SGJA</div>
+  <div class="legend">
+    <div class="legend-item"><span class="dot" style="background:#10b981"></span> Inicio/Fin</div>
+    <div class="legend-item"><span class="dot" style="background:#3b82f6"></span> Acción</div>
+    <div class="legend-item"><span class="dot" style="background:#8b5cf6"></span> Subproceso</div>
+    <div class="legend-item"><span class="dot" style="background:#f59e0b"></span> Decisión</div>
+    <div class="legend-item"><span class="dot" style="background:#ef4444"></span> Excepción</div>
+  </div>
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 660 2020" xmlns="http://www.w3.org/2000/svg" style="font-family:'Segoe UI',system-ui,sans-serif;font-size:12px">
+      <filter id="sh"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.07"/></filter>
+
+      <!-- LÍNEAS Y FLECHAS -->
+      <!-- 1→2 -->
+      <polygon points="325,142 335,142 330,150" fill="#6b7280"/>
+      <line x1="330" y1="104" x2="330" y2="142" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 2→3 -->
+      <polygon points="325,212 335,212 330,220" fill="#6b7280"/>
+      <line x1="330" y1="178" x2="330" y2="212" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 3(Sí)→4 -->
+      <polygon points="325,290 335,290 330,298" fill="#6b7280"/>
+      <line x1="330" y1="256" x2="330" y2="290" stroke="#6b7280" stroke-width="1.5"/>
+      <text x="338" y="277" fill="#059669" font-size="10" font-weight="700">Sí</text>
+      <!-- 3(No)→2 -->
+      <polygon points="218,158 218,166 226,162" fill="#6b7280"/>
+      <polyline points="250,261 60,261 60,160 220,160" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="68" y="220" fill="#dc2626" font-size="10" font-weight="600">No</text>
+      <!-- 4→5 -->
+      <polygon points="325,368 335,368 330,376" fill="#6b7280"/>
+      <line x1="330" y1="334" x2="330" y2="368" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 5→6 -->
+      <polygon points="325,446 335,446 330,454" fill="#6b7280"/>
+      <line x1="330" y1="412" x2="330" y2="446" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 6(Sí)→7a -->
+      <polygon points="500,530 508,530 504,538" fill="#6b7280"/>
+      <polyline points="410,530 502,530" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+      <text x="418" y="523" fill="#059669" font-size="10" font-weight="700">Sí</text>
+      <!-- 6(No)→7b -->
+      <polygon points="55,526 65,526 60,534" fill="#6b7280"/>
+      <polyline points="250,530 60,530 60,520" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+      <text x="68" y="548" fill="#dc2626" font-size="10" font-weight="600">No</text>
+      <!-- 7b→7a merge -->
+      <polygon points="495,610 503,610 499,618" fill="#6b7280"/>
+      <polyline points="160,556 160,610 497,610" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 7a→8 -->
+      <polygon points="325,688 335,688 330,696" fill="#6b7280"/>
+      <line x1="330" y1="646" x2="330" y2="688" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 8(Sí)→9 -->
+      <polygon points="510,754 518,754 514,762" fill="#6b7280"/>
+      <polyline points="410,754 512,754" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+      <text x="418" y="747" fill="#059669" font-size="10" font-weight="700">Sí</text>
+      <!-- 8(No)→8b -->
+      <polygon points="55,750 65,750 60,758" fill="#6b7280"/>
+      <polyline points="250,754 60,754 60,744" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+      <text x="68" y="772" fill="#dc2626" font-size="10" font-weight="600">No</text>
+      <!-- 8b→9 merge -->
+      <polygon points="507,832 515,832 511,840" fill="#6b7280"/>
+      <polyline points="160,778 160,832 509,832" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 9→10 -->
+      <polygon points="325,910 335,910 330,918" fill="#6b7280"/>
+      <line x1="330" y1="868" x2="330" y2="910" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 10→11 -->
+      <polygon points="325,988 335,988 330,996" fill="#6b7280"/>
+      <line x1="330" y1="954" x2="330" y2="988" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 11→12 -->
+      <polygon points="325,1066 335,1066 330,1074" fill="#6b7280"/>
+      <line x1="330" y1="1032" x2="330" y2="1066" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 12(Sí)→13 -->
+      <polygon points="325,1144 335,1144 330,1152" fill="#6b7280"/>
+      <line x1="330" y1="1110" x2="330" y2="1144" stroke="#6b7280" stroke-width="1.5"/>
+      <text x="338" y="1131" fill="#059669" font-size="10" font-weight="700">Sí</text>
+      <!-- 12(No→escalar)→13a -->
+      <polygon points="505,1076 513,1076 509,1084" fill="#6b7280"/>
+      <polyline points="410,1076 507,1076" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+      <text x="418" y="1069" fill="#d97706" font-size="10" font-weight="600">No (escalar)</text>
+      <!-- 13a→14 -->
+      <polygon points="325,1222 335,1222 330,1230" fill="#6b7280"/>
+      <line x1="330" y1="1188" x2="330" y2="1222" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 13→14 -->
+      <polygon points="325,1300 335,1300 330,1308" fill="#6b7280"/>
+      <line x1="330" y1="1264" x2="330" y2="1300" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 14→15 -->
+      <polygon points="325,1378 335,1378 330,1386" fill="#6b7280"/>
+      <line x1="330" y1="1344" x2="330" y2="1378" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 15→16 -->
+      <polygon points="325,1456 335,1456 330,1464" fill="#6b7280"/>
+      <line x1="330" y1="1422" x2="330" y2="1456" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 16(Sí)→17 -->
+      <polygon points="325,1534 335,1534 330,1542" fill="#6b7280"/>
+      <line x1="330" y1="1500" x2="330" y2="1534" stroke="#6b7280" stroke-width="1.5"/>
+      <text x="338" y="1521" fill="#059669" font-size="10" font-weight="700">Sí</text>
+      <!-- 16(No)→13 loop -->
+      <polygon points="215,1112 215,1120 223,1116" fill="#6b7280"/>
+      <polyline points="250,1500 100,1500 100,1110 217,1110" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="108" y="1310" fill="#dc2626" font-size="10" font-weight="600">No</text>
+      <!-- 17→18 -->
+      <polygon points="325,1612 335,1612 330,1620" fill="#6b7280"/>
+      <line x1="330" y1="1578" x2="330" y2="1612" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 18→19 -->
+      <polygon points="325,1690 335,1690 330,1698" fill="#6b7280"/>
+      <line x1="330" y1="1656" x2="330" y2="1690" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 19→20 -->
+      <polygon points="325,1768 335,1768 330,1776" fill="#6b7280"/>
+      <line x1="330" y1="1734" x2="330" y2="1768" stroke="#6b7280" stroke-width="1.5"/>
+      <!-- 20→21 -->
+      <polygon points="325,1838 335,1838 330,1846" fill="#10b981"/>
+      <line x1="330" y1="1804" x2="330" y2="1838" stroke="#10b981" stroke-width="1.5"/>
+
+      <!-- NODOS -->
+      <!-- 1. Inicio -->
+      <ellipse cx="330" cy="76" rx="130" ry="28" fill="#10b981" stroke="#059669" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="81" text-anchor="middle" fill="#fff" font-weight="700" font-size="13">Inicio: Técnico ingresa al sistema</text>
+
+      <!-- 2. Validar sesión -->
+      <rect x="220" y="142" width="220" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="165" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Validar sesión activa en Supabase</text>
+
+      <!-- 3. ¿Sesión válida? -->
+      <polygon points="330,212 410,256 330,300 250,256" fill="#f59e0b" stroke="#d97706" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="253" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">¿Sesión</text>
+      <text x="330" y="267" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">válida?</text>
+
+      <!-- 4. Menú principal -->
+      <rect x="230" y="298" width="200" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="321" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Mostrar menú principal móvil</text>
+
+      <!-- 5. Seleccionar Nuevo Requerimiento -->
+      <rect x="215" y="376" width="230" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="399" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Seleccionar "Nuevo Requerimiento"</text>
+
+      <!-- 6. ¿Usuario reporta o es responsable? -->
+      <polygon points="330,454 420,502 330,550 240,502" fill="#f59e0b" stroke="#d97706" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="497" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">¿El usuario que reporta</text>
+      <text x="330" y="512" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">es el responsable?</text>
+
+      <!-- 7a. Usuario responsable encontrado (columna central) -->
+      <rect x="225" y="610" width="210" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="633" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Usuario responsable del equipo</text>
+
+      <!-- 7b. Buscar/crear usuario (rama izquierda) -->
+      <rect x="60" y="520" width="200" height="36" rx="8" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" filter="url(#sh)"/>
+      <text x="160" y="543" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">Buscar / crear usuario</text>
+      <text x="160" y="557" text-anchor="middle" fill="#fff" font-weight="600" font-size="10">responsable del equipo</text>
+
+      <!-- 8. ¿Equipo existe en db? -->
+      <polygon points="330,688 420,734 330,780 240,734" fill="#f59e0b" stroke="#d97706" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="729" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">¿El equipo está</text>
+      <text x="330" y="743" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">registrado?</text>
+
+      <!-- 8b. Registrar equipo nuevo (rama izquierda) -->
+      <rect x="60" y="744" width="200" height="36" rx="8" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" filter="url(#sh)"/>
+      <text x="160" y="767" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">Registrar equipo en el</text>
+      <text x="160" y="781" text-anchor="middle" fill="#fff" font-weight="600" font-size="10">lugar / departamento</text>
+
+      <!-- 9. Crear ticket con datos -->
+      <rect x="200" y="832" width="260" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="855" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Crear ticket: tipo, prioridad, descripción</text>
+
+      <!-- 10. Asignar técnico estado Pendiente -->
+      <rect x="215" y="910" width="230" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="933" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Asignar técnico · Estado "Pendiente"</text>
+
+      <!-- 11. Adjuntar evidencia inicial -->
+      <rect x="200" y="988" width="260" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1011" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Adjuntar fotos / evidencia de la falla</text>
+
+      <!-- 12. Recepcionar: ¿se puede resolver? -->
+      <polygon points="330,1066 420,1110 330,1154 240,1110" fill="#f59e0b" stroke="#d97706" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1107" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">Recepcionar: ¿se puede</text>
+      <text x="330" y="1121" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">resolver?</text>
+
+      <!-- 13. Diagnosticar falla -->
+      <rect x="235" y="1152" width="190" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1175" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Diagnosticar falla</text>
+
+      <!-- 13a. Derivar técnico superior (rama derecha) -->
+      <rect x="480" y="1144" width="160" height="36" rx="8" fill="#ef4444" stroke="#dc2626" stroke-width="2" filter="url(#sh)"/>
+      <text x="560" y="1167" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">Derivar a técnico</text>
+      <text x="560" y="1181" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">superior / Admin</text>
+
+      <!-- 14. Registrar diagnóstico y solución -->
+      <rect x="200" y="1264" width="260" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1287" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Aplicar solución y registrar en ticket</text>
+
+      <!-- 15. Adjuntar evidencia final -->
+      <rect x="200" y="1344" width="260" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1367" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Adjuntar fotos / evidencia reparación</text>
+
+      <!-- 16. Notificar y preguntar conformidad -->
+      <rect x="185" y="1422" width="290" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1445" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Notificar al usuario: ¿solución conforme?</text>
+
+      <!-- 17. ¿Conforme? -->
+      <polygon points="330,1500 420,1544 330,1588 240,1544" fill="#f59e0b" stroke="#d97706" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1541" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">¿Usuario</text>
+      <text x="330" y="1555" text-anchor="middle" fill="#fff" font-weight="600" font-size="11">conforme?</text>
+
+      <!-- 18. Cerrar ticket -->
+      <rect x="225" y="1612" width="210" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1635" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Cerrar ticket: solución final</text>
+
+      <!-- 19. Actualizar equipo -->
+      <rect x="185" y="1690" width="290" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1713" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Actualizar equipo a "Operativo"</text>
+
+      <!-- 20. Notificar cierre -->
+      <rect x="195" y="1768" width="270" height="36" rx="8" fill="#3b82f6" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1791" text-anchor="middle" fill="#fff" font-weight="600" font-size="12">Notificar al usuario: ticket cerrado</text>
+
+      <!-- 21. Fin -->
+      <ellipse cx="330" cy="1872" rx="110" ry="28" fill="#10b981" stroke="#059669" stroke-width="2" filter="url(#sh)"/>
+      <text x="330" y="1877" text-anchor="middle" fill="#fff" font-weight="700" font-size="13">Fin: Proceso completado ✓</text>
+    </svg>
+  </div>
+
+  <div class="steps">
+    <div class="step-card endpoint"><div class="num">1</div><h3>Validación</h3><p>El técnico inicia sesión y se valida su sesión activa en Supabase antes de operar.</p></div>
+    <div class="step-card action"><div class="num">2</div><h3>Crear requerimiento</h3><p>Se selecciona nuevo requerimiento, se define tipo, prioridad y descripción de la falla.</p></div>
+    <div class="step-card action"><div class="num">3</div><h3>Evidencia inicial</h3><p>Se adjuntan fotos de la falla al ticket como evidencia del estado del equipo.</p></div>
+    <div class="step-card decision"><div class="num">4</div><h3>Recepcionar</h3><p>El técnico evalúa si puede resolver. Si no, deriva a técnico superior o admin.</p></div>
+    <div class="step-card action"><div class="num">5</div><h3>Diagnosticar y resolver</h3><p>Diagnóstico, solución y registro en el ticket. Se adjunta evidencia de la reparación.</p></div>
+    <div class="step-card decision"><div class="num">6</div><h3>Conformidad</h3><p>Se notifica al usuario. Si no conforme, se re-diagnostica. Si conforme, se procede al cierre.</p></div>
+    <div class="step-card endpoint"><div class="num">7</div><h3>Cierre y notificación</h3><p>Ticket cerrado, equipo actualizado a "Operativo" y se notifica al usuario el resultado final.</p></div>
+  </div>
+
+  <div class="footer">SGJA — Sistema Gestión de Justificaciones y Asistencia · Diagrama v2.0 · Mejoras: sesión, evidencia, prioridad, escalamiento, notificación final</div>
+</div>
+</body>
+</html>

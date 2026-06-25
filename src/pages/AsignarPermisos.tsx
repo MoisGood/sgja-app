@@ -34,7 +34,7 @@ const JERARQUIA: GrupoPaginas[] = [
   {
     titulo: 'Técnico',
     padre: '/tecnico',
-    rutas: ['/tecnico', '/tecnico/mapa', '/tecnico/equipos', '/tecnico/ubicaciones', '/tecnico/requerimientos', '/tecnico/accesos', '/tecnico/menu', '/tecnico/configuracion', '/tecnico/qr', '/ticket', '/tecnico/m/mapa', '/tecnico/m/equipos', '/tecnico/m/ubicaciones', '/tecnico/m/config'],
+    rutas: ['/tecnico', '/tecnico/mapa', '/tecnico/equipos', '/tecnico/ubicaciones', '/tecnico/requerimientos', '/tecnico/accesos', '/tecnico/menu', '/tecnico/configuracion', '/tecnico/qr', '/ticket', '/tecnico/m/inicio', '/tecnico/m/historial', '/tecnico/m/mapa', '/tecnico/m/grid', '/tecnico/m/equipos', '/tecnico/m/ubicaciones', '/tecnico/m/config', '/tecnico/m/qr', '/tecnico/m/accesos'],
   },
   {
     titulo: 'Biblioteca',

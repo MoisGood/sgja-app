@@ -9,6 +9,7 @@ import '../styles/login.css';
 
 export default function Login() {
   const [cargando, setCargando] = useState(false);
+  const [verificando, setVerificando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [mantenimientoActivo, setMantenimientoActivo] = useState(false);
@@ -16,35 +17,47 @@ export default function Login() {
   const [sistema, setSistema] = useState({ nombre_sistema: 'SGJA', subtitulo: '', favicon_url: '' });
 
   useEffect(() => {
-    const leerErrorOAuth = () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-      const errorCode = searchParams.get('error_code') || hashParams.get('error_code');
-      const errorDescription =
-        searchParams.get('error_description') || hashParams.get('error_description');
-
-      if (errorCode || errorDescription) {
-        const descripcion = decodeURIComponent(errorDescription || '').replace(/\+/g, ' ');
-        const mensaje = descripcion || 'No se pudo completar la autenticación con Google.';
-        setError(`Error OAuth (${errorCode || 'desconocido'}): ${mensaje}`);
-        setCargando(false);
-      }
-    };
-
     const handleAuthCallback = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          console.log('✅ Sesión activa detectada');
-          setMensajeExito('Sesión iniciada correctamente.');
+          const email = session.user?.email || '';
+          const tokenExterno = new URLSearchParams(window.location.search).get('token_externo');
+
+          if (email) {
+            const { data: verif } = await supabase.rpc('verificar_acceso_externo', {
+              p_email: email,
+              p_token: tokenExterno || null,
+            });
+
+            if (verif) {
+              if (!verif.permitido) {
+                await supabase.auth.signOut();
+                const dominio = verif.dominio || 'desconocido';
+                setError(`El dominio @${dominio} no esta permitido. Use su correo institucional.`);
+                setVerificando(false);
+                return;
+              }
+              if (verif.excepcion && verif.rol) {
+                const { data: existente } = await supabase.from('usuarios')
+                  .select('id').eq('uid', session.user.id).maybeSingle();
+                if (!existente) {
+                  await supabase.from('usuarios').insert({
+                    id: session.user.id, uid: session.user.id, email,
+                    nombre: email.split('@')[0].replace(/[._]/g, ' '),
+                    rol: verif.rol, activo: true,
+                  });
+                }
+              }
+            }
+          }
+          setVerificando(false);
+          return;
         }
-      } catch (err: unknown) {
-        const authError = err as { code?: string; message?: string };
-        console.error('❌ Error al verificar sesión:', authError);
-      }
+      } catch { /* ignore */ }
+      setVerificando(false);
     };
 
-    leerErrorOAuth();
     handleAuthCallback();
 
     Promise.all([
@@ -106,7 +119,15 @@ export default function Login() {
           {sistema.subtitulo && <p className="login-subtitle" style={{ fontSize: 13, color: '#64748b' }}>{sistema.subtitulo}</p>}
         </div>
 
-        {/* ── Cartel de mantenimiento ── */}
+        {/* Verificando sesion (despues de OAuth) */}
+        {verificando && (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div className="login-spinner" style={{ margin: '0 auto 12px' }}></div>
+            <p style={{ fontSize: 14, color: '#64748b' }}>Verificando acceso...</p>
+          </div>
+        )}
+
+        {!verificando && (<>
         {mantenimientoActivo && !mostrarLogin && (
           <div style={{ padding: '16px', background: '#FEF3C7', borderRadius: '8px', border: '1px solid #F59E0B', marginBottom: '16px', textAlign: 'center' }}>
             <p style={{ fontSize: '32px', margin: '0 0 8px 0' }}>🔧</p>
@@ -220,6 +241,8 @@ export default function Login() {
           Debes utilizar tu correo institucional<br/>
           <strong>tucorreo@andaliensur.cl</strong>
         </div>
+        </>
+        )}
         </>
         )}
       </div>

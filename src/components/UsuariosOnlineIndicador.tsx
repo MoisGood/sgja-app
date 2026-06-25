@@ -1,76 +1,41 @@
 // ============================================================
-// SGJA – Indicador de Usuarios En Línea
-// src/components/UsuariosOnlineIndicador.tsx
+// SGJA – Indicador de Conectividad
+// Consulta Cloudflare Worker para verificar estado del servidor
 // ============================================================
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { useTheme } from '../hooks/useTheme';
-
-interface IndicadorState {
-  conectados: number;
-  desconectados: number;
-}
+const WORKER_URL = 'https://icy-limit-9f6c.soportetipresente.workers.dev/';
 
 export function UsuariosOnlineIndicador() {
-  const { temaOscuro } = useTheme();
-  const [estado, setEstado] = useState<IndicadorState>({
-    conectados: 0,
-    desconectados: 0,
-  });
+  const [online, setOnline] = useState(true);
 
   useEffect(() => {
-    const fetchUsuarios = async () => {
+    let activo = true;
+
+    const check = async () => {
       try {
-        const { data, error } = await supabase
-          .from('online')
-          .select('estado');
-
-        if (error) throw error;
-
-        let conectados = 0;
-        let desconectados = 0;
-
-        (data || []).forEach((doc) => {
-          if (doc.estado === 'conectado') {
-            conectados++;
-          } else if (doc.estado === 'desconectado') {
-            desconectados++;
-          }
-        });
-
-        setEstado({
-          conectados,
-          desconectados,
-        });
-      } catch (error) {
-        console.error('Error obteniendo usuarios online:', error);
+        const res = await fetch(WORKER_URL, { method: 'GET', cache: 'no-store' });
+        if (!activo) return;
+        setOnline(res.ok);
+      } catch {
+        if (activo) setOnline(false);
       }
     };
 
-    // Cargar datos inicialmente
-    fetchUsuarios();
-    
-    // Polling cada 30 segundos
-    const interval = setInterval(fetchUsuarios, 30000);
+    check();
+    const interval = setInterval(() => { if (activo) check(); }, 30000);
 
-    return () => clearInterval(interval);
+    return () => { activo = false; clearInterval(interval); };
   }, []);
-
-  const colorTexto = temaOscuro ? '#d1d5db' : '#6b7280';
 
   return (
     <div style={styles.contenedor}>
-      {/* Punto verde - Conectados */}
-      <div style={styles.indicador} title="Usuarios conectados">
-        <span style={{ ...styles.punto, backgroundColor: '#10b981' }} />
-        <span style={{ ...styles.numero, color: colorTexto }}>{estado.conectados}</span>
-      </div>
-
-      {/* Punto gris - Desconectados */}
-      <div style={styles.indicador} title="Usuarios desconectados">
-        <span style={{ ...styles.punto, backgroundColor: '#9ca3af' }} />
-        <span style={{ ...styles.numero, color: colorTexto }}>{estado.desconectados}</span>
+      <div style={styles.indicador} title={online ? 'Servidor en línea' : 'Servidor desconectado'}>
+        <span style={{
+          ...styles.punto,
+          backgroundColor: online ? '#10b981' : '#ef4444',
+          boxShadow: online ? '0 0 6px rgba(16, 185, 129, 0.6)' : 'none',
+        }} />
       </div>
     </div>
   );
@@ -79,7 +44,6 @@ export function UsuariosOnlineIndicador() {
 const styles: Record<string, React.CSSProperties> = {
   contenedor: {
     display: 'flex',
-    gap: '16px',
     alignItems: 'center',
   },
   indicador: {
@@ -90,16 +54,10 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'all 0.2s ease',
   },
   punto: {
-    width: '12px',
-    height: '12px',
+    width: '10px',
+    height: '10px',
     borderRadius: '50%',
     display: 'inline-block',
-    filter: 'drop-shadow(0 0 3px rgba(0, 0, 0, 0.3))',
-  },
-  numero: {
-    fontSize: '14px',
-    fontWeight: '600',
-    minWidth: '20px',
   },
 };
 

@@ -7,7 +7,7 @@ import { useAuth } from './hooks/useAuth';
 import { useInactivityWarning } from './hooks/useInactivityWarning';
 import { usePermisosUsuario } from './hooks/usePermisosUsuario';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import { Rol } from './types';
 import Login from './pages/Login';
@@ -40,6 +40,7 @@ import ConfigBiblioteca from './pages/ConfigBiblioteca';
 import HistorialBiblioteca from './pages/HistorialBiblioteca';
 import Inventario from './pages/Inventario';
 import MonitoreoCorreos from './pages/MonitoreoCorreos';
+import Correos from './pages/Correos';
 import MonitoreoFallos from './pages/MonitoreoFallos';
 import MantenimientoConfig from './pages/MantenimientoConfig';
 import Tecnico from './pages/Tecnico';
@@ -49,15 +50,18 @@ import Requerimientos from './pages/Requerimientos';
 import ConfiguracionTecnico from './pages/ConfiguracionTecnico';
 import Ticket from './pages/Ticket';
 import AccesosRapidos from './pages/AccesosRapidos';
-import MenuTecnico from './pages/MenuTecnico';
+
 import MobileMapa from './pages/MobileMapa';
 import MobileEquipos from './pages/MobileEquipos';
 import MobileUbicaciones from './pages/MobileUbicaciones';
 import MobileConfigTecnico from './pages/MobileConfigTecnico';
 import MobileDashboard from './pages/MobileDashboard';
 import MobileGrid from './pages/MobileGrid';
+import HistorialMovil from './pages/HistorialMovil';
+import MobileTickets from './pages/MobileTickets';
+import MobileInventario from './pages/MobileInventario';
 import MobileQrScanner from './pages/MobileQrScanner';
-import MobileNavBar from './components/MobileNavBar';
+import { SkinProvider } from './contexts/SkinContext';
 import QrRedirect from './pages/QrRedirect';
 import Configurar2FA from './pages/Configurar2FA';
 import AyudaPage from './pages/AyudaPage';
@@ -67,20 +71,12 @@ import AdminTickets from './pages/AdminTickets';
 
 export default function AppContent() {
   const { uid, rol, idEstablecimiento, cargando, autorizado, usuarioInactivo, documentoExiste, nombre, apellidos, email, datosPendientes, mantenimientoBloqueo, mttoHorario } = useAuth();
-  const location = useLocation();
   const [errorSesion, setErrorSesion] = useState<string | null>(null);
   const [mostrarFormDatos, setMostrarFormDatos] = useState(false);
   const [mfaPendiente, setMfaPendiente] = useState(false);
   const [cargandoMfa, setCargandoMfa] = useState(true);
   const [otraPestanaAbierta, setOtraPestanaAbierta] = useState(false);
   const [kickedByAdmin, setKickedByAdmin] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     const s = document.createElement('style');
@@ -106,7 +102,7 @@ export default function AppContent() {
   }, []);
 
   const { mostrarModal, segundosRestantes, cerrandoSesion, extenderSesion } = useInactivityWarning(rol, autorizado);
-  const { permisos: permisosRol } = usePermisosUsuario(idEstablecimiento || '', rol as Rol);
+  const { permisos: permisosRol, cargando: cargandoPermisos } = usePermisosUsuario(idEstablecimiento || '', rol as Rol);
   const esRolPredefinido = Object.values(Rol).includes(rol as Rol);
   const [mantenimientoCountdown, setMantenimientoCountdown] = useState<number | null>(null);
   const countdownRef = useRef(mantenimientoCountdown);
@@ -417,14 +413,14 @@ export default function AppContent() {
       case 'APODERADO':
         return <DashboardApoderado idApoderado={uid || ''} idEstablecimiento={idEstablecimiento} />;
       case 'TECNICO':
-        return <AccesosRapidos idEstablecimiento={idEstablecimiento} />;
+        return <Navigate to="/tecnico/m/inicio" replace />;
       default:
         return <DashboardSecretaria nombre={nombre || 'Usuario'} />;
     }
   };
 
   return (
-    <>
+    <SkinProvider>
       {/* Modal de error de sesión (límite alcanzado) */}
       {errorSesion && (
         <div style={styles.modalOverlay}>
@@ -561,6 +557,8 @@ export default function AppContent() {
         email={email || ''}
         usuarioId={uid}
         idEstablecimiento={idEstablecimiento}
+        permisos={permisosRol}
+        cargandoPermisos={cargandoPermisos}
       >
         <Routes>
           <Route path="/" element={(rol as string) === 'TECNICO' ? <Navigate to="/tecnico/m/inicio" replace /> : renderRoleDashboard()} />
@@ -583,6 +581,7 @@ export default function AppContent() {
           <Route path="/asignar-permisos" element={puedeVer('/asignar-permisos', 'ADMIN') ? <AsignarPermisos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/sistema" element={puedeVer('/sistema', 'ADMIN') ? <MantenimientoConfig idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/monitoreo-correos" element={puedeVer('/monitoreo-correos', 'ADMIN') ? <MonitoreoCorreos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/correos" element={puedeVer('/correos', 'ADMIN') ? <Correos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/monitoreo-fallos" element={puedeVer('/monitoreo-fallos', 'ADMIN') ? <MonitoreoFallos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/libros" element={puedeVer('/libros', 'ADMIN') ? <MantenedorLibros idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/catalogo" element={puedeVer('/catalogo', 'ADMIN') ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
@@ -599,14 +598,17 @@ export default function AppContent() {
           <Route path="/tecnico/ubicaciones" element={puedeVer('/tecnico', 'ADMIN') ? <Ubicaciones idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/requerimientos" element={puedeVer('/tecnico', 'ADMIN') ? <Requerimientos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/accesos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <AccesosRapidos idEstablecimiento={idEstablecimiento!} /> : null} />
-          <Route path="/tecnico/menu" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MenuTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
-          <Route path="/tecnico/m/inicio" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileDashboard idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/menu" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <Navigate to="/tecnico/m/inicio" replace /> : null} />
+          <Route path="/tecnico/m/inicio" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileDashboard idEstablecimiento={idEstablecimiento!} nombre={nombre || ''} apellidos={apellidos || ''} /> : null} />
+          <Route path="/tecnico/m/historial" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <HistorialMovil idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/tickets" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileTickets idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/mapa" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileMapa idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/grid" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileGrid idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/equipos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileEquipos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/tecnico/m/inventario" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileInventario idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/ubicaciones" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileUbicaciones idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/m/config" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileConfigTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
-          <Route path="/tecnico/m/qr" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileQrScanner /> : null} />
+          <Route path="/tecnico/m/qr" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileQrScanner idEstablecimiento={idEstablecimiento!} nombre={nombre || ''} apellidos={apellidos || ''} /> : null} />
           <Route path="/tecnico/m/accesos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <AccesosRapidos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/configuracion" element={puedeVer('/tecnico', 'ADMIN') ? <ConfiguracionTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/ayuda" element={<AyudaPage />} />
@@ -615,9 +617,8 @@ export default function AppContent() {
           <Route path="/ayuda/tickets" element={rol === 'ADMIN' ? <AdminTickets /> : <AyudaPage />} />
           <Route path="*" element={renderRoleDashboard()} />
         </Routes>
-        {isMobile && location.pathname.startsWith('/tecnico/m/') && <MobileNavBar />}
       </Layout>
-    </>
+    </SkinProvider>
   );
 }
 

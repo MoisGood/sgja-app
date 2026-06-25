@@ -1,8 +1,10 @@
 import { useState, useEffect, forwardRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { validarTicket, crearRequerimiento } from '../services/requerimiento.service';
+import { subirEvidencia } from '../services/evidenciaService';
 
 interface Props {
-  lugar: { id: string; nombre: string; piso: number };
+  lugar: { id: string; nombre: string; piso: number; soporte?: boolean };
   equipos: { id: string; nombre: string; marca: string | null; modelo: string | null; estado: string }[];
   idEstablecimiento: string;
   onCerrar: () => void;
@@ -33,6 +35,15 @@ const ModalRequerimiento = forwardRef<HTMLDivElement, Props>(function ModalReque
   const [idUsuarioDb, setIdUsuarioDb] = useState<string | null>(null);
   const [sugFallas, setSugFallas] = useState<string[]>([]);
   const [sugDiags, setSugDiags] = useState<string[]>([]);
+  const [todosEquipos, setTodosEquipos] = useState<{ id: string; nombre: string; id_usuario?: string; estado: string }[]>([]);
+  const [todosUsuarios, setTodosUsuarios] = useState<{ id: string; nombre: string; email: string }[]>([]);
+  const [buscarUsuario, setBuscarUsuario] = useState('');
+  const [usuarioSel, setUsuarioSel] = useState<{ id: string; nombre: string } | null>(null);
+  const [sugUsuarios, setSugUsuarios] = useState<{ id: string; nombre: string }[]>([]);
+  const [mostrarSugUsu, setMostrarSugUsu] = useState(false);
+  const [equiposFiltrados, setEquiposFiltrados] = useState<{ id: string; nombre: string; id_usuario?: string; estado: string }[]>([]);
+  const [evidencias, setEvidencias] = useState<string[]>([]);
+  const [subiendoEvidencia, setSubiendoEvidencia] = useState(false);
 
   useEffect(() => {
     // Resolver usuarios.id desde auth.uid
@@ -47,46 +58,60 @@ const ModalRequerimiento = forwardRef<HTMLDivElement, Props>(function ModalReque
     Promise.all([
       supabase.from('posibles_fallas').select('nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
       supabase.from('posibles_diagnosticos').select('nombre').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
-    ]).then(([fRes, dRes]) => {
+      supabase.from('equipos').select('id, nombre, id_usuario, estado').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
+      supabase.from('usuarios').select('id, nombre, email').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
+    ]).then(([fRes, dRes, eqRes, usrRes]) => {
       if (fRes.data) setSugFallas(fRes.data.map(x => x.nombre));
       if (dRes.data) setSugDiags(dRes.data.map(x => x.nombre));
+      if (eqRes.data) setTodosEquipos(eqRes.data);
+      if (usrRes.data) setTodosUsuarios(usrRes.data);
     });
   }, [idEstablecimiento]);
 
   async function guardar() {
     if (!descripcion.trim() || !idUsuarioDb) return;
     setGuardando(true);
-    const payload = {
-      id_establecimiento: idEstablecimiento,
-      id_lugar: lugar.id,
-      id_equipo: idEquipo || null,
-      id_solicitante: idUsuarioDb,
-      tipo_requerimiento: tipo,
-      descripcion: descripcion.trim(),
-      posible_falla: posibleFalla.trim() || null,
+
+    const equipo = (buscarUsuario ? equiposFiltrados : equipos).find(e => e.id === idEquipo) || null;
+    const errVal = await validarTicket({
+      equipo: equipo ? { id: equipo.id, estado: equipo.estado, id_usuario: (equipo as any).id_usuario } : null,
+      posibleFalla,
+      solicitanteId: idUsuarioDb,
+      lugarSoporte: lugar.soporte,
+    });
+
+    if (errVal) {
+      if (errVal.type === 'bloqueante') {
+        alert('❌ ' + errVal.mensaje);
+        setGuardando(false);
+        return;
+      }
+      if (!confirm('⚠️ ' + errVal.mensaje + '\n\n¿Continuar de todas formas?')) {
+        setGuardando(false);
+        return;
+      }
+    }
+
+    const desc = descripcion.trim() + (posibleFalla ? ` (Falla: ${posibleFalla})` : '');
+    const res = await crearRequerimiento({
+      idEstablecimiento,
+      idLugar: lugar.id,
+      idEquipo: idEquipo || null,
+      idSolicitante: idUsuarioDb,
+      tipoReq: tipo,
+      descripcion: desc,
+      posibleFalla: posibleFalla.trim() || null,
       diagnostico: diagnostico.trim() || null,
       prioridad,
       estado,
       observaciones: observaciones.trim() || null,
-      fecha_solicitud: new Date().toISOString().split('T')[0],
-    };
-    const { error } = await supabase.rpc('insertar_requerimiento', {
-      p_id_establecimiento: payload.id_establecimiento,
-      p_id_lugar: payload.id_lugar,
-      p_id_equipo: payload.id_equipo,
-      p_id_solicitante: payload.id_solicitante,
-      p_tipo_requerimiento: payload.tipo_requerimiento,
-      p_descripcion: payload.descripcion,
-      p_posible_falla: payload.posible_falla,
-      p_diagnostico: payload.diagnostico,
-      p_prioridad: payload.prioridad,
-      p_estado: payload.estado,
-      p_fecha_solicitud: payload.fecha_solicitud,
+      lugarSoporte: lugar.soporte,
     });
-    if (error) {
-      // Fallback: direct INSERT
-      const { error: ie } = await supabase.from('requerimientos').insert(payload);
-      if (ie) { alert('Error: ' + ie.message); setGuardando(false); return; }
+
+    if (res.error) {
+      alert('Error: ' + res.error);
+      setGuardando(false);
+      return;
     }
     setGuardando(false);
     onCreado();
@@ -147,15 +172,72 @@ const ModalRequerimiento = forwardRef<HTMLDivElement, Props>(function ModalReque
           </div>
 
           <div>
-            <label style={labelStyle}>Equipo asignado</label>
+            <label style={labelStyle}>Equipo</label>
             <select value={idEquipo} onChange={e => setIdEquipo(e.target.value)} style={inputStyle}>
               <option value="">Seleccionar equipo (opcional)</option>
-              {equipos.map(eq => (
+              {(buscarUsuario ? equiposFiltrados : equipos).map(eq => {
+                const usrId = (eq as any).id_usuario;
+                const usr = usrId ? todosUsuarios.find(u => u.id === usrId) : null;
+                return (
                 <option key={eq.id} value={eq.id}>
-                  {eq.nombre}{eq.marca ? ` (${eq.marca})` : ''} — {eq.estado}
+                  {eq.nombre}{eq.estado ? ` (${eq.estado})` : ''}{usr ? ` — ${usr.nombre}` : ''}
                 </option>
-              ))}
+              );})}
             </select>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Buscar equipos por usuario</label>
+            <div style={{ position: 'relative' }}>
+              <input value={buscarUsuario} onChange={e => {
+                setBuscarUsuario(e.target.value);
+                setUsuarioSel(null);
+                setIdEquipo('');
+                if (e.target.value.length >= 1) {
+                  const filtrados = todosUsuarios.filter(u =>
+                    u.nombre.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                    (u.email && u.email.toLowerCase().includes(e.target.value.toLowerCase()))
+                  ).slice(0, 8);
+                  setSugUsuarios(filtrados);
+                  setMostrarSugUsu(true);
+                } else {
+                  setSugUsuarios([]);
+                  setMostrarSugUsu(false);
+                  setEquiposFiltrados([]);
+                }
+              }}
+                onFocus={() => { if (sugUsuarios.length > 0) setMostrarSugUsu(true); }}
+                onBlur={() => setTimeout(() => setMostrarSugUsu(false), 200)}
+                placeholder="Nombre del usuario…" style={inputStyle} />
+              {mostrarSugUsu && sugUsuarios.length > 0 && (
+                <div style={{
+                  position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
+                  background: '#fff', border: '1px solid #d1d5db', borderRadius: 6,
+                  maxHeight: 180, overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                }}>
+                  {sugUsuarios.map(u => (
+                    <div key={u.id} onMouseDown={() => {
+                      setBuscarUsuario(u.nombre);
+                      setUsuarioSel(u);
+                      setMostrarSugUsu(false);
+                      const encontrados = todosEquipos.filter(e => e.id_usuario === u.id);
+                      setEquiposFiltrados(encontrados);
+                      if (encontrados.length > 0) setIdEquipo(encontrados[0].id);
+                    }} style={{
+                      padding: '8px 12px', cursor: 'pointer', fontSize: 13, color: '#1f2937',
+                      borderBottom: '1px solid #f3f4f6',
+                    }}>
+                      {u.nombre}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {usuarioSel && !mostrarSugUsu && (
+                <p style={{ fontSize: 11, color: '#16a34a', margin: '4px 0 0' }}>
+                  ✓ {equiposFiltrados.length} equipo(s) de {usuarioSel.nombre}
+                </p>
+              )}
+            </div>
           </div>
 
           <div>
@@ -228,6 +310,59 @@ const ModalRequerimiento = forwardRef<HTMLDivElement, Props>(function ModalReque
               style={{ ...inputStyle, resize: 'vertical', minHeight: 50 }}
             />
           </div>
+        </div>
+
+        {/* Evidencia foto */}
+        <div style={{ padding: '0 20px 14px' }}>
+          <label style={labelStyle}>Foto evidencia (opcional)</label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button type="button" onClick={async () => {
+              if (!navigator.mediaDevices?.getUserMedia) { alert('Cámara no disponible'); return; }
+              try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const track = stream.getVideoTracks()[0];
+                const imageCapture = new (window as any).ImageCapture(track);
+                const photoBlob = await imageCapture.takePhoto();
+                track.stop();
+                if (photoBlob.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5MB'); return; }
+                setSubiendoEvidencia(true);
+                const file = new File([photoBlob], `evidencia_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                const res = await subirEvidencia('temp_' + Date.now(), file, 'falla');
+                setSubiendoEvidencia(false);
+                if (res.error) { alert('Error: ' + res.error); return; }
+                if (res.url) setEvidencias(prev => [...prev, res.url!]);
+              } catch { alert('No se pudo acceder a la cámara'); }
+            }}
+              style={{
+                padding: '8px 14px', borderRadius: 6, border: '1px solid #d1d5db',
+                background: '#fff', color: '#374151', fontSize: 12, cursor: 'pointer',
+              }}>📸 Cámara</button>
+            <input type="file" accept="image/*" id="modal-foto" style={{ display: 'none' }}
+              onChange={async e => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5MB'); return; }
+                setSubiendoEvidencia(true);
+                const res = await subirEvidencia('temp_' + Date.now(), file, 'falla');
+                setSubiendoEvidencia(false);
+                if (res.error) { alert('Error: ' + res.error); return; }
+                if (res.url) setEvidencias(prev => [...prev, res.url!]);
+              }} />
+            <button type="button" onClick={() => document.getElementById('modal-foto')?.click()}
+              style={{
+                padding: '8px 14px', borderRadius: 6, border: '1px solid #d1d5db',
+                background: '#fff', color: '#374151', fontSize: 12, cursor: 'pointer',
+              }}>📁 Subir</button>
+            {subiendoEvidencia && <span style={{ fontSize: 12, color: '#6b7280' }}>Subiendo...</span>}
+          </div>
+          {evidencias.length > 0 && (
+            <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
+              {evidencias.map((url, i) => (
+                <img key={i} src={url} alt="evidencia"
+                  style={{ width: 50, height: 50, borderRadius: 4, objectFit: 'cover', border: '1px solid #d1d5db' }} />
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={{

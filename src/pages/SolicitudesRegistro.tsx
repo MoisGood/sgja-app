@@ -1,5 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Rol } from '../types';
+import { supabase } from '../lib/supabase';
+import { obtenerRolesPersonalizados } from '../services/roles.service';
 import {
   obtenerSolicitudesPaginadas,
   aprobarSolicitud,
@@ -10,15 +12,6 @@ import {
 interface Props {
   idEstablecimiento: string;
 }
-
-const OPCIONES_ROL = [
-  { valor: Rol.ADMIN, etiqueta: 'Administrador' },
-  { valor: Rol.INSPECTOR, etiqueta: 'Inspector' },
-  { valor: Rol.PROFESOR, etiqueta: 'Profesor' },
-  { valor: Rol.ESTUDIANTE, etiqueta: 'Estudiante' },
-  { valor: Rol.APODERADO, etiqueta: 'Apoderado' },
-  { valor: 'TECNICO', etiqueta: 'Técnico' },
-];
 
 const ESTADO_COLOR: Record<string, string> = {
   pendiente: '#F59E0B',
@@ -32,7 +25,16 @@ const ESTADO_LABEL: Record<string, string> = {
   rechazado: 'Rechazado',
 };
 
-const POR_PAGINA = 7;
+const POR_PAGINA = 15;
+
+type FiltroEstado = 'todas' | 'pendiente' | 'aprobado' | 'rechazado';
+
+const FILTROS: { key: FiltroEstado; label: string }[] = [
+  { key: 'todas', label: 'Todas' },
+  { key: 'pendiente', label: 'Pendientes' },
+  { key: 'aprobado', label: 'Aprobados' },
+  { key: 'rechazado', label: 'Rechazados' },
+];
 
 export default function SolicitudesRegistro({ idEstablecimiento: _idEstablecimiento }: Props) {
   const [visible, setVisible] = useState(false);
@@ -40,12 +42,48 @@ export default function SolicitudesRegistro({ idEstablecimiento: _idEstablecimie
   const [cargando, setCargando] = useState(false);
   const [total, setTotal] = useState(0);
   const [pagina, setPagina] = useState(1);
+  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todas');
   const [rolSeleccionado, setRolSeleccionado] = useState<Record<string, string>>({});
   const [mensaje, setMensaje] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [rolesPersonalizados, setRolesPersonalizados] = useState<{ nombre_rol: string }[]>([]);
 
-  const cargarPagina = useCallback(async (p: number) => {
+  useEffect(() => {
+    if (_idEstablecimiento) {
+      obtenerRolesPersonalizados(_idEstablecimiento).then(r => setRolesPersonalizados(r));
+    }
+  }, [_idEstablecimiento]);
+
+  const OPCIONES_ROL = useMemo(() => {
+    const base = [
+      { valor: Rol.ADMIN, etiqueta: 'Administrador' },
+      { valor: Rol.INSPECTOR, etiqueta: 'Inspector' },
+      { valor: Rol.PROFESOR, etiqueta: 'Profesor' },
+      { valor: Rol.ESTUDIANTE, etiqueta: 'Estudiante' },
+      { valor: Rol.APODERADO, etiqueta: 'Apoderado' },
+      { valor: 'TECNICO', etiqueta: 'Técnico' },
+    ];
+    const custom = rolesPersonalizados
+      .filter(r => !base.some(b => b.valor === r.nombre_rol))
+      .map(r => ({ valor: r.nombre_rol, etiqueta: r.nombre_rol }));
+    return [...base, ...custom];
+  }, [rolesPersonalizados]);
+
+  const solicitudesFiltradas = useMemo(() => {
+    if (!busqueda.trim()) return solicitudes;
+    const q = busqueda.toLowerCase().trim();
+    return solicitudes.filter(s =>
+      s.nombre.toLowerCase().includes(q) ||
+      s.apellidos?.toLowerCase().includes(q) ||
+      s.correo.toLowerCase().includes(q)
+    );
+  }, [solicitudes, busqueda]);
+
+  const cargarPagina = useCallback(async (p: number, estado?: FiltroEstado) => {
     setCargando(true);
-    const { data, total: t } = await obtenerSolicitudesPaginadas(p, POR_PAGINA);
+    const estadoFiltro = estado || filtroEstado;
+    const estadoParam = estadoFiltro === 'todas' ? undefined : estadoFiltro;
+    const { data, total: t } = await obtenerSolicitudesPaginadas(p, POR_PAGINA, estadoParam);
     setSolicitudes(data);
     setTotal(t);
     const roles: Record<string, string> = {};
@@ -53,7 +91,12 @@ export default function SolicitudesRegistro({ idEstablecimiento: _idEstablecimie
     setRolSeleccionado(roles);
     setPagina(p);
     setCargando(false);
-  }, []);
+  }, [filtroEstado]);
+
+  const cambiarFiltro = (f: FiltroEstado) => {
+    setFiltroEstado(f);
+    cargarPagina(1, f);
+  };
 
   const abrirListado = async () => {
     setVisible(true);
@@ -86,6 +129,28 @@ export default function SolicitudesRegistro({ idEstablecimiento: _idEstablecimie
     setTimeout(() => setMensaje(null), 3000);
   };
 
+  const handleEliminar = async (uid: string, nombre: string) => {
+    if (!confirm(`Eliminar solicitud de ${nombre}?`)) return;
+    const { error } = await supabase.from('solicitudes_registro').delete().eq('uid', uid);
+    if (error) {
+      setMensaje({ tipo: 'error', texto: `Error al eliminar: ${error.message}` });
+    } else {
+      setMensaje({ tipo: 'exito', texto: 'Solicitud eliminada' });
+      await cargarPagina(pagina);
+    }
+    setTimeout(() => setMensaje(null), 3000);
+  };
+
+  const sugerencias = useMemo(() => {
+    const vistos = new Set<string>();
+    const res: string[] = [];
+    [...solicitudes].forEach(s => {
+      const t = `${s.nombre} ${s.apellidos} (${s.correo})`;
+      if (!vistos.has(t)) { vistos.add(t); res.push(s.nombre, s.correo); }
+    });
+    return [...new Set(res)];
+  }, [solicitudes]);
+
   return (
     <div style={styles.contenedor}>
       <div style={styles.encabezado}>
@@ -105,9 +170,32 @@ export default function SolicitudesRegistro({ idEstablecimiento: _idEstablecimie
             </div>
           )}
 
+          <div style={styles.filtros}>
+            {FILTROS.map(f => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => cambiarFiltro(f.key)}
+                style={{
+                  ...styles.botonFiltro,
+                  background: filtroEstado === f.key ? '#1A3C6B' : '#F3F4F6',
+                  color: filtroEstado === f.key ? '#fff' : '#374151',
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+            <input value={busqueda} onChange={e => setBusqueda(e.target.value)}
+              placeholder="Buscar nombre o correo…" list="sug-sol"
+              style={styles.busqueda} />
+            <datalist id="sug-sol">
+              {sugerencias.map(s => <option key={s} value={s} />)}
+            </datalist>
+          </div>
+
           {cargando ? (
             <p style={styles.cargando}>Cargando solicitudes...</p>
-          ) : solicitudes.length === 0 ? (
+          ) : solicitudesFiltradas.length === 0 ? (
             <div style={styles.vacio}>
               <p style={styles.iconoVacio}>No hay solicitudes de registro</p>
             </div>
@@ -122,7 +210,7 @@ export default function SolicitudesRegistro({ idEstablecimiento: _idEstablecimie
                   <span style={styles.colRol}>Rol</span>
                   <span style={styles.colAccion}>Acción</span>
                 </div>
-                {solicitudes.map((s) => (
+                {solicitudesFiltradas.map((s) => (
                   <div key={s.uid} style={styles.fila}>
                     <span style={styles.colNombre}>{s.nombre}</span>
                     <span style={styles.colApellidos}>{s.apellidos}</span>
@@ -162,6 +250,7 @@ export default function SolicitudesRegistro({ idEstablecimiento: _idEstablecimie
                       ) : (
                         <span style={{ color: '#9CA3AF', fontSize: '13px' }}>--</span>
                       )}
+                      <button type="button" onClick={() => handleEliminar(s.uid, s.nombre)} style={{ ...styles.botonRechazar, background: '#6B7280', width: '30px', height: '30px', fontSize: '12px' }} title="Eliminar">🗑</button>
                     </span>
                   </div>
                 ))}
@@ -169,21 +258,25 @@ export default function SolicitudesRegistro({ idEstablecimiento: _idEstablecimie
 
               {totalPaginas > 1 && (
                 <div style={styles.paginador}>
-                  <button type="button"                     onClick={() => cargarPagina(pagina - 1)}
+                  <button type="button" onClick={() => cargarPagina(1)}
+                    disabled={pagina <= 1}
+                    style={{ ...styles.botonPagina, opacity: pagina <= 1 ? 0.5 : 1, fontSize: 11 }}
+                  >Primera</button>
+                  <button type="button" onClick={() => cargarPagina(pagina - 1)}
                     disabled={pagina <= 1}
                     style={{ ...styles.botonPagina, opacity: pagina <= 1 ? 0.5 : 1 }}
-                  >
-                    Anterior
-                  </button>
+                  >Anterior</button>
                   <span style={styles.infoPagina}>
-                    Página {pagina} de {totalPaginas} ({total} total)
+                    Página {pagina} de {totalPaginas} ({solicitudesFiltradas.length} registros)
                   </span>
-                  <button type="button"                     onClick={() => cargarPagina(pagina + 1)}
+                  <button type="button" onClick={() => cargarPagina(pagina + 1)}
                     disabled={pagina >= totalPaginas}
                     style={{ ...styles.botonPagina, opacity: pagina >= totalPaginas ? 0.5 : 1 }}
-                  >
-                    Siguiente
-                  </button>
+                  >Siguiente</button>
+                  <button type="button" onClick={() => cargarPagina(totalPaginas)}
+                    disabled={pagina >= totalPaginas}
+                    style={{ ...styles.botonPagina, opacity: pagina >= totalPaginas ? 0.5 : 1, fontSize: 11 }}
+                  >Última</button>
                 </div>
               )}
             </>
@@ -317,6 +410,21 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '16px',
     cursor: 'pointer',
   },
+  filtros: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '16px',
+    flexWrap: 'wrap' as const,
+  },
+  botonFiltro: {
+    padding: '8px 16px',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  },
   paginador: {
     display: 'flex',
     alignItems: 'center',
@@ -340,5 +448,14 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '13px',
     color: '#6B7280',
     fontWeight: '500',
+  },
+  busqueda: {
+    padding: '6px 12px',
+    borderRadius: '6px',
+    border: '1px solid #D1D5DB',
+    fontSize: '13px',
+    flex: 1,
+    minWidth: '180px',
+    outline: 'none',
   },
 };

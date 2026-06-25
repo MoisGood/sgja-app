@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@100..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "primary-container": "#7a1f3d",
+                        "on-tertiary-fixed-variant": "#00468b",
+                        "on-primary-container": "#ff8ba8",
+                        "inverse-surface": "#2e3132",
+                        "outline-variant": "#dac0c4",
+                        "surface-container-low": "#f3f4f6",
+                        "primary-fixed-dim": "#ffb1c2",
+                        "background": "#f8f9fb",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#9f3c59",
+                        "tertiary-container": "#004182",
+                        "secondary": "#595f67",
+                        "on-surface": "#191c1e",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f0f1f3",
+                        "on-surface-variant": "#554245",
+                        "on-primary-fixed-variant": "#802442",
+                        "surface": "#f8f9fb",
+                        "secondary-fixed-dim": "#c1c7d0",
+                        "surface-dim": "#d9dadc",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#7dafff",
+                        "tertiary-fixed": "#d6e3ff",
+                        "inverse-primary": "#ffb1c2",
+                        "on-primary-fixed": "#3f0018",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#dde3ec",
+                        "on-secondary-fixed-variant": "#41474f",
+                        "outline": "#887275",
+                        "on-secondary-container": "#5f656d",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#a8c8ff",
+                        "surface-variant": "#e1e2e4",
+                        "on-background": "#191c1e",
+                        "primary": "#5c0427",
+                        "secondary-container": "#dde3ec",
+                        "surface-container-highest": "#e1e2e4",
+                        "surface-bright": "#f8f9fb",
+                        "primary-fixed": "#ffd9df",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeef0",
+                        "on-error": "#ffffff",
+                        "tertiary": "#002b5a",
+                        "on-secondary-fixed": "#161c23",
+                        "surface-container-high": "#e7e8ea",
+                        "on-tertiary-fixed": "#001b3d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "safe-margin": "16px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Roboto Flex"],
+                        "caption": ["Roboto Flex"],
+                        "display-lg": ["Roboto Flex"],
+                        "body-md": ["Roboto Flex"],
+                        "headline-md": ["Roboto Flex"],
+                        "label-caps": ["Roboto Flex"],
+                        "title-sm": ["Roboto Flex"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "display-lg": ["34px", {"lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #191c1e; /* Using on-surface as base for dark mode */
+            color: #e1e2e4;
+        }
+        .kanban-column {
+            min-width: 280px;
+            max-width: 280px;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .ticket-card {
+            border: 1px solid #41474f;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .ticket-card:hover {
+            border-color: #ffb1c2;
+            transform: translateY(-2px);
+        }
+        .urgent-pulse {
+            border: 2px solid #ba1a1a;
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { border-color: rgba(186, 26, 26, 1); }
+            50% { border-color: rgba(186, 26, 26, 0.3); }
+            100% { border-color: rgba(186, 26, 26, 1); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="dark font-body-md text-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-4 h-14 w-full fixed top-0 z-50 bg-surface dark:bg-on-surface">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-secondary-fixed-variant p-2 rounded-full transition-transform active:scale-95 duration-150">menu</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary dark:text-primary-fixed-dim">EduTech Support</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-secondary-fixed-variant p-2 rounded-full transition-transform active:scale-95 duration-150">search</button>
+<img alt="Avatar" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A professional headshot of a young IT technician with a friendly expression, wearing a dark polo shirt with a subtle school logo. The lighting is crisp and professional, set against a blurred background of a modern server room with blue and white status lights. The aesthetic is clean, corporate, and highly detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3-sumiIVJ5_OxIJ2h8-gus8_V6xGSLcVWMm7nC94q8X41dAwN5qBxHnzRlPxKCDQYJ4R0lcC2SGRzly0hOFp86mE6hlvfqyvVjHTg0ujj4OtvXZhXdKm9Y1xTccQmVphKSWkne71JgxTuptZfJiYy3I5OPUu2vwFltZgRbSBvJ_cm_u7DWnzWPthA9ip81DiGjWNHmjfSMWplLFBhQUrNEiZWZZPNIegW3gSO6P_p12Mxe8We1wns2wu7w0eoJXbCPBLoAw977AE"/>
+</div>
+</header>
+<!-- Main Content: Kanban Board -->
+<main class="pt-14 pb-24 h-screen overflow-hidden flex flex-col">
+<!-- Kanban Header / Controls -->
+<div class="px-md py-base flex items-center justify-between bg-surface-container dark:bg-on-surface">
+<div class="flex items-center gap-base">
+<span class="font-title-sm text-title-sm text-on-surface dark:text-surface-variant">Gestión de Tickets</span>
+<span class="bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-on-secondary-fixed px-2 py-0.5 rounded-full text-[12px] font-bold">24 activos</span>
+</div>
+<button class="flex items-center gap-1 bg-primary text-on-primary px-4 py-2 rounded-full font-label-caps text-label-caps active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">add</span> NUEVO TICKET
+            </button>
+</div>
+<!-- Horizontal Scrollable Container -->
+<div class="flex-1 overflow-x-auto hide-scrollbar flex gap-4 p-md bg-background dark:bg-inverse-surface">
+<!-- Column: Nuevo -->
+<section class="kanban-column flex flex-col gap-md">
+<div class="flex items-center justify-between px-2">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant uppercase tracking-widest">Nuevo</h3>
+<span class="text-caption font-caption text-secondary">4</span>
+</div>
+<div class="flex flex-col gap-base overflow-y-auto hide-scrollbar pb-lg">
+<!-- Ticket Card 1 (Urgent) -->
+<div class="ticket-card urgent-pulse bg-surface dark:bg-on-surface p-md rounded-xl flex flex-col gap-2 shadow-sm">
+<div class="flex justify-between items-start">
+<span class="font-mono text-caption text-secondary">#TK-8821</span>
+<span class="bg-error text-on-error px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Urgente</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-on-surface dark:text-surface-bright leading-tight">Fallo de red en Laboratorio 3</h4>
+<div class="flex items-center gap-1 text-on-surface-variant dark:text-outline-variant">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span class="text-caption">Edificio A - Aula 302</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant dark:border-on-secondary-fixed-variant flex justify-between items-center">
+<div class="flex items-center gap-1 text-error">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="text-caption font-bold">12m transcurridos</span>
+</div>
+<img alt="Tech" class="w-6 h-6 rounded-full" data-alt="Small circular avatar of a technician with short hair and glasses. The style is minimalist and consistent with a corporate employee directory. Deep burgundy accents are visible in the background profile color." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZb1c9cJzgoS0gMq4GZdwa3s2XkrxfngV3C93Nju_boraV1GSpioM_jwN_Oscso5NVaYUU0XqxJQxG3rRkzfiqIf_fFTM9aWJtHlbHRvfYb-UeHaaRxzddexCSuKu1ZQQzkb5Up-YmXV4MOMiBl0DSSvcaWTetv4tbri00192j1BjpEmiShaM1ga3WRfPGA8Jv9X_elaUF3jnBAF4sAGbJRqsh6ntLlCxtVuvQNcWwhIiL9G08LEjLUd2RLaZG53K9vpJ0EVQdmd0"/>
+</div>
+</div>
+<!-- Ticket Card 2 -->
+<div class="ticket-card bg-surface dark:bg-on-surface p-md rounded-xl flex flex-col gap-2 shadow-sm">
+<div class="flex justify-between items-start">
+<span class="font-mono text-caption text-secondary">#TK-8825</span>
+<span class="bg-secondary-fixed-dim text-on-secondary-fixed-variant px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Estándar</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-on-surface dark:text-surface-bright leading-tight">Configuración de proyector</h4>
+<div class="flex items-center gap-1 text-on-surface-variant dark:text-outline-variant">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span class="text-caption">Edificio B - Auditorio</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant dark:border-on-secondary-fixed-variant flex justify-between items-center">
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="text-caption font-bold">45m transcurridos</span>
+</div>
+<img alt="Tech" class="w-6 h-6 rounded-full" data-alt="Small circular avatar of a technician with curly dark hair. The image is clear, professional, and fits within a dark mode enterprise interface. Subtle glowing status indicators surround the frame." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUKLvig8awQov7OPAHtw4N77CMhHroX95f9tTqGYRvG6SIGqUpaQummbtWr9jLFmIFWl0Qt80fapTFlCFxfsA8FF-CVdl2cur7ZC3EpAYBfGuSGBHRBw3tJkjkGMmbriU-CsFcxUjhEAvl6OH9gPqkozsY_20SJrQd9TyM5P8g3UfJ5vdMslNWn7OPhYnYRc927STQoL8Ogvg_Dpy-rfjA4xefmikeLVUbcj63kfe2EmOy5QMlcT0OfvTN6huVN4HacdIuddpnrNw"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Column: En Proceso -->
+<section class="kanban-column flex flex-col gap-md">
+<div class="flex items-center justify-between px-2 border-b-2 border-primary-fixed-dim pb-1">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant uppercase tracking-widest">En Proceso</h3>
+<span class="text-caption font-caption text-secondary">2</span>
+</div>
+<div class="flex flex-col gap-base overflow-y-auto hide-scrollbar pb-lg">
+<!-- Ticket Card 3 -->
+<div class="ticket-card bg-surface dark:bg-on-surface p-md rounded-xl flex flex-col gap-2 shadow-sm border-l-4 border-l-primary">
+<div class="flex justify-between items-start">
+<span class="font-mono text-caption text-secondary">#TK-8799</span>
+<span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Media</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-on-surface dark:text-surface-bright leading-tight">Actualización de Software Administrativo</h4>
+<div class="flex items-center gap-1 text-on-surface-variant dark:text-outline-variant">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span class="text-caption">Rectoría - Oficina 12</span>
+</div>
+<div class="mt-2 flex -space-x-2">
+<img alt="Tech" class="w-6 h-6 rounded-full border-2 border-on-surface" data-alt="Small circular avatar of a technician. Professional lighting, deep burgundy and gray tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0-beO3CacZB6YfHXh-GqhAAm5l1yFkH2BTUO2NSbYJeqdxTrQXYR93i_HteFYCVQG9k4ZkJ9-IAVOV_JxSpwm4K64N5JQGu85LOVYFaBiikz7_QGAJzSavKEJrQRFARzrMLfmmzVBLPqYCVYs4ijzul14dfWhV1ompxGN-BCLhh7aM3YBIvLfGcdBAwRz6TD8pDwHUZ6zuvBOK_AIl3ibt1NN3wtwSnt5NpFV3zBZZOEadkYNHg0GkBk8u_9aybuu8-4mnFtMams"/>
+<img alt="Tech" class="w-6 h-6 rounded-full border-2 border-on-surface" data-alt="Small circular avatar of a technician with a headset. Professional lighting, deep burgundy and gray tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOAKw88XKL4Y-z88K_UCGXLoAiCM6fq1gpXNJd0lhSh8ibmEuMAe8SMYpedy_yx8oTHjDQmTgJKFOeoer4j8E-uGbXpqrPwcS4dX3fZOwfKS-r0olYro5yBGKlW54bcWaSvpUmPU46KBGXJWph4upYq8S37mM4gq7s_BXIQf8-nq3fw6OEhFhpLheiyj1MKRfnLaEn4xpxM5OlP1NKajjXuE1SK0P2lSXPsaeRDVpg5g5tnsH3SAeD6_3KHlgxrl_pKFVnvX49inA"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Column: Esperando Repuesto -->
+<section class="kanban-column flex flex-col gap-md">
+<div class="flex items-center justify-between px-2">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant uppercase tracking-widest text-tertiary-fixed-dim">Esperando Repuesto</h3>
+<span class="text-caption font-caption text-secondary">1</span>
+</div>
+<div class="flex flex-col gap-base overflow-y-auto hide-scrollbar pb-lg">
+<!-- Ticket Card 4 -->
+<div class="ticket-card bg-surface-container dark:bg-on-surface/40 p-md rounded-xl flex flex-col gap-2 shadow-sm opacity-80">
+<div class="flex justify-between items-start">
+<span class="font-mono text-caption text-secondary">#TK-8650</span>
+<span class="bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Repuesto</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-on-surface dark:text-surface-bright leading-tight">Cambio de Disco Duro - Servidor Proxy</h4>
+<div class="flex items-center gap-1 text-on-surface-variant dark:text-outline-variant">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span>
+<span class="text-caption italic">En tránsito (SSD 500GB)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Column: Cerrado -->
+<section class="kanban-column flex flex-col gap-md">
+<div class="flex items-center justify-between px-2">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant uppercase tracking-widest">Cerrado</h3>
+<span class="text-caption font-caption text-secondary">17</span>
+</div>
+<div class="flex flex-col gap-base overflow-y-auto hide-scrollbar pb-lg">
+<!-- Ticket Card 5 (Closed) -->
+<div class="ticket-card bg-surface dark:bg-on-surface p-md rounded-xl flex flex-col gap-2 shadow-sm grayscale opacity-60">
+<div class="flex justify-between items-start">
+<span class="font-mono text-caption text-secondary">#TK-8800</span>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">Resuelto</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-on-surface dark:text-surface-bright leading-tight line-through">Reemplazo de Mouse</h4>
+<div class="mt-2 pt-2 border-t border-outline-variant/30 flex justify-between items-center">
+<span class="text-caption text-secondary italic">Finalizado hace 2h</span>
+<span class="material-symbols-outlined text-primary-fixed-dim text-[16px]">check_circle</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-2 bg-surface-container dark:bg-inverse-surface rounded-t-xl shadow-md">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-secondary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">Historial</span>
+</a>
+<div class="relative -top-6">
+<button class="bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform duration-200 border-4 border-background dark:border-inverse-surface">
+<span class="material-symbols-outlined text-[32px]">qr_code_scanner</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-secondary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">Inventario</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-secondary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps uppercase mt-1">Configuración</span>
+</a>
+</nav>
+<!-- Interaction Script -->
+<script>
+        // Simple drag scroll simulation for columns
+        const scrollContainer = document.querySelector('.overflow-x-auto');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        scrollContainer.addEventListener('mousedown', (e) => {
+            isDown = true;
+            scrollContainer.classList.add('cursor-grabbing');
+            startX = e.pageX - scrollContainer.offsetLeft;
+            scrollLeft = scrollContainer.scrollLeft;
+        });
+        scrollContainer.addEventListener('mouseleave', () => {
+            isDown = false;
+            scrollContainer.classList.remove('cursor-grabbing');
+        });
+        scrollContainer.addEventListener('mouseup', () => {
+            isDown = false;
+            scrollContainer.classList.remove('cursor-grabbing');
+        });
+        scrollContainer.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scrollContainer.offsetLeft;
+            const walk = (x - startX) * 2;
+            scrollContainer.scrollLeft = scrollLeft - walk;
+        });
+
+        // Toggle hover effect micro-interaction
+        document.querySelectorAll('.ticket-card').forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('scale-95');
+                setTimeout(() => card.classList.toggle('scale-95'), 150);
+            });
+        });
+    </script>
+</body></html>

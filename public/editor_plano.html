@@ -139,9 +139,12 @@
   <button onclick="copySelected()" id="btnCopy" style="opacity:.4">📋 Copiar</button>
   <button onclick="pasteCopies()" id="btnPaste" style="opacity:.4">📋 Pegar</button>
   <span class="sep"></span>
-  <button onclick="exportJSON()">💾 JSON</button>
-  <button onclick="document.getElementById('fileInput').click()">📂 Cargar</button>
+  <button onclick="loadFromSystem()">📂 Del sistema</button>
+  <button onclick="document.getElementById('fileInput').click()">📂 Local</button>
   <input type="file" id="fileInput" accept=".json" style="display:none" onchange="loadJSONFile(event)">
+  <select id="pisoSelector" onchange="cambiarPiso(this.value)" style="display:none;width:110px"></select>
+  <button onclick="guardarEnSistema()" id="btnGuardar" style="display:none">💾 Guardar en sistema</button>
+  <button onclick="exportJSON()">💾 Exportar</button>
   <button onclick="exportHTML()">📄 HTML</button>
   <button onclick="toggleGrid()">🔲 Cuadrícula</button>
   <button onclick="toggleMedidas()" id="btnMedidas">📏 Medidas</button>
@@ -183,6 +186,9 @@ let selectedId = null;
 let clipboard = null;
 let medidasVisibles = true;
 let roomColors = {};  // keyed by room id (number) → hex color string
+let pisosData = null;  // holds the full multi-piso JSON when loaded from system
+let pisoActual = 'Piso 1';
+let pisosDisponibles = ['Piso 1'];
 
 // ===== UNDO / REDO =====
 const MAX_HISTORY = 50;
@@ -242,6 +248,24 @@ const zoneNameMap = {
 };
 
 // ===== LOAD JSON =====
+function cargarSalas(jsonArray) {
+  rooms = jsonArray.map((r,i) => ({
+    id: nextId++, l:r.left, t:r.top, w:r.width, h:r.height, txt:r.text, cls:r.zone||'z-other'
+  }));
+  if (jsonArray[0] && jsonArray[0].color !== undefined) {
+    jsonArray.forEach((r,i) => { if (r.color) roomColors[rooms[i].id] = r.color; });
+  }
+}
+
+function loadJSONArray(arr, pisoLabel) {
+  if (!arr || !arr.length) { toast('⚠️ Piso vacío: ' + pisoLabel); return; }
+  cargarSalas(arr);
+  saveState();
+  render();
+  renderLegend();
+  toast(`✅ ${pisoLabel}: ${rooms.length} salas`);
+}
+
 function loadJSONFile(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -249,23 +273,56 @@ function loadJSONFile(event) {
   reader.onload = (e) => {
     try {
       const json = JSON.parse(e.target.result);
-      if (!Array.isArray(json) || !json.length) throw new Error('JSON vacío o inválido');
-      rooms = json.map((r,i) => ({
-        id: nextId++, l:r.left, t:r.top, w:r.width, h:r.height, txt:r.text, cls:r.zone||'z-other'
-      }));
-      if (json[0].color !== undefined) {
-        json.forEach((r,i) => { if (r.color) roomColors[rooms[i].id] = r.color; });
-      }
-      saveState();
-      render();
-      renderLegend();
-      toast(`✅ Cargadas ${rooms.length} salas`);
+      aplicarJSON(json);
     } catch(err) {
       toast('❌ Error: ' + err.message);
     }
   };
   reader.readAsText(file);
   event.target.value = '';
+}
+
+function aplicarJSON(json) {
+  // Detect multi-piso: object with string keys mapping to arrays
+  if (typeof json === 'object' && !Array.isArray(json)) {
+    pisosData = json;
+    pisosDisponibles = Object.keys(json);
+    const sel = document.getElementById('pisoSelector');
+    sel.innerHTML = pisosDisponibles.map(p => `<option value="${p}">${p}</option>`).join('');
+    sel.style.display = 'inline-block';
+    pisoActual = pisosDisponibles[0];
+    sel.value = pisoActual;
+    loadJSONArray(json[pisoActual], pisoActual);
+    document.getElementById('btnGuardar').style.display = 'inline-block';
+  } else if (Array.isArray(json)) {
+    pisosData = null;
+    pisosDisponibles = ['Piso 1'];
+    document.getElementById('pisoSelector').style.display = 'none';
+    document.getElementById('btnGuardar').style.display = 'none';
+    if (!json.length) { toast('⚠️ JSON vacío'); return; }
+    loadJSONArray(json, 'Archivo');
+  } else {
+    toast('❌ Formato JSON no reconocido');
+  }
+}
+
+function loadFromSystem() {
+  fetch('/plano_edificio.json')
+    .then(r => { if (!r.ok) throw new Error('No encontrado'); return r.json(); })
+    .then(json => {
+      aplicarJSON(json);
+    })
+    .catch(() => toast('❌ No se pudo cargar plano_edificio.json del sistema'));
+}
+
+function cambiarPiso(piso) {
+  if (!pisosData || !pisosData[piso]) { toast('⚠️ Piso no encontrado'); return; }
+  pisoActual = piso;
+  cargarSalas(pisosData[piso]);
+  saveState();
+  render();
+  renderLegend();
+  toast(`📂 ${piso}: ${rooms.length} salas`);
 }
 
 // ===== PRESETS =====
@@ -595,13 +652,21 @@ function resizeMap() {
 
 // ===== EXPORT JSON (with colors) =====
 function exportJSON() {
-  const data = rooms.map(r => ({
+  const salasActuales = rooms.map(r => ({
     left: Math.round(r.l), top: Math.round(r.t),
     width: Math.round(r.w), height: Math.round(r.h),
     text: r.txt, zone: r.cls,
     color: roomColors[r.id] || zoneColors[r.cls] || null,
   }));
-  const json = JSON.stringify(data, null, 2);
+
+  let json;
+  if (pisosData) {
+    pisosData[pisoActual] = salasActuales;
+    json = JSON.stringify(pisosData, null, 2);
+  } else {
+    json = JSON.stringify(salasActuales, null, 2);
+  }
+
   const blob = new Blob([json], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -609,6 +674,33 @@ function exportJSON() {
   a.click();
   URL.revokeObjectURL(url);
   toast('✅ JSON exportado');
+}
+
+// ===== SAVE TO SYSTEM =====
+function guardarEnSistema() {
+  const salasActuales = rooms.map(r => ({
+    left: Math.round(r.l), top: Math.round(r.t),
+    width: Math.round(r.w), height: Math.round(r.h),
+    text: r.txt, zone: r.cls,
+    color: roomColors[r.id] || zoneColors[r.cls] || null,
+  }));
+
+  let json;
+  if (pisosData) {
+    pisosData[pisoActual] = salasActuales;
+    json = JSON.stringify(pisosData, null, 2);
+  } else {
+    json = JSON.stringify(salasActuales, null, 2);
+  }
+
+  fetch('/api/save-plano', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: json,
+  })
+    .then(r => { if (!r.ok) throw new Error('Error al guardar'); return r.json(); })
+    .then(() => toast('✅ Guardado en sistema'))
+    .catch(err => toast('❌ ' + err.message));
 }
 
 // ===== EXPORT HTML =====

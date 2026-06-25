@@ -1,0 +1,44 @@
+/* ============================================================
+   SGJA – Sistema de Skins para Móviles
+   src/styles/skins/skin.css
+
+   Los skins se activan vía: document.documentElement.dataset.skin
+   Ej: <html data-skin="profesional">
+
+   Uso en componentes: var(--skin-nav-bg), var(--skin-nav-text), etc.
+   ============================================================ */
+
+/* ── Skin por defecto (Base) ── */
+:root,
+html:not([data-skin]),
+html[data-skin="base"] {
+  --skin-nav-bg: var(--md-surface-container-lowest);
+  --skin-nav-text: var(--md-on-surface-variant);
+  --skin-nav-text-active: var(--md-primary);
+  --skin-nav-height: 56px;
+  --skin-nav-icon-size: 20px;
+  --skin-nav-font-size: 12px;
+  --skin-nav-border-top: 1px solid var(--md-outline-variant);
+  --skin-nav-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+  --skin-nav-radius: 0px;
+
+  --skin-header-bg: var(--md-primary);
+  --skin-header-gradient: linear-gradient(to right, var(--md-primary) 0%, var(--md-primary-container) 100%);
+  --skin-header-text: var(--md-on-primary);
+
+  --skin-card-bg: var(--md-surface-container-low);
+  --skin-card-radius: var(--radius-lg);
+  --skin-card-shadow: var(--shadow-sm);
+
+  --skin-page-bg: var(--md-surface);
+  --skin-font-family: var(--font-body);
+}
+
+/* ── Skin: Profesional ── */
+/* Pendiente de definición por el usuario */
+
+/* ── Skin: Juvenil ── */
+/* Pendiente de definición por el usuario */
+
+/* ── Skin: Senior ── */
+/* Pendiente de definición por el usuario */

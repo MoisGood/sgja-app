@@ -1,14 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { validarTicket, crearRequerimiento } from '../services/requerimiento.service';
+import { subirEvidencia, obtenerEvidencias } from '../services/evidenciaService';
+import { enviarCorreo as enviarCorreoEmail } from '../services/emailService';
 
 interface Props {
   idEstablecimiento: string;
   idUsuario: string;
 }
 
-interface Lugar { id: string; nombre: string; piso: number }
-interface Equipo { id: string; nombre: string; id_lugar?: string }
+interface Lugar { id: string; nombre: string; piso: number; soporte?: boolean; abreviatura?: string }
+interface Equipo { id: string; nombre: string; id_lugar?: string; estado?: string; id_usuario?: string }
 
 type Paso = 'loading' | 'splash' | 'create' | 'close' | 'view' | 'done';
 
@@ -58,24 +61,41 @@ const s = {
 };
 
 export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [paso, setPaso] = useState<Paso>('loading');
   const [lugar, setLugar] = useState<Lugar | null>(null);
+  const [usuario, setUsuario] = useState<{ id: string; nombre: string; email: string } | null>(null);
   const [equiposLugar, setEquiposLugar] = useState<Equipo[]>([]);
+  const [todosEquipos, setTodosEquipos] = useState<(Equipo & { estado?: string; id_usuario?: string })[]>([]);
+  const [todosUsuarios, setTodosUsuarios] = useState<{ id: string; nombre: string; email: string }[]>([]);
   const [ticketActivo, setTicketActivo] = useState<any>(null);
+  const [ticketsActivos, setTicketsActivos] = useState<any[]>([]);
+  const [nombresUsuarios, setNombresUsuarios] = useState<Record<string, string>>({});
+  const [pagTicket, setPagTicket] = useState(0);
+  const POR_PAG_TICKET = 4;
   const [idUsuarioDb, setIdUsuarioDb] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState('');
+  const [evidencias, setEvidencias] = useState<string[]>([]);
+  const [subiendoEvidencia, setSubiendoEvidencia] = useState(false);
 
   const [posibleFalla, setPosibleFalla] = useState('');
   const [diagnostico, setDiagnostico] = useState('');
   const [solucion, setSolucion] = useState('');
   const [observaciones, setObservaciones] = useState('');
+  const [tipoReq, setTipoReq] = useState('Reparación');
+  const [prioridad, setPrioridad] = useState('Normal');
 
   const [sugerenciasFalla, setSugerenciasFalla] = useState<string[]>([]);
   const [sugerenciasDiagnostico, setSugerenciasDiagnostico] = useState<string[]>([]);
   const [sugerenciasSolucion, setSugerenciasSolucion] = useState<string[]>([]);
   const [sugerenciasObs, setSugerenciasObs] = useState<string[]>([]);
   const [equipoSel, setEquipoSel] = useState<string>('');
+  const [buscarUsuario, setBuscarUsuario] = useState('');
+  const [usuarioSel, setUsuarioSel] = useState<{ id: string; nombre: string } | null>(null);
+  const [sugUsuarios, setSugUsuarios] = useState<{ id: string; nombre: string }[]>([]);
+  const [mostrarSugUsu, setMostrarSugUsu] = useState(false);
+  const [equiposFiltrados, setEquiposFiltrados] = useState<(Equipo & { estado?: string; id_usuario?: string })[]>([]);
 
   useEffect(() => {
     if (!idEstablecimiento || !idUsuario) return;
@@ -87,24 +107,70 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
     const lugarId = searchParams.get('lugar');
     const equipoId = searchParams.get('equipo');
     const lugarNombre = searchParams.get('lugar_nombre');
+    const usuarioId = searchParams.get('usuario');
 
     if (ticketId) {
       loadTicket(ticketId);
       return;
     }
 
+    // ── Flujo por usuario ──
+    if (usuarioId) {
+      supabase.from('usuarios').select('id, nombre, email').eq('id', usuarioId).maybeSingle()
+        .then(async ({ data: usr }) => {
+          if (!usr) {
+            setMensaje('⚠️ Usuario no encontrado.');
+            setPaso('done');
+            return;
+          }
+          setUsuario(usr);
+          const { data: equipos } = await supabase
+            .from('equipos').select('id, nombre, id_lugar, estado, id_usuario')
+            .eq('id_establecimiento', idEstablecimiento).eq('id_usuario', usr.id).eq('activo', true).order('nombre');
+          setTodosEquipos(equipos || []);
+          setEquiposLugar(equipos || []);
+
+          const { data: users } = await supabase
+            .from('usuarios').select('id, nombre, email')
+            .eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('nombre');
+          setTodosUsuarios(users || []);
+
+          setPaso('splash');
+
+          supabase
+            .from('requerimientos')
+            .select('*')
+            .eq('id_establecimiento', idEstablecimiento)
+            .eq('id_solicitante', usr.id)
+            .in('estado', ['Pendiente', 'En Proceso'])
+            .eq('activo', true)
+            .order('created_at', { ascending: false })
+            .then(async ({ data }) => {
+              setTicketsActivos(data || []);
+              setPagTicket(0);
+              if (data && data.length > 0) {
+                setPosibleFalla(data[0].posible_falla || '');
+                setDiagnostico(data[0].diagnostico || '');
+              }
+            });
+        });
+      return;
+    }
+
     if (!lugarId && !equipoId && !lugarNombre) {
-      setMensaje('⚠️ Falta parámetro ?lugar=ID o ?equipo=ID en la URL.');
+      setMensaje('⚠️ Falta parámetro ?lugar=ID, ?equipo=ID o ?usuario=ID en la URL.');
       setPaso('done');
       return;
     }
 
     Promise.all([
-      supabase.from('lugares').select('id, nombre, piso, soporte').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
-      supabase.from('equipos').select('id, nombre, id_lugar').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
-    ]).then(([lugRes, eqRes]) => {
-      const todosLugares = (lugRes.data || []) as Lugar[];
-      const todosEquipos = (eqRes.data || []) as Equipo[];
+      supabase.from('lugares').select('id, nombre, piso, soporte, abreviatura').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
+      supabase.from('equipos').select('id, nombre, id_lugar, id_usuario, estado').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
+      supabase.from('usuarios').select('id, nombre, email').eq('id_establecimiento', idEstablecimiento).eq('activo', true),
+    ]).then(([lugRes, eqRes, usrRes]) => {
+      const todosLugares = (lugRes.data || []) as (Lugar & { abreviatura?: string })[];
+      const todosEquipos = (eqRes.data || []) as (Equipo & { estado?: string; id_usuario?: string })[];
+      const todosUsuarios = (usrRes.data || []) as { id: string; nombre: string; email: string }[];
 
       let lugarSel: Lugar | null = null;
       let equipoSelInicial: Equipo | null = null;
@@ -129,6 +195,8 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
       }
 
       setLugar(lugarSel);
+      setTodosEquipos(todosEquipos);
+      setTodosUsuarios(todosUsuarios);
 
       const eqs = todosEquipos.filter(e => e.id_lugar === lugarSel!.id);
       setEquiposLugar(eqs);
@@ -144,13 +212,19 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         .in('estado', ['Pendiente', 'En Proceso'])
         .eq('activo', true)
         .order('created_at', { ascending: false })
-        .limit(1)
-        .then(({ data }) => {
-          const activo = data?.[0] || null;
-          setTicketActivo(activo);
-          if (activo) {
-            setPosibleFalla(activo.posible_falla || '');
-            setDiagnostico(activo.diagnostico || '');
+        .then(async ({ data }) => {
+          setTicketsActivos(data || []);
+          setPagTicket(0);
+          if (data && data.length > 0) {
+            setPosibleFalla(data[0].posible_falla || '');
+            setDiagnostico(data[0].diagnostico || '');
+            const ids = [...new Set(data.map(t => t.id_solicitante).filter(Boolean))];
+            if (ids.length > 0) {
+              const { data: users } = await supabase.from('usuarios').select('id, nombre').in('id', ids);
+              const mapa: Record<string, string> = {};
+              (users || []).forEach(u => { mapa[u.id] = u.nombre; });
+              setNombresUsuarios(mapa);
+            }
           }
         });
     });
@@ -206,7 +280,10 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
   const [lugarTicket, setLugarticket] = useState<string>('');
   const [equipoTicket, setEquipoTicket] = useState<string>('');
   const [conforme, setConforme] = useState(false);
-  const [enviarCorreo, setEnviarCorreo] = useState(false);
+  const [plantillaSel, setPlantillaSel] = useState('');
+  const [plantillas, setPlantillas] = useState<{ id: string; titulo: string; asunto: string; cuerpo: string }[]>([]);
+  const [enviandoCorreo, setEnviandoCorreo] = useState(false);
+  const [correoSolicitante, setCorreoSolicitante] = useState('');
   const [cierreProgramado, setCierreProgramado] = useState('');
 
   async function loadTicket(id: string) {
@@ -228,6 +305,15 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
       if (eq) setEquipoTicket(eq.nombre);
     }
     setPaso('view');
+    obtenerEvidencias(id).then(urls => setEvidencias(urls));
+    if (req.id_solicitante) {
+      const { data: sol } = await supabase.from('usuarios').select('email,nombre').eq('id', req.id_solicitante).maybeSingle();
+      if (sol) {
+        setCorreoSolicitante(sol.email || '');
+      }
+    }
+    const { data: pts } = await supabase.from('plantillas_correo_tecnico').select('id, titulo, asunto, cuerpo').eq('id_establecimiento', idEstablecimiento).eq('activo', true).order('titulo');
+    if (pts) setPlantillas(pts);
   }
 
   async function crearTicket() {
@@ -235,7 +321,6 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
     setCreando(true);
     setMensaje('');
 
-    // Resolver usuarios.id desde auth.uid()
     const { data: userData, error: userErr } = await supabase
       .from('usuarios').select('id').eq('uid', idUsuario).maybeSingle();
     if (userErr || !userData) {
@@ -243,43 +328,51 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
       setCreando(false);
       return;
     }
-    const idSolicitante = userData.id;
+    const idTecnico = userData.id;
 
-    const eq = equiposLugar.find(e => e.id === equipoSel) || null;
-    const params = {
-      p_id_establecimiento: idEstablecimiento,
-      p_id_lugar: lugar!.id,
-      p_id_equipo: eq?.id || null,
-      p_id_solicitante: idSolicitante,
-      p_tipo_requerimiento: 'Reparación',
-      p_descripcion: `[Ticket rápido] ${posibleFalla ? `Falla: ${posibleFalla}. ` : ''}${diagnostico}`,
-      p_posible_falla: posibleFalla || null,
-      p_diagnostico: diagnostico || null,
-      p_prioridad: 'Normal',
-      p_estado: 'En Proceso',
-      p_fecha_solicitud: new Date().toISOString().slice(0, 10),
-    };
-    const { error } = await supabase.rpc('insertar_requerimiento', params);
-    if (error) {
-      // Fallback: si el RPC falla, INSERT directo
-      const { error: insertErr } = await supabase.from('requerimientos').insert({
-        id_establecimiento: params.p_id_establecimiento,
-        id_lugar: params.p_id_lugar,
-        id_equipo: params.p_id_equipo,
-        id_solicitante: params.p_id_solicitante,
-        tipo_requerimiento: params.p_tipo_requerimiento,
-        descripcion: params.p_descripcion,
-        posible_falla: params.p_posible_falla,
-        diagnostico: params.p_diagnostico,
-        prioridad: params.p_prioridad,
-        estado: params.p_estado,
-        fecha_solicitud: params.p_fecha_solicitud,
-      });
-      if (insertErr) {
-        setMensaje(`❌ Error al crear: ${insertErr.message}`);
+    const eq = todosEquipos.find(e => e.id === equipoSel) || null;
+
+    const solicitanteId = usuario?.id || idTecnico;
+
+    const errVal = await validarTicket({
+      equipo: eq ? { id: eq.id, estado: eq.estado || 'Operativo', id_usuario: eq.id_usuario } : null,
+      posibleFalla,
+      solicitanteId,
+      lugarSoporte: lugar?.soporte,
+    });
+
+    if (errVal) {
+      if (errVal.type === 'bloqueante') {
+        setMensaje('❌ ' + errVal.mensaje);
         setCreando(false);
         return;
       }
+      if (!confirm('⚠️ ' + errVal.mensaje + '\n\n¿Continuar de todas formas?')) {
+        setCreando(false);
+        return;
+      }
+    }
+
+    const ctx = usuario ? `Usuario: ${usuario.nombre}` : lugar ? `Lugar: ${lugar.nombre}` : '';
+    const descripcion = `[Ticket rápido] ${ctx ? `(${ctx}) ` : ''}${posibleFalla ? `Falla: ${posibleFalla}. ` : ''}${diagnostico}`;
+    const res = await crearRequerimiento({
+      idEstablecimiento,
+      idLugar: lugar?.id || null,
+      idEquipo: eq?.id || null,
+      idSolicitante: solicitanteId,
+      tipoReq,
+      descripcion,
+      posibleFalla: posibleFalla || null,
+      diagnostico: diagnostico || null,
+      prioridad,
+      estado: 'En Proceso',
+      lugarSoporte: lugar?.soporte,
+    });
+
+    if (res.error) {
+      setMensaje(`❌ Error al crear: ${res.error}`);
+      setCreando(false);
+      return;
     }
     setCreando(false);
     setMensaje('✅ Ticket creado exitosamente.');
@@ -337,10 +430,11 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: paso === 'splash' ? 20 : 4 }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>
-            {paso === 'splash' ? '📍' : paso === 'create' ? '🔧' : paso === 'close' ? '✅' : '🎉'}
+            {paso === 'splash' ? (usuario ? '👤' : '📍') : paso === 'create' ? '🔧' : paso === 'close' ? '✅' : '🎉'}
           </div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>
             {paso === 'splash' && lugar && `Requerimiento en ${lugar.nombre}`}
+            {paso === 'splash' && usuario && `Ticket para ${usuario.nombre}`}
             {paso === 'create' && 'Registrar Diagnóstico'}
             {paso === 'close' && 'Cerrar Ticket'}
             {paso === 'done' && 'Listo'}
@@ -348,65 +442,198 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         </div>
 
         {/* Splash */}
-        {paso === 'splash' && lugar && (
+        {paso === 'splash' && (lugar || usuario) && (
           <div>
-            <div style={{
-              background: '#0f172a', borderRadius: 14, padding: 16,
-              marginBottom: 16, border: '1px solid #334155',
-            }}>
-              <div style={{ fontSize: 13, color: '#64748b', marginBottom: 2 }}>📍 Ubicación</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9' }}>{lugar.nombre}</div>
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Piso {lugar.piso}</div>
-            </div>
+            {lugar ? (
+              <div style={{
+                background: '#0f172a', borderRadius: 14, padding: 16,
+                marginBottom: 16, border: '1px solid #334155',
+              }}>
+                <div style={{ fontSize: 13, color: '#64748b', marginBottom: 2 }}>📍 Ubicación</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9' }}>{lugar.nombre}</div>
+                <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Piso {lugar.piso}</div>
+              </div>
+            ) : usuario ? (
+              <div style={{
+                background: '#0f172a', borderRadius: 14, padding: 16,
+                marginBottom: 16, border: '1px solid #334155',
+              }}>
+                <div style={{ fontSize: 13, color: '#64748b', marginBottom: 2 }}>👤 Usuario</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9' }}>{usuario.nombre}</div>
+                <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{usuario.email}</div>
+              </div>
+            ) : null}
 
             {/* Selector de equipo */}
             <div style={{ marginBottom: 16 }}>
               <label style={s.label}>Seleccionar Equipo</label>
-              <select
-                value={equipoSel}
-                onChange={e => setEquipoSel(e.target.value)}
-                style={s.sel}
-              >
-                <option value="">— Sin equipo específico —</option>
-                {equiposLugar.map(eq => (
-                  <option key={eq.id} value={eq.id}>{eq.nombre}</option>
-                ))}
-              </select>
-              {equiposLugar.length === 0 && (
+              <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                <select
+                  value={equipoSel}
+                  onChange={e => setEquipoSel(e.target.value)}
+                  style={{ ...s.sel, flex: 1 }}
+                >
+                  <option value="">— Sin equipo específico —</option>
+                  {(buscarUsuario ? equiposFiltrados : (lugar ? equiposLugar : todosEquipos)).map(eq => {
+                    const usr = todosUsuarios.find(u => u.id === eq.id_usuario);
+                    return (
+                      <option key={eq.id} value={eq.id} disabled={eq.estado === 'Baja'} style={eq.estado === 'Baja' ? { opacity: 0.4 } : {}}>
+                        {eq.nombre}{eq.estado === 'Baja' ? ' (Baja)' : ''}{usr ? ` · ${usr.nombre}` : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <input value={buscarUsuario} onChange={e => {
+                  setBuscarUsuario(e.target.value);
+                  setUsuarioSel(null);
+                  setEquipoSel('');
+                  if (e.target.value.length >= 1) {
+                    const filtrados = todosUsuarios.filter(u =>
+                      u.nombre.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                      (u.email && u.email.toLowerCase().includes(e.target.value.toLowerCase()))
+                    ).slice(0, 8);
+                    setSugUsuarios(filtrados);
+                    setMostrarSugUsu(true);
+                  } else {
+                    setSugUsuarios([]);
+                    setMostrarSugUsu(false);
+                    setEquiposFiltrados([]);
+                  }
+                }}
+                  onFocus={() => { if (sugUsuarios.length > 0) setMostrarSugUsu(true); }}
+                  onBlur={() => setTimeout(() => setMostrarSugUsu(false), 200)}
+                  placeholder="Buscar usuario…" style={{ ...s.inp, fontSize: 13 }} />
+                {mostrarSugUsu && sugUsuarios.length > 0 && (
+                  <div style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
+                    background: '#0f172a', border: '1px solid #475569', borderRadius: 8,
+                    maxHeight: 200, overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                  }}>
+                    {sugUsuarios.map(u => (
+                      <div key={u.id} onMouseDown={() => {
+                        setBuscarUsuario(u.nombre);
+                        setUsuarioSel(u);
+                        setMostrarSugUsu(false);
+                        const encontrados = todosEquipos.filter(e => e.id_usuario === u.id);
+                        setEquiposFiltrados(encontrados);
+                        if (encontrados.length > 0) setEquipoSel(encontrados[0].id);
+                      }} style={{
+                        padding: '8px 12px', cursor: 'pointer', fontSize: 13, color: '#f1f5f9',
+                        borderBottom: '1px solid #334155',
+                      }}>
+                        {u.nombre}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {usuarioSel && !mostrarSugUsu && (
+                  <p style={{ fontSize: 11, color: '#4ade80', margin: '4px 0 0' }}>
+                    ✓ {usuarioSel.nombre} · {equiposFiltrados.length} equipo(s)
+                  </p>
+                )}
+              </div>
+              {lugar && equiposLugar.length === 0 && (
                 <p style={{ fontSize: 11, color: '#64748b', margin: '4px 0 0' }}>
                   No hay equipos registrados en este lugar
                 </p>
               )}
+              {usuario && todosEquipos.length === 0 && (
+                <p style={{ fontSize: 11, color: '#64748b', margin: '4px 0 0' }}>
+                  Este usuario no tiene equipos asignados
+                </p>
+              )}
+              {equipoSel && (() => {
+                const eqSel = todosEquipos.find(e => e.id === equipoSel);
+                return eqSel && eqSel.estado === 'Baja' ? (
+                  <p style={{ fontSize: 11, color: '#fca5a5', margin: '4px 0 0' }}>⚠️ Este equipo está dado de baja</p>
+                ) : eqSel && !eqSel.id_usuario ? (
+                  <p style={{ fontSize: 11, color: '#fcd34d', margin: '4px 0 0' }}>⚠️ Este equipo no tiene responsable asignado</p>
+                ) : null;
+              })()}
+              {lugar && lugar.soporte === false && (
+                <p style={{ fontSize: 11, color: '#fca5a5', margin: '4px 0 0' }}>⚠️ Este lugar no tiene soporte activo</p>
+              )}
             </div>
 
-            {ticketActivo && (
-              <div style={{
-                background: '#1e3a5f', borderRadius: 10, padding: 12,
-                marginBottom: 16, border: '1px solid #2563eb40',
-                display: 'flex', alignItems: 'center', gap: 10,
-              }}>
-                <span style={{ fontSize: 20 }}>🔄</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#93c5fd' }}>Ticket activo encontrado</div>
-                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Ya hay un ticket abierto en este lugar</div>
-                </div>
+            {/* Tickets activos */}
+            {ticketsActivos.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ ...s.label, marginBottom: 6, fontSize: 11 }}>Tickets abiertos ({ticketsActivos.length})</label>
+                {ticketsActivos.slice(pagTicket * POR_PAG_TICKET, (pagTicket + 1) * POR_PAG_TICKET).map(t => (
+                  <div key={t.id} onClick={() => {
+                    setTicketActivo(t);
+                    setTicketData(t);
+                    setPosibleFalla(t.posible_falla || '');
+                    setDiagnostico(t.diagnostico || '');
+                    setSolucion(t.solucion || '');
+                    setObservaciones(t.observaciones || '');
+                    const pasoDestino = t.estado === 'Pendiente' ? 'view' : 'close';
+                    if (pasoDestino === 'view') obtenerEvidencias(t.id).then(urls => setEvidencias(urls));
+                    setPaso(pasoDestino);
+                  }} style={{
+                    background: '#1e3a5f', borderRadius: 8, padding: '8px 12px',
+                    marginBottom: 6, border: '1px solid #2563eb40', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 8, fontSize: 12,
+                  }}>
+                    <span style={{ fontSize: 14 }}>🔄</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, color: '#93c5fd', fontSize: 13 }}>
+                        {t.codigo || '#' + t.id.slice(0, 6)}
+                      </div>
+                      <div style={{ color: '#94a3b8', fontSize: 11, marginTop: 1 }}>
+                        {new Date(t.created_at).toLocaleDateString()} · {nombresUsuarios[t.id_solicitante] || '—'}
+                      </div>
+                    </div>
+                    <span style={{
+                      padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 600,
+                      background: t.estado === 'En Proceso' ? '#1e3a5f' : '#451a03',
+                      color: t.estado === 'En Proceso' ? '#93c5fd' : '#fcd34d',
+                      whiteSpace: 'nowrap',
+                    }}>{t.estado}</span>
+                  </div>
+                ))}
+                {ticketsActivos.length > POR_PAG_TICKET && (
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 6 }}>
+                    <button onClick={() => setPagTicket(p => Math.max(0, p - 1))}
+                      disabled={pagTicket === 0}
+                      style={{ ...s.btnSec, padding: '4px 12px', fontSize: 11, flex: 'none' }}>
+                      ← Anterior
+                    </button>
+                    <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center' }}>
+                      {pagTicket + 1} / {Math.ceil(ticketsActivos.length / POR_PAG_TICKET)}
+                    </span>
+                    <button onClick={() => setPagTicket(p => Math.min(Math.ceil(ticketsActivos.length / POR_PAG_TICKET) - 1, p + 1))}
+                      disabled={pagTicket >= Math.ceil(ticketsActivos.length / POR_PAG_TICKET) - 1}
+                      style={{ ...s.btnSec, padding: '4px 12px', fontSize: 11, flex: 'none' }}>
+                      Siguiente →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
+            {ticketsActivos.length === 0 && (
+              <p style={{ fontSize: 12, color: '#64748b', marginBottom: 12, textAlign: 'center' }}>
+                {lugar ? 'No hay tickets abiertos en este lugar' : 'No hay tickets abiertos para este usuario'}
+              </p>
+            )}
+
             <button
-              onClick={() => setPaso(ticketActivo ? 'close' : 'create')}
+              onClick={() => setPaso('create')}
               style={{
                 width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none',
-                background: ticketActivo ? '#2563eb' : '#059669', color: '#fff',
+                background: '#059669', color: '#fff',
                 fontSize: 15, fontWeight: 600, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               }}
             >
-              {ticketActivo ? 'Ir al Ticket Activo →' : 'Continuar →'}
+              + Nuevo Ticket
             </button>
 
             <button
-              onClick={() => { window.location.href = window.location.href.split('#')[0] + '#/tecnico/m/inicio'; }}
+              onClick={() => { navigate('/tecnico/m/grid'); }}
               style={{ ...s.btnSec, marginTop: 10, width: '100%' }}
             >
               Cancelar
@@ -417,14 +644,37 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         {/* Create */}
         {paso === 'create' && (
           <div>
-            {lugar && (
+            {(lugar || usuario) && (
               <div style={{ fontSize: 13, color: '#64748b', marginBottom: 16, textAlign: 'center' }}>
-                📍 {lugar.nombre}
-                {equipoSel && equiposLugar.find(e => e.id === equipoSel) && (
-                  <> · 🔧 {equiposLugar.find(e => e.id === equipoSel)!.nombre}</>
+                {lugar && `📍 ${lugar.nombre}`}
+                {usuario && `👤 ${usuario.nombre}`}
+                {equipoSel && todosEquipos.find(e => e.id === equipoSel) && (
+                  <> · 🔧 {todosEquipos.find(e => e.id === equipoSel)!.nombre}</>
                 )}
               </div>
             )}
+
+            <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
+              <div style={{ flex: 1 }}>
+                <label style={s.label}>Tipo</label>
+                <select value={tipoReq} onChange={e => setTipoReq(e.target.value)} style={s.sel}>
+                  <option value="Reparación">Reparación</option>
+                  <option value="Mantención">Mantención</option>
+                  <option value="Instalación">Instalación</option>
+                  <option value="Traslado">Traslado</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={s.label}>Prioridad</label>
+                <select value={prioridad} onChange={e => setPrioridad(e.target.value)} style={s.sel}>
+                  <option value="Baja">Baja</option>
+                  <option value="Normal">Normal</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Urgente">Urgente</option>
+                </select>
+              </div>
+            </div>
 
             <div style={{ marginBottom: 18 }}>
               <label style={s.label}>Posible Falla</label>
@@ -483,9 +733,10 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
         {/* Close */}
         {paso === 'close' && ticketActivo && (
           <div>
-            {lugar && (
+            {(lugar || usuario) && (
               <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12, textAlign: 'center' }}>
-                📍 {lugar.nombre}
+                {lugar && `📍 ${lugar.nombre}`}
+                {usuario && `👤 ${usuario.nombre}`}
               </div>
             )}
 
@@ -529,6 +780,66 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
               <datalist id="obs-sugs">
                 {sugerenciasObs.map((sug, i) => <option key={i} value={sug} />)}
               </datalist>
+            </div>
+
+            {/* Evidencia foto */}
+            <div style={{ marginBottom: 18 }}>
+              <label style={s.label}>Foto reparación (opcional)</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button type="button" onClick={async () => {
+                  if (!navigator.mediaDevices?.getUserMedia) { alert('Cámara no disponible'); return; }
+                  try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    const track = stream.getVideoTracks()[0];
+                    const imageCapture = new (window as any).ImageCapture(track);
+                    const photoBlob = await imageCapture.takePhoto();
+                    track.stop();
+                    if (photoBlob.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5MB'); return; }
+                    setSubiendoEvidencia(true);
+                    const file = new File([photoBlob], `reparacion_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                    const res = await subirEvidencia(ticketActivo.id, file, 'reparacion');
+                    setSubiendoEvidencia(false);
+                    if (res.error) { alert('Error: ' + res.error); return; }
+                    if (res.url) setEvidencias(prev => [...prev, res.url!]);
+                  } catch { alert('No se pudo acceder a la cámara'); }
+                }}
+                  style={{
+                    padding: '10px 16px', borderRadius: 8, border: '1px solid #475569',
+                    background: '#1e293b', color: '#f1f5f9', fontSize: 13, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}>
+                  📸 Cámara
+                </button>
+                <input type="file" accept="image/*" id="close-foto"
+                  onChange={async e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5MB'); return; }
+                    setSubiendoEvidencia(true);
+                    const res = await subirEvidencia(ticketActivo.id, file, 'reparacion');
+                    setSubiendoEvidencia(false);
+                    if (res.error) { alert('Error: ' + res.error); return; }
+                    if (res.url) setEvidencias(prev => [...prev, res.url!]);
+                  }}
+                  style={{ display: 'none' }} />
+                <button type="button" onClick={() => document.getElementById('close-foto')?.click()}
+                  style={{
+                    padding: '10px 16px', borderRadius: 8, border: '1px solid #475569',
+                    background: '#1e293b', color: '#f1f5f9', fontSize: 13, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}>
+                  📁 Subir archivo
+                </button>
+                {subiendoEvidencia && <span style={{ fontSize: 12, color: '#64748b' }}>Subiendo...</span>}
+              </div>
+              {evidencias.length > 0 && (
+                <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
+                  {evidencias.map((url, i) => (
+                    <img key={i} src={url} alt="reparacion"
+                      style={{ width: 50, height: 50, borderRadius: 4, objectFit: 'cover', border: '1px solid #334155' }} />
+                  ))}
+                </div>
+              )}
             </div>
 
             {mensaje && (
@@ -627,6 +938,100 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                     <div style={{ fontSize: 13, color: '#f1f5f9' }}>{observaciones || '—'}</div>
                   )}
                 </div>
+                {/* Enviar correo */}
+                <div style={{ marginBottom: 10, borderTop: '1px solid #334155', paddingTop: 10 }}>
+                  <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Enviar correo</label>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <select value={plantillaSel} onChange={e => setPlantillaSel(e.target.value)}
+                      style={{ flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+                      <option value="">-- Plantilla --</option>
+                      {plantillas.map(p => <option key={p.id} value={p.id}>{p.titulo}</option>)}
+                    </select>
+                    <button onClick={async () => {
+                      if (!plantillaSel) return alert('Selecciona una plantilla.');
+                      if (!correoSolicitante) return alert('El solicitante no tiene correo registrado.');
+                      setEnviandoCorreo(true);
+                      const tmpl = plantillas.find(p => p.id === plantillaSel);
+                      if (!tmpl) { setEnviandoCorreo(false); return; }
+                      const { data: solData } = await supabase.from('usuarios').select('nombre').eq('id', ticketData.id_solicitante).maybeSingle();
+                      const { data: tecData } = await supabase.from('usuarios').select('nombre').eq('uid', idUsuario).maybeSingle();
+                      const vars: Record<string, string> = {
+                        codigo: ticketData.codigo || ticketData.id || '', lugar: lugarTicket || '', equipo: equipoTicket || '',
+                        descripcion: ticketData.descripcion || '', diagnostico: diagnostico || '', solucion: solucion || '',
+                        posible_falla: posibleFalla || '', falla: posibleFalla || '', observaciones: observaciones || '',
+                        usuario: solData?.nombre || '', tecnico: tecData?.nombre || '', nombre_tecnico: tecData?.nombre || '',
+                        fecha: new Date().toLocaleDateString('es-CL'), estado: ticketData.estado || '',
+                      };
+                      let html = tmpl.cuerpo;
+                      let asunto = tmpl.asunto;
+                      for (const [k, v] of Object.entries(vars)) { html = html.replaceAll(`{${k}}`, v); asunto = asunto.replaceAll(`{${k}}`, v); }
+                      const { data: cfg } = await supabase.from('email_config').select('*').eq('id_establecimiento', idEstablecimiento).eq('activo', true).maybeSingle();
+                      const emailConfig = cfg ? { email: cfg.email, appPassword: cfg.app_password, displayName: cfg.display_name, port: cfg.smtp_port || 587, ssl: cfg.smtp_port === 465 } : undefined;
+                      const res = await enviarCorreoEmail(correoSolicitante, asunto, `<p>${html.replace(/\n/g, '<br>')}</p>`, emailConfig);
+                      setEnviandoCorreo(false);
+                      setMensaje(res.success ? '✅ Correo enviado.' : `⚠️ Error: ${res.error}`);
+                    }} style={{
+                      padding: '8px 14px', borderRadius: 8, border: 'none',
+                      background: enviandoCorreo ? '#334155' : '#2563eb', color: '#fff', fontSize: 12, fontWeight: 600, cursor: enviandoCorreo ? 'not-allowed' : 'pointer',
+                    }}>
+                      {enviandoCorreo ? '...' : '📧 Enviar'}
+                    </button>
+                  </div>
+                </div>
+                {/* Evidencia foto reparacion */}
+                {ticketData.estado !== 'Completada' && (
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Foto reparación</label>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={async () => {
+                      if (!navigator.mediaDevices?.getUserMedia) { alert('Cámara no disponible'); return; }
+                      try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                        const track = stream.getVideoTracks()[0];
+                        const imageCapture = new (window as any).ImageCapture(track);
+                        const photoBlob = await imageCapture.takePhoto();
+                        track.stop();
+                        if (photoBlob.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5MB'); return; }
+                        setSubiendoEvidencia(true);
+                        const file = new File([photoBlob], `reparacion_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                        const res = await subirEvidencia(ticketData.id, file, 'reparacion');
+                        setSubiendoEvidencia(false);
+                        if (res.error) { alert('Error: ' + res.error); return; }
+                        if (res.url) setEvidencias(prev => [...prev, res.url!]);
+                      } catch { alert('No se pudo acceder a la cámara'); }
+                    }}
+                      style={{
+                        padding: '8px 14px', borderRadius: 8, border: '1px solid #475569',
+                        background: '#1e293b', color: '#f1f5f9', fontSize: 12, cursor: 'pointer',
+                      }}>📸 Cámara</button>
+                    <input type="file" accept="image/*" id="view-foto" style={{ display: 'none' }}
+                      onChange={async e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5MB'); return; }
+                        setSubiendoEvidencia(true);
+                        const res = await subirEvidencia(ticketData.id, file, 'reparacion');
+                        setSubiendoEvidencia(false);
+                        if (res.error) { alert('Error: ' + res.error); return; }
+                        if (res.url) setEvidencias(prev => [...prev, res.url!]);
+                      }} />
+                    <button type="button" onClick={() => document.getElementById('view-foto')?.click()}
+                      style={{
+                        padding: '8px 14px', borderRadius: 8, border: '1px solid #475569',
+                        background: '#1e293b', color: '#f1f5f9', fontSize: 12, cursor: 'pointer',
+                      }}>📁 Subir</button>
+                    {subiendoEvidencia && <span style={{ fontSize: 11, color: '#64748b' }}>Subiendo...</span>}
+                  </div>
+                  {evidencias.length > 0 && (
+                    <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
+                      {evidencias.map((url, i) => (
+                        <img key={i} src={url} alt="reparacion"
+                          style={{ width: 50, height: 50, borderRadius: 4, objectFit: 'cover', border: '1px solid #334155' }} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+                )}
                 {ticketData.estado !== 'Completada' && (
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={async () => {
@@ -666,13 +1071,23 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                     Cerrado: {new Date(ticketData.fecha_cierre).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </div>
                 )}
+                {evidencias.length > 0 && (
+                  <div style={{ marginBottom: 10 }}>
+                    <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Fotos de evidencia</label>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {evidencias.map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                          <img src={url} alt={`evidencia ${i+1}`}
+                            style={{ width: 80, height: 80, borderRadius: 6, objectFit: 'cover', border: '1px solid #334155', cursor: 'pointer' }}
+                            onClick={e => { e.preventDefault(); window.open(url, '_blank'); }} />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <label style={{ fontSize: 12, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: 8 }}>
                   <input type="checkbox" checked={conforme} onChange={e => setConforme(e.target.checked)} />
                   Usuario conforme
-                </label>
-                <label style={{ fontSize: 12, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: 8 }}>
-                  <input type="checkbox" checked={enviarCorreo} onChange={e => setEnviarCorreo(e.target.checked)} />
-                  Enviar correo de cierre
                 </label>
                 <div style={{ marginBottom: 10 }}>
                   <label style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 3 }}>Cierre programado</label>
@@ -681,7 +1096,6 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                 </div>
                 <button onClick={async () => {
                   if (!conforme) return alert('Confirma que el usuario está conforme.');
-                  if (enviarCorreo) console.log('📧 Enviar correo de cierre (pendiente implementar)');
                   const updates: any = { conforme: true };
                   if (cierreProgramado) updates.fecha_cierre = new Date(cierreProgramado).toISOString();
                   await supabase.from('requerimientos').update(updates).eq('id', ticketData.id);
@@ -713,7 +1127,8 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
             </div>
             <p style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 500, margin: '0 0 4px' }}>{mensaje}</p>
             <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 24px' }}>
-              {lugar && `📍 ${lugar.nombre}${equipoSel && equiposLugar.find(e => e.id === equipoSel) ? ` · 🔧 ${equiposLugar.find(e => e.id === equipoSel)!.nombre}` : ''}`}
+              {lugar && `📍 ${lugar.nombre}${equipoSel && todosEquipos.find(e => e.id === equipoSel) ? ` · 🔧 ${todosEquipos.find(e => e.id === equipoSel)!.nombre}` : ''}`}
+              {usuario && `👤 ${usuario.nombre}${equipoSel && todosEquipos.find(e => e.id === equipoSel) ? ` · 🔧 ${todosEquipos.find(e => e.id === equipoSel)!.nombre}` : ''}`}
             </p>
             <button
               onClick={() => {
