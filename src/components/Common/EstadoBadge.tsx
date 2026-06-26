@@ -10,14 +10,16 @@ interface Props {
 }
 
 export default function EstadoBadge({ estado }: Props) {
-  const colores: Record<EstadoSolicitud, { bg: string; color: string }> = {
-    Injustificada: { bg: '#FEE2E2', color: '#991B1B' },
-    Justificada: { bg: '#D1FAE5', color: '#065F46' },
-    Rechazada: { bg: '#FEE2E2', color: '#991B1B' },
-    'No presentada': { bg: '#F3F4F6', color: '#374151' },
+  const colores: Record<string, { bg: string; color: string; label: string }> = {
+    [EstadoSolicitud.INASISTENTE]:                { bg: '#FEF3C7', color: '#92400E', label: 'Sin procesar' },
+    [EstadoSolicitud.ATRASO_JUSTIFICADO]:         { bg: '#D1FAE5', color: '#065F46', label: 'Atraso justificado' },
+    [EstadoSolicitud.ATRASO_INJUSTIFICADO]:       { bg: '#FEE2E2', color: '#991B1B', label: 'Atraso injustificado' },
+    [EstadoSolicitud.INASISTENCIA_JUSTIFICADA]:   { bg: '#D1FAE5', color: '#065F46', label: 'Inasistencia justificada' },
+    [EstadoSolicitud.INASISTENCIA_NO_JUSTIFICADA]: { bg: '#FEE2E2', color: '#991B1B', label: 'Inasistencia no justificada' },
+    [EstadoSolicitud.NO_PRESENTADA]:              { bg: '#F3F4F6', color: '#374151', label: 'No presentada' },
   };
 
-  const estilo = colores[estado] || { bg: '#F3F4F6', color: '#374151' };
+  const estilo = colores[estado] || { bg: '#F3F4F6', color: '#374151', label: estado };
 
   return (
     <span
@@ -30,7 +32,7 @@ export default function EstadoBadge({ estado }: Props) {
         fontWeight: '600',
       }}
     >
-      {estado}
+      {estilo.label}
     </span>
   );
 }

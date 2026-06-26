@@ -15,7 +15,7 @@ const mockSolicitud = {
   tipo: 'INASISTENCIA',
   fecha: '2026-06-01',
   hora: '09:00',
-  estado: EstadoSolicitud.INJUSTIFICADA,
+  estado: EstadoSolicitud.INASISTENTE,
   motivo_codigo: null,
   motivo_descripcion: null,
   observaciones: null,
@@ -31,7 +31,7 @@ beforeEach(async () => {
 });
 
 describe('obtenerSolicitud', () => {
-  it('finds solicitud in justificadas first', async () => {
+  it('finds solicitud in solicitudes table', async () => {
     const { obtenerSolicitud } = await import('../solicitudes.service');
     const { supabase } = await import('../../lib/supabase') as any;
     supabase.chain.single.mockResolvedValue(successResult(mockSolicitud));
@@ -39,19 +39,17 @@ describe('obtenerSolicitud', () => {
     const result = await obtenerSolicitud('s1');
     expect(result).not.toBeNull();
     expect(result!.id_solicitud).toBe('s1');
-    expect(supabase.from).toHaveBeenCalledWith('justificadas');
+    expect(supabase.from).toHaveBeenCalledWith('solicitudes');
   });
 
-  it('falls back to injustificadas when not in justificadas', async () => {
+  it('returns null when not found', async () => {
     const { obtenerSolicitud } = await import('../solicitudes.service');
     const { supabase } = await import('../../lib/supabase') as any;
-    supabase.chain.single
-      .mockResolvedValueOnce(errorResult('Not found', 'PGRST116'))
-      .mockResolvedValueOnce(successResult(mockSolicitud));
+    supabase.chain.single.mockResolvedValue(errorResult('Not found', 'PGRST116'));
 
     const result = await obtenerSolicitud('s1');
-    expect(result).not.toBeNull();
-    expect(supabase.from).toHaveBeenCalledWith('injustificadas');
+    expect(result).toBeNull();
+    expect(supabase.from).toHaveBeenCalledWith('solicitudes');
   });
 });
 
@@ -59,12 +57,7 @@ describe('obtenerSolicitudesDelEstablecimiento', () => {
   it('returns solicitudes array', async () => {
     const { obtenerSolicitudesDelEstablecimiento } = await import('../solicitudes.service');
     const { supabase } = await import('../../lib/supabase') as any;
-    let callIdx = 0;
-    supabase.from = vi.fn(() => {
-      callIdx++;
-      supabase.setResult(successResult(callIdx <= 1 ? [] : [mockSolicitud]));
-      return supabase.chain;
-    });
+    supabase.setResult(successResult([mockSolicitud]));
 
     const result = await obtenerSolicitudesDelEstablecimiento('est1');
     expect(Array.isArray(result)).toBe(true);
@@ -81,28 +74,21 @@ describe('obtenerSolicitudesDelEstablecimiento', () => {
 });
 
 describe('crearSolicitud', () => {
-  it('inserts into justificadas when JUSTIFICADA', async () => {
-    const { crearSolicitud } = await import('../solicitudes.service');
-    const { supabase } = await import('../../lib/supabase') as any;
-
-    await crearSolicitud({ ...mockSolicitud, estado: EstadoSolicitud.JUSTIFICADA });
-    expect(supabase.from).toHaveBeenCalledWith('justificadas');
-  });
-
-  it('inserts into injustificadas otherwise', async () => {
+  it('inserts into solicitudes table', async () => {
     const { crearSolicitud } = await import('../solicitudes.service');
     const { supabase } = await import('../../lib/supabase') as any;
 
     await crearSolicitud(mockSolicitud);
-    expect(supabase.from).toHaveBeenCalledWith('injustificadas');
+    expect(supabase.from).toHaveBeenCalledWith('solicitudes');
   });
 });
 
-describe('justificarSolicitud', () => {
-  it('moves from injustificadas to justificadas', async () => {
+describe('justificarSolicitud (backward compat)', () => {
+  it('does not throw when called', async () => {
     const { justificarSolicitud } = await import('../solicitudes.service');
     const { supabase } = await import('../../lib/supabase') as any;
 
     await expect(justificarSolicitud('s1', mockSolicitud, 'M01', 'Enfermedad')).resolves.not.toThrow();
+    expect(supabase.from).toHaveBeenCalledWith('solicitudes');
   });
 });

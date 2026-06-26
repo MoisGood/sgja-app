@@ -3,12 +3,13 @@ import {
   obtenerEstudiantesDelEstablecimiento,
   obtenerCursosDelEstablecimiento,
   obtenerMotivosDelEstablecimiento,
-  justificarSolicitud,
-  escucharSolicitudesJustificadas,
+  justificarAtraso,
+  justificarInasistencia,
   escucharSolicitudesInjustificadas,
 } from '../services/database';
 import type { Estudiante, Solicitud, MotivoJustificacion } from '../types';
 import { EstadoSolicitud } from '../types';
+import { esAtraso } from '../utils/tipoRegistroHelper';
 
 interface Props {
   idEstablecimiento: string;
@@ -24,7 +25,7 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
   const [cargando, setCargando] = useState(true);
   const [paginaActual, setPaginaActual] = useState(1);
   const [busquedaRut, setBusquedaRut] = useState('');
-  const [pestanaActiva, setPestanaActiva] = useState<'justificados' | 'injustificados'>('justificados');
+  const [pestanaActiva, setPestanaActiva] = useState<'justificados' | 'injustificados' | 'pendientes'>('pendientes');
   const [filtroFecha, setFiltroFecha] = useState<string>('');
   const [itemsPorPagina, setItemsPorPagina] = useState(10);
   const [filtrosCurso, setFiltrosCurso] = useState<string>('');
@@ -42,14 +43,12 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
 
   // ── Cargar datos iniciales y escuchar cambios en tiempo real ──
   useEffect(() => {
-    let unsubscribeJustificadas: () => void = () => {};
-    let unsubscribeInjustificadas: () => void = () => {};
+    let unsubscribe: () => void = () => {};
 
     const cargarDatosIniciales = async () => {
       try {
         setCargando(true);
         
-        // Cargar datos estáticos
         const [estudiantesData, cursosData, motivosData] = await Promise.all([
           obtenerEstudiantesDelEstablecimiento(idEstablecimiento),
           obtenerCursosDelEstablecimiento(idEstablecimiento),
@@ -66,26 +65,10 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
         );
         setMotivos(motivosOrdenados);
 
-        // Configurar listeners para cambios en tiempo real
-        unsubscribeJustificadas = escucharSolicitudesJustificadas(
+        unsubscribe = escucharSolicitudesInjustificadas(
           idEstablecimiento,
-          (justificadasData) => {
-            setSolicitudes((prevSolicitudes) => {
-              // Combinar justificadas + injustificadas existentes
-              const injustificadas = prevSolicitudes.filter(s => s.estado === EstadoSolicitud.INJUSTIFICADA);
-              return [...justificadasData, ...injustificadas];
-            });
-          }
-        );
-
-        unsubscribeInjustificadas = escucharSolicitudesInjustificadas(
-          idEstablecimiento,
-          (injustificadasData) => {
-            setSolicitudes((prevSolicitudes) => {
-              // Combinar justificadas + injustificadas existentes
-              const justificadas = prevSolicitudes.filter(s => s.estado === EstadoSolicitud.JUSTIFICADA);
-              return [...justificadas, ...injustificadasData];
-            });
+          (solicitudesData) => {
+            setSolicitudes(solicitudesData);
           }
         );
 
@@ -98,20 +81,22 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
 
     cargarDatosIniciales();
 
-    // Limpiar listeners al desmontar componente
     return () => {
-      unsubscribeJustificadas();
-      unsubscribeInjustificadas();
+      unsubscribe();
     };
   }, [idEstablecimiento]);
 
-  // Filtrar solicitudes según la pestaña activa
+  const estadosJustificados = [EstadoSolicitud.ATRASO_JUSTIFICADO, EstadoSolicitud.INASISTENCIA_JUSTIFICADA];
+  const estadosInjustificados = [EstadoSolicitud.ATRASO_INJUSTIFICADO, EstadoSolicitud.INASISTENCIA_NO_JUSTIFICADA];
+  const estadosPendientes = [EstadoSolicitud.INASISTENTE];
+
   const solicitudesFiltradas = solicitudes.filter(s => {
     if (pestanaActiva === 'justificados') {
-      return s.estado === EstadoSolicitud.JUSTIFICADA;
+      return estadosJustificados.includes(s.estado);
+    } else if (pestanaActiva === 'injustificados') {
+      return estadosInjustificados.includes(s.estado);
     } else {
-      // Injustificados
-      return s.estado === EstadoSolicitud.INJUSTIFICADA;
+      return estadosPendientes.includes(s.estado);
     }
   });
 
@@ -177,12 +162,23 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
         descripcionMotivo = motivo?.descripcion || '';
       }
 
-      await justificarSolicitud(
-        solicitudSeleccionada.id_solicitud,
-        solicitudSeleccionada,
-        codigoMotivo,
-        descripcionMotivo
-      );
+      const esAtrasoItem = esAtraso(solicitudSeleccionada.tipo);
+      if (esAtrasoItem) {
+        await justificarAtraso(
+          solicitudSeleccionada.id_solicitud,
+          codigoMotivo,
+          descripcionMotivo,
+          ''
+        );
+      } else {
+        await justificarInasistencia(
+          solicitudSeleccionada.id_solicitud,
+          codigoMotivo,
+          descripcionMotivo,
+          '',
+          tieneDocumento
+        );
+      }
       setExito(true);
       cerrarModal();
       // Los datos se actualizan automáticamente mediante listeners en tiempo real
@@ -403,10 +399,11 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
       <div style={styles.card}>
         {/* Pestañas */}
         <div style={styles.tabContainer}>
-          {(['justificados', 'injustificados'] as const).map((tab) => {
+          {(['pendientes', 'justificados', 'injustificados'] as const).map((tab) => {
             const labels = {
-              justificados: `✓ Justificados (${solicitudes.filter(s => s.estado === EstadoSolicitud.JUSTIFICADA).length})`,
-              injustificados: `✕ Injustificados (${solicitudes.filter(s => s.estado === EstadoSolicitud.INJUSTIFICADA).length})`,
+              pendientes: `🕐 Pendientes (${solicitudes.filter(s => estadosPendientes.includes(s.estado)).length})`,
+              justificados: `✓ Justificados (${solicitudes.filter(s => estadosJustificados.includes(s.estado)).length})`,
+              injustificados: `✕ No justificados (${solicitudes.filter(s => estadosInjustificados.includes(s.estado)).length})`,
             };
             return (
               <button type="button" 
@@ -498,11 +495,16 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
                 {solicitudesPaginadas.map((solicitud) => {
                   const estudiante = estudiantes.find(e => e.id_estudiante === solicitud.id_estudiante);
                   let estadoBadge = styles.badgeInjustificado;
-                  let etiquetaEstado = 'Injustificado';
+                  let etiquetaEstado = solicitud.estado;
 
-                  if (solicitud.estado === EstadoSolicitud.JUSTIFICADA) {
+                  if (estadosJustificados.includes(solicitud.estado)) {
                     estadoBadge = styles.badgeJustificado;
                     etiquetaEstado = 'Justificado';
+                  } else if (estadosPendientes.includes(solicitud.estado)) {
+                    estadoBadge = styles.badgePendiente;
+                    etiquetaEstado = 'Pendiente';
+                  } else if (estadosInjustificados.includes(solicitud.estado)) {
+                    etiquetaEstado = 'No justificado';
                   }
 
                   return (
@@ -518,7 +520,7 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
                         </span>
                       </td>
                       <td style={styles.td}>
-                        {solicitud.estado === EstadoSolicitud.INJUSTIFICADA && (
+                        {estadosPendientes.includes(solicitud.estado) && (
                           <button type="button" 
                             onClick={() => abrirModal(solicitud)}
                             style={styles.botonJustificar}

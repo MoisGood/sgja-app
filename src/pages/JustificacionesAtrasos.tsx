@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Justificaciones de Atrasos e Inasistencias
+// SGJA – Justificaciones de Atrasos e Inasistencias (Paradocente)
 // src/pages/JustificacionesAtrasos.tsx
 // ============================================================
 
@@ -7,7 +7,10 @@ import { useState, useEffect } from 'react';
 import {
   obtenerEstudiantesDelEstablecimiento,
   obtenerMotivosDelEstablecimiento,
-  actualizarSolicitud,
+  justificarAtraso,
+  marcarAtrasoInjustificado,
+  justificarInasistencia,
+  rechazarInasistencia,
   escucharSolicitudesInjustificadas,
 } from '../services/database';
 import type { Estudiante, Solicitud, MotivoJustificacion } from '../types';
@@ -120,14 +123,27 @@ export default function JustificacionesAtrasos({ idEstablecimiento }: Props) {
       setError(null);
 
       const motivoSeleccionado = motivos.find(m => m.id_motivo === formJustificacion.motivo_codigo);
+      const { id_solicitud: id, tipo } = modal.solicitud;
+      const esAtrasoItem = esAtraso(tipo);
 
-      await actualizarSolicitud(modal.solicitud.id_solicitud, {
-        estado: EstadoSolicitud.JUSTIFICADA,
-        motivo_codigo: formJustificacion.motivo_codigo,
-        motivo_descripcion: motivoSeleccionado?.descripcion || '',
-        observaciones: formJustificacion.observaciones || null,
-        tipo_respaldo: formJustificacion.respaldo_url,
-      });
+      if (esAtrasoItem) {
+        await justificarAtraso(
+          id,
+          formJustificacion.motivo_codigo,
+          motivoSeleccionado?.descripcion || '',
+          '',
+          formJustificacion.observaciones || undefined
+        );
+      } else {
+        await justificarInasistencia(
+          id,
+          formJustificacion.motivo_codigo,
+          motivoSeleccionado?.descripcion || '',
+          '',
+          false,
+          formJustificacion.observaciones || undefined
+        );
+      }
 
       // Actualizar localmente para reflejo inmediato
       setSolicitudes(prev => 
@@ -148,9 +164,13 @@ export default function JustificacionesAtrasos({ idEstablecimiento }: Props) {
     if (!confirm('¿Estás seguro de que deseas rechazar esta justificación?')) return;
 
     try {
-      await actualizarSolicitud(solicitud.id_solicitud, {
-        estado: EstadoSolicitud.RECHAZADA,
-      });
+      const esAtrasoItem = esAtraso(solicitud.tipo);
+
+      if (esAtrasoItem) {
+        await marcarAtrasoInjustificado(solicitud.id_solicitud, '', undefined);
+      } else {
+        await rechazarInasistencia(solicitud.id_solicitud, '', undefined);
+      }
 
       // Actualizar localmente para reflejo inmediato
       setSolicitudes(prev => 
@@ -165,8 +185,8 @@ export default function JustificacionesAtrasos({ idEstablecimiento }: Props) {
     }
   };
 
-  // Filtrar solo INJUSTIFICADAS
-  const injustificadas = solicitudes.filter(s => s.estado === EstadoSolicitud.INJUSTIFICADA);
+  // Filtrar solo INASISTENTES (sin procesar)
+  const injustificadas = solicitudes.filter(s => s.estado === EstadoSolicitud.INASISTENTE);
 
   // Aplicar filtro por tipo
   const filtradas =

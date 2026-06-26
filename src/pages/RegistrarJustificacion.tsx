@@ -4,12 +4,13 @@ import {
   obtenerEstudiantesDelEstablecimiento,
   obtenerCursosDelEstablecimiento,
   obtenerMotivosDelEstablecimiento,
-  justificarSolicitud,
+  justificarAtraso,
+  justificarInasistencia,
   escucharSolicitudesInjustificadas,
-  escucharSolicitudesJustificadas,
 } from '../services/database';
 import type { Estudiante, Solicitud, MotivoJustificacion } from '../types';
 import { EstadoSolicitud } from '../types';
+import { esAtraso } from '../utils/tipoRegistroHelper';
 
 interface Props {
   idEstablecimiento: string;
@@ -39,14 +40,12 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
 
   // ── Cargar datos iniciales y escuchar cambios en tiempo real ──
   useEffect(() => {
-    let unsubscribeInjustificadas: () => void = () => {};
-    let unsubscribeJustificadas: () => void = () => {};
+    let unsubscribe: () => void = () => {};
 
     const cargarDatosIniciales = async () => {
       try {
         setCargando(true);
         
-        // Cargar datos estáticos
         const [estudiantesData, cursosData, motivosData] = await Promise.all([
           obtenerEstudiantesDelEstablecimiento(idEstablecimiento).catch(() => []),
           obtenerCursosDelEstablecimiento(idEstablecimiento).catch(() => []),
@@ -63,26 +62,10 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
         );
         setMotivos(motivosOrdenados);
 
-        // Configurar listeners para ambas colecciones
-        unsubscribeInjustificadas = escucharSolicitudesInjustificadas(
+        unsubscribe = escucharSolicitudesInjustificadas(
           idEstablecimiento,
-          (injustificadasData) => {
-            setSolicitudes((prevSolicitudes) => {
-              // Combinar con justificadas existentes
-              const justificadas = prevSolicitudes.filter(s => s.estado === EstadoSolicitud.JUSTIFICADA);
-              return [...injustificadasData, ...justificadas];
-            });
-          }
-        );
-
-        unsubscribeJustificadas = escucharSolicitudesJustificadas(
-          idEstablecimiento,
-          (justificadasData) => {
-            setSolicitudes((prevSolicitudes) => {
-              // Combinar con injustificadas existentes
-              const injustificadas = prevSolicitudes.filter(s => s.estado === EstadoSolicitud.INJUSTIFICADA);
-              return [...injustificadas, ...justificadasData];
-            });
+          (solicitudesData) => {
+            setSolicitudes(solicitudesData);
           }
         );
 
@@ -95,20 +78,17 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
 
     cargarDatosIniciales();
 
-    // Limpiar listeners al desmontar
     return () => {
-      unsubscribeInjustificadas();
-      unsubscribeJustificadas();
+      unsubscribe();
     };
   }, [idEstablecimiento]);
 
   const abrirModal = (solicitud: Solicitud) => {
-    if (solicitud.estado === EstadoSolicitud.INJUSTIFICADA) {
+    if (solicitud.estado === EstadoSolicitud.INASISTENTE) {
       setSolicitudSeleccionada(solicitud);
       setModalAbierto(true);
       setMotivoSeleccionado('');
       setError(null);
-      // Hacer focus en el select cuando se abre el modal
       setTimeout(() => {
         selectMotivoRef.current?.focus();
       }, 0);
@@ -147,14 +127,24 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
         descripcionMotivo = motivo?.descripcion || '';
       }
 
-      // Justificar la solicitud (crea en justificadas, elimina de injustificadas)
-      await justificarSolicitud(
-        solicitudSeleccionada.id_solicitud,
-        solicitudSeleccionada,
-        codigoMotivo,
-        descripcionMotivo,
-        idUsuario  // Pasar el ID del usuario (inspector/paradocente) que justifica
-      );
+      const esAtrasoItem = esAtraso(solicitudSeleccionada.tipo);
+
+      if (esAtrasoItem) {
+        await justificarAtraso(
+          solicitudSeleccionada.id_solicitud,
+          codigoMotivo,
+          descripcionMotivo,
+          idUsuario
+        );
+      } else {
+        await justificarInasistencia(
+          solicitudSeleccionada.id_solicitud,
+          codigoMotivo,
+          descripcionMotivo,
+          idUsuario,
+          tieneDocumento
+        );
+      }
 
       // Actualizar localmente: eliminar de la lista
       setSolicitudes(prev =>

@@ -46,13 +46,16 @@ export function RegistrarJustificacionUI({
   const solicitudesFiltradas = solicitudes.filter(sol => {
     const est = estudiantes.find(e => e.id_estudiante === sol.id_estudiante);
     
-    // Filtro por estado (todos/injustificado/justificado)
+    // Filtro por estado
     const estaEnEstado =
       pestanaActiva === 'todos'
         ? true
         : pestanaActiva === 'injustificados'
-          ? sol.estado === EstadoSolicitud.INJUSTIFICADA
-          : sol.estado === EstadoSolicitud.JUSTIFICADA;
+          ? sol.estado === EstadoSolicitud.INASISTENTE
+          : [
+              EstadoSolicitud.ATRASO_JUSTIFICADO,
+              EstadoSolicitud.INASISTENCIA_JUSTIFICADA,
+            ].includes(sol.estado);
 
     // Filtro por RUT
     const cumpleBusqueda = !busquedaRut || (est?.rut || '').includes(busquedaRut);
@@ -70,10 +73,9 @@ export function RegistrarJustificacionUI({
   const inicio = (paginaActual - 1) * itemsPorPagina;
   const solicitudesEnPagina = solicitudesFiltradas.slice(inicio, inicio + itemsPorPagina);
 
-  // Función para obtener icono según estado
   const getEstadoIcono = (estado: EstadoSolicitud) => {
-    if (estado === EstadoSolicitud.JUSTIFICADA) return '✅';
-    if (estado === EstadoSolicitud.INJUSTIFICADA) return '🕐';
+    if (estado === EstadoSolicitud.INASISTENTE) return '🕐';
+    if (estado === EstadoSolicitud.ATRASO_JUSTIFICADO || estado === EstadoSolicitud.INASISTENCIA_JUSTIFICADA) return '✅';
     return '⚠️';
   };
 

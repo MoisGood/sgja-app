@@ -98,17 +98,23 @@ export default function DashboardInspector({ idEstablecimiento }: Props) {
       {/* Filtros */}
       <Card titulo="Filtros" padding="16px" sombra="pequeña">
         <div style={styles.filtros}>
-          {['TODAS', 'Injustificada', 'Justificada', 'Rechazada', 'No presentada'].map((estado) => (
+          {[
+            { label: 'Todas', value: 'TODAS' as const },
+            { label: 'Sin procesar', value: EstadoSolicitud.INASISTENTE },
+            { label: 'Justificadas', value: EstadoSolicitud.INASISTENCIA_JUSTIFICADA },
+            { label: 'No justificadas', value: EstadoSolicitud.INASISTENCIA_NO_JUSTIFICADA },
+            { label: 'No presentada', value: EstadoSolicitud.NO_PRESENTADA },
+          ].map((item) => (
             <button type="button" 
-              key={estado}
-              onClick={() => setFiltroEstado(estado as 'TODAS' | EstadoSolicitud)}
+              key={item.value}
+              onClick={() => setFiltroEstado(item.value as 'TODAS' | EstadoSolicitud)}
               style={{
                 ...styles.botonFiltro,
-                backgroundColor: filtroEstado === estado ? '#1A3C6B' : '#F3F4F6',
-                color: filtroEstado === estado ? '#FFFFFF' : '#374151',
+                backgroundColor: filtroEstado === item.value ? '#1A3C6B' : '#F3F4F6',
+                color: filtroEstado === item.value ? '#FFFFFF' : '#374151',
               }}
             >
-              {estado}
+              {item.label}
             </button>
           ))}
         </div>
@@ -152,16 +158,16 @@ export default function DashboardInspector({ idEstablecimiento }: Props) {
                   <Button
                     tamaño="pequeño"
                     tipo="exito"
-                    onClick={() => handleCambiarEstado(solicitud.id_solicitud, 'Aprobada' as EstadoSolicitud)}
+                    onClick={() => handleCambiarEstado(solicitud.id_solicitud, EstadoSolicitud.INASISTENCIA_JUSTIFICADA)}
                   >
-                    ✓ Aprobar
+                    ✓ Justificar
                   </Button>
                   <Button
                     tamaño="pequeño"
                     tipo="peligro"
-                    onClick={() => handleCambiarEstado(solicitud.id_solicitud, 'Rechazada' as EstadoSolicitud)}
+                    onClick={() => handleCambiarEstado(solicitud.id_solicitud, EstadoSolicitud.INASISTENCIA_NO_JUSTIFICADA)}
                   >
-                    ✗ Rechazar
+                    ✗ No justificar
                   </Button>
                 </div>
               </div>

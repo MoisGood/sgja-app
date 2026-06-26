@@ -4,18 +4,26 @@
 // ============================================================
 
 export enum Rol {
-  ADMIN      = 'ADMIN',
-  INSPECTOR  = 'INSPECTOR',
-  PROFESOR   = 'PROFESOR',
-  ESTUDIANTE = 'ESTUDIANTE',
-  APODERADO  = 'APODERADO',
+  ADMIN       = 'ADMIN',
+  INSPECTOR   = 'INSPECTOR',
+  PARADOCENTE = 'PARADOCENTE',
+  PROFESOR    = 'PROFESOR',
+  ESTUDIANTE  = 'ESTUDIANTE',
+  APODERADO   = 'APODERADO',
 }
 
 export enum EstadoSolicitud {
-  INJUSTIFICADA = 'Injustificada',
-  JUSTIFICADA   = 'Justificada',
-  RECHAZADA     = 'Rechazada',
-  NO_PRESENTADA = 'No presentada',
+  INASISTENTE                = 'INASISTENTE',
+  ATRASO_JUSTIFICADO        = 'ATRASO_JUSTIFICADO',
+  ATRASO_INJUSTIFICADO      = 'ATRASO_INJUSTIFICADO',
+  INASISTENCIA_JUSTIFICADA  = 'INASISTENCIA_JUSTIFICADA',
+  INASISTENCIA_NO_JUSTIFICADA = 'INASISTENCIA_NO_JUSTIFICADA',
+  NO_PRESENTADA             = 'NO_PRESENTADA',
+  // Backward compat — se resuelven a los nuevos valores
+  JUSTIFICADA               = 'INASISTENCIA_JUSTIFICADA',
+  INJUSTIFICADA             = 'INASISTENTE',
+  RECHAZADA                 = 'INASISTENCIA_NO_JUSTIFICADA',
+  PENDIENTE                 = 'INASISTENTE',
 }
 
 export enum TipoRegistro {

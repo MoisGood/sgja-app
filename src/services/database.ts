@@ -37,11 +37,17 @@ export {
   obtenerSolicitudesPorEstudiante,
   obtenerSolicitudesDelEstablecimiento,
   crearSolicitud,
-  eliminarSolicitudesInjustificadas,
-  justificarSolicitud,
   actualizarEstadoSolicitud,
   actualizarSolicitud,
+  justificarSolicitud,
   eliminarSolicitudPorId,
+  eliminarSolicitudesPorEstudianteYFecha,
+  justificarAtraso,
+  marcarAtrasoInjustificado,
+  justificarInasistencia,
+  rechazarInasistencia,
+  anularSolicitud,
+  escucharSolicitudes,
 } from './solicitudes.service';
 
 export {

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flujo Justificaciones — SGJA</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f3f4f6; margin: 0; padding: 24px; color: #1f2937; }
+  h1 { text-align: center; font-size: 22px; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 32px; }
+  .diagram-container { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 32px; overflow-x: auto; }
+  .diagram-container h2 { font-size: 16px; margin: 0 0 16px; color: #374151; border-left: 4px solid #2563eb; padding-left: 12px; }
+  .legend { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; font-size: 13px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot-blue { background: #2563eb; }
+  .dot-green { background: #16a34a; }
+  .dot-purple { background: #7c3aed; }
+  .dot-amber { background: #d97706; }
+  .dot-gray { background: #6b7280; }
+  .notes { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.6; margin-top: 16px; }
+  .notes strong { color: #92400e; }
+  .legend-box { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin: 0 2px; }
+  .box-blue { background: #dbeafe; color: #1e40af; }
+  .box-green { background: #d1fae5; color: #065f46; }
+  .box-purple { background: #ede9fe; color: #5b21b6; }
+  .box-amber { background: #fef3c7; color: #92400e; }
+  .box-gray { background: #f3f4f6; color: #374151; }
+</style>
+</head>
+<body>
+
+<h1>🧭 Flujo del Módulo de Justificaciones</h1>
+<p class="subtitle">SGJA — Roles: Profesor (móvil) · Paradocente · Inspector · Estudiante</p>
+
+<div class="legend">
+  <span class="legend-item"><span class="legend-dot dot-blue"></span> Profesor (móvil)</span>
+  <span class="legend-item"><span class="legend-dot dot-green"></span> Paradocente (nuevo rol)</span>
+  <span class="legend-item"><span class="legend-dot dot-purple"></span> Inspector</span>
+  <span class="legend-item"><span class="legend-dot dot-amber"></span> Estudiante</span>
+  <span class="legend-item"><span class="legend-dot dot-gray"></span> ADMIN</span>
+</div>
+
+<!-- DIAGRAMA 1: FLUJO GENERAL -->
+<div class="diagram-container">
+<h2>1. Flujo general — Ciclo de vida de una solicitud</h2>
+<pre class="mermaid">
+flowchart TD
+    %% Definición de estilos
+    classDef prof fill:#dbeafe,stroke:#2563eb,color:#1e40af
+    classDef para fill:#d1fae5,stroke:#16a34a,color:#065f46
+    classDef insp fill:#ede9fe,stroke:#7c3aed,color:#5b21b6
+    classDef est fill:#fef3c7,stroke:#d97706,color:#92400e
+    classDef admin fill:#f3f4f6,stroke:#6b7280,color:#374151
+    classDef sist fill:#fce7f3,stroke:#ec4899,color:#9d174d
+    classDef db fill:#e0e7ff,stroke:#4f46e5,color:#3730a3
+
+    %% Nodos
+    START(("Inicio")) --> PROF_CREA["Profesor crea pase\n(GestionPases)"]
+    PROF_CREA --> DB_INSERT["📦 solicitudes\nINSERT estado=INJUSTIFICADA"]
+    
+    DB_INSERT --> PARA_VE["Paradocente ve\nsolicitudes pendientes\n(RegistrarJustificacion / JustificacionesAtrasos)"]
+    DB_INSERT --> INSP_VE["Inspector ve\nsolicitudes pendientes\n(VerJustificaciones)"]
+    
+    PARA_VE --> PARA_DECIDE{"¿Justifica o Rechaza?"}
+    PARA_DECIDE -->|Justifica| PARA_JUST["Selecciona motivo\nOpcional: documento"]
+    PARA_JUST --> DB_JUST["📦 solicitudes\nUPDATE estado=JUSTIFICADA\n+ motivo + inspector"]
+    DB_JUST --> EST_VE["Estudiante ve\nsolicitud justificada\n(MisJustificaciones)"]
+    
+    PARA_DECIDE -->|Rechaza| DB_RECHAZA["📦 solicitudes\nUPDATE estado=RECHAZADA"]
+    DB_RECHAZA --> EST_VE
+    
+    INSP_VE --> INSP_DECIDE{"¿Justifica o Rechaza?"}
+    INSP_DECIDE -->|Justifica| INSP_JUST["Selecciona motivo"]
+    INSP_JUST --> DB_JUST
+    INSP_DECIDE -->|Rechaza| DB_RECHAZA
+    
+    PROF_CREA -->|Anula| DB_ANULA["📦 solicitudes\nUPDATE estado=NO_PRESENTADA"]
+    DB_ANULA -.->|Solo profesor o admin| PROF_CREA
+    
+    DB_INSERT --> ADMIN_VE["Admin ve todo\n(acceso completo)"]
+    ADMIN_VE --> ADMIN_ANY["Admin puede\njustificar/rechazar\nsobre cualquier solicitud"]
+
+    %% Clases
+    class PROF_CREA prof
+    class PARA_VE,PARA_DECIDE,PARA_JUST para
+    class INSP_VE,INSP_DECIDE,INSP_JUST insp
+    class EST_VE est
+    class ADMIN_VE,ADMIN_ANY admin
+    class DB_INSERT,DB_JUST,DB_RECHAZA,DB_ANULA db
+</pre>
+
+<div class="notes">
+  <strong>Notas:</strong><br>
+  • El profesor <strong>solo crea pases</strong> (no justifica). Su interfaz en móvil es simplificada.<br>
+  • El paradocente es el rol <strong>nuevo</strong> que ejecuta la justificación diaria.<br>
+  • El inspector supervisa y también puede justificar.<br>
+  • El estudiante solo <strong>ve</strong> sus solicitudes (no crea, no edita).<br>
+  • Todas las operaciones van a una <strong>única tabla <code>solicitudes</code></strong> con campo <code>estado</code>.
+</div>
+</div>
+
+<!-- DIAGRAMA 2: PROFESOR MÓVIL -->
+<div class="diagram-container">
+<h2>2. Profesor — Versión móvil (crear pase de atraso)</h2>
+<pre class="mermaid">
+flowchart LR
+    INICIO["App → 'Nuevo Pase'"] --> CURSO["Selecciona Curso\n(selector touch)"]
+    CURSO --> ESTUD["Selecciona Estudiante\n(lista del curso)"]
+    ESTUD --> TIPO["Define Tipo\nATRASO / INASISTENCIA"]
+    TIPO --> FECHA["Define Fecha + Hora\n(dentro del día escolar)"]
+    FECHA --> CONFIRMA{"¿Confirmar?"}
+    CONFIRMA -->|Sí| DB[(solicitudes\nINJUSTIFICADA)]
+    CONFIRMA -->|No| CURSO
+    DB --> OK["✅ Pase creado\nVuelve al inicio"]
+    
+    class INICIO,CURSO,ESTUD,TIPO,FECHA,OK prof
+    class DB db
+</pre>
+
+<div class="notes">
+  <strong>Requisitos móvil:</strong> Interfaz touch-friendly, paso a paso (stepper), selectores grandes, teclado tipo fecha/hora nativo, sin justificación, sin tabla de historial. Ruta: <code>/gestion-pases/movil</code>.
+</div>
+</div>
+
+<!-- DIAGRAMA 3: PARADOCENTE -->
+<div class="diagram-container">
+<h2>3. Paradocente — Justificación diaria</h2>
+<pre class="mermaid">
+flowchart LR
+    INICIO["Menú → 'Registrar'\n(o 'Justificaciones de Atrasos')"] --> LISTA["Ve solicitudes\nINJUSTIFICADAS\n(filtra por curso/fecha/tipo)"]
+    LISTA --> SEL["Selecciona una\nsolicitud"]
+    SEL --> MOTIVO["Elige motivo\ndel catálogo\n(motivos_justificacion)"]
+    MOTIVO --> DOC["Opcional:\nDocumento / Certificado"]
+    DOC --> OBS["Opcional:\nObservaciones"]
+    OBS --> JUSTIFICA{"¿Justificar\no Rechazar?"}
+    JUSTIFICA -->|Justificar| DB_J[(solicitudes\nestado=JUSTIFICADA)]
+    JUSTIFICA -->|Rechazar| DB_R[(solicitudes\nestado=RECHAZADA)]
+    DB_J --> OK["✅ Listo\nSolicitud justificada"]
+    DB_R --> OK_R["🚫 Rechazada"]
+    
+    class INICIO,LISTA,SEL,MOTIVO,DOC,OBS para
+    class DB_J,DB_R db
+    class OK,OK_R para
+</pre>
+
+<div class="notes">
+  <strong>Notas:</strong><br>
+  • El paradocente usa las mismas páginas que el inspector: <code>RegistrarJustificacion</code>, <code>VerJustificaciones</code>, <code>JustificacionesAtrasos</code>.<br>
+  • Diferencia con inspector: el inspector además tiene dashboard propio.<br>
+  • El flujo es puramente desktop (no hay versión móvil para paradocente en esta fase).
+</div>
+</div>
+
+<!-- DIAGRAMA 4: ESTUDIANTE -->
+<div class="diagram-container">
+<h2>4. Estudiante — Vista de solo lectura</h2>
+<pre class="mermaid">
+flowchart LR
+    INICIO["App → 'Mis Justificaciones'"] --> CARGA["Carga solicitudes\ndel estudiante autenticado"]
+    CARGA --> FILTRO["Filtra por fecha\ntipo o estado"]
+    FILTRO --> TABLA["Tabla de solicitudes\n(Solo lectura)"]
+    TABLA --> DETALLE["Abre detalle:\nfecha, tipo, estado,\nmotivo, quién justificó"]
+    
+    class INICIO,CARGA,FILTRO,TABLA,DETALLE est
+</pre>
+
+<div class="notes">
+  <strong>Requisitos:</strong> Ruta <code>/mis-justificaciones</code>. Solo SELECT con <code>WHERE id_estudiante = auth.uid()</code>. Sin botones de crear/editar/eliminar. RLS policy: <code>USING (id_estudiante = auth.uid())</code>.
+</div>
+</div>
+
+<!-- DIAGRAMA 5: MODELO DE DATOS -->
+<div class="diagram-container">
+<h2>5. Modelo de datos — Tabla unificada <code>solicitudes</code></h2>
+<pre class="mermaid">
+erDiagram
+    solicitudes {
+        uuid id_solicitud PK
+        uuid id_establecimiento FK
+        uuid id_estudiante FK
+        uuid id_profesor FK
+        enum tipo "ATRASO | INASISTENCIA"
+        date fecha
+        time hora
+        enum estado "INJUSTIFICADA | JUSTIFICADA | RECHAZADA | NO_PRESENTADA"
+        varchar motivo_codigo "nullable"
+        text motivo_descripcion "nullable"
+        text observaciones "nullable"
+        boolean respaldo_recibido
+        varchar tipo_respaldo "nullable"
+        uuid id_token_qr "nullable"
+        uuid id_inspector_justificador "nullable"
+        time hora_justificacion "nullable"
+        varchar curso "nullable"
+        uuid id_bloque "nullable"
+        int bloques_afectados
+        timestamptz creado_en
+        timestamptz actualizado_en
+    }
+
+    estudiantes ||--o{ solicitudes : tiene
+    motivos_justificacion ||--o{ solicitudes : "motivo_codigo referencia"
+    
+    solicitudes }o--|| establecimientos : pertenece
+</pre>
+
+<div class="notes">
+  <strong>Notas:</strong><br>
+  • Se unifica en una sola tabla <code>solicitudes</code> (reemplaza a <code>justificadas</code> + <code>injustificadas</code>).<br>
+  • El campo <code>estado</code> determina en qué etapa está la solicitud.<br>
+  • <code>id_inspector_justificador</code> registra quién (paradocente/inspector) ejecutó la justificación.<br>
+  • <code>hora_justificacion</code> registra cuándo se justificó (formato TIME).<br>
+  • Migración existente: la tabla <code>solicitudes</code> ya está definida en <code>SQL_SUPABASE_CREAR_TABLAS.sql</code> pero no usada por TypeScript.
+</div>
+</div>
+
+<!-- CUADRO: CAMBIOS POR ROL -->
+<div class="diagram-container">
+<h2>6. Cambios de permisos vs hoy</h2>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+
+<div style="border: 1px solid #dbeafe; border-radius: 8px; padding: 16px;">
+  <h3 style="font-size: 14px; color: #1e40af; margin: 0 0 8px;">👨‍🏫 Profesor</h3>
+  <ul style="font-size: 12px; line-height: 1.8; margin: 0; padding-left: 16px; color: #374151;">
+    <li>✅ <code>/gestion-pases</code> (desktop) — crear + ver sus pases</li>
+    <li>✅ <code>/gestion-pases/movil</code> (nuevo) — solo crear pase</li>
+    <li style="color: #dc2626; text-decoration: line-through;">❌ <code>/registrar</code> — pierde acceso (ya no justifica)</li>
+  </ul>
+</div>
+
+<div style="border: 1px solid #d1fae5; border-radius: 8px; padding: 16px;">
+  <h3 style="font-size: 14px; color: #065f46; margin: 0 0 8px;">👷 Paradocente (nuevo)</h3>
+  <ul style="font-size: 12px; line-height: 1.8; margin: 0; padding-left: 16px; color: #374151;">
+    <li>✅ <code>/registrar</code> — justificar solicitudes</li>
+    <li>✅ <code>/ver-justificaciones</code> — ver historial</li>
+    <li>✅ <code>/justificaciones</code> — atrasos e inasistencias</li>
+  </ul>
+</div>
+
+<div style="border: 1px solid #ede9fe; border-radius: 8px; padding: 16px;">
+  <h3 style="font-size: 14px; color: #5b21b6; margin: 0 0 8px;">🔍 Inspector</h3>
+  <ul style="font-size: 12px; line-height: 1.8; margin: 0; padding-left: 16px; color: #374151;">
+    <li>✅ Todo lo que hace paradocente</li>
+    <li>✅ <code>/gestion-pases</code> (ver todos)</li>
+    <li>✅ Dashboard inspector</li>
+  </ul>
+</div>
+
+<div style="border: 1px solid #fef3c7; border-radius: 8px; padding: 16px;">
+  <h3 style="font-size: 14px; color: #92400e; margin: 0 0 8px;">🎒 Estudiante (nuevo)</h3>
+  <ul style="font-size: 12px; line-height: 1.8; margin: 0; padding-left: 16px; color: #374151;">
+    <li>✅ <code>/mis-justificaciones</code> (nuevo) — solo lectura</li>
+    <li style="color: #dc2626;">❌ No puede crear ni editar</li>
+  </ul>
+</div>
+
+</div>
+
+<div class="notes">
+  <strong>ADMIN</strong>: mantiene acceso completo a todo (sin cambios). También mantiene acceso a <code>/secretaria/ausentes</code> (ausencias de funcionarios, que es un módulo aparte).
+</div>
+</div>
+
+</body>
+</html>

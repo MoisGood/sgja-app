@@ -1,26 +1,28 @@
 import { supabase } from '../lib/supabase';
 import type { Solicitud } from '../types';
 
-export function escucharSolicitudesInjustificadas(
+/** Suscribe a cambios en la tabla `solicitudes` (todos los eventos) */
+function escucharSolicitudes(
   idEstablecimiento: string,
   callback: (solicitudes: Solicitud[]) => void
 ): () => void {
   try {
     const subscription = supabase
-      .channel(`injustificadas:${idEstablecimiento}`)
+      .channel(`solicitudes:${idEstablecimiento}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'injustificadas',
+          table: 'solicitudes',
           filter: `id_establecimiento=eq.${idEstablecimiento}`,
         },
         async () => {
           const { data } = await supabase
-            .from('injustificadas')
+            .from('solicitudes')
             .select('*')
-            .eq('id_establecimiento', idEstablecimiento);
+            .eq('id_establecimiento', idEstablecimiento)
+            .eq('activo', true);
 
           callback((data || []) as Solicitud[]);
         }
@@ -36,37 +38,5 @@ export function escucharSolicitudesInjustificadas(
   }
 }
 
-export function escucharSolicitudesJustificadas(
-  idEstablecimiento: string,
-  callback: (solicitudes: Solicitud[]) => void
-): () => void {
-  try {
-    const subscription = supabase
-      .channel(`justificadas:${idEstablecimiento}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'justificadas',
-          filter: `id_establecimiento=eq.${idEstablecimiento}`,
-        },
-        async () => {
-          const { data } = await supabase
-            .from('justificadas')
-            .select('*')
-            .eq('id_establecimiento', idEstablecimiento);
-
-          callback((data || []) as Solicitud[]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  } catch (error) {
-    console.error('Error al configurar listener:', error);
-    return () => {};
-  }
-}
+export { escucharSolicitudes as escucharSolicitudesInjustificadas };
+export { escucharSolicitudes as escucharSolicitudesJustificadas };
