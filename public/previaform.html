@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vista previa - SGJA</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #e8ecf1;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+}
+.preview-wrap {
+  max-width: 860px;
+  width: 100%;
+}
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.preview-header h1 {
+  font-size: 18px;
+  color: #1A3C6B;
+  font-weight: 700;
+}
+.preview-header button {
+  padding: 8px 18px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  background: #FFF;
+  color: #374151;
+  font-size: 12px;
+  cursor: pointer;
+}
+.preview-header button:hover { background: #f3f4f6; }
+.seccion-wrapper {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+.seccion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #F3F4F6;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+.seccion-badge {
+  padding: 2px 10px;
+  background: #1A3C6B;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px 3px 0 0;
+}
+.seccion-body {
+  position: relative;
+  min-height: 300px;
+  padding: 12px;
+  margin: 0 auto;
+}
+.navegacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-top: 1px solid #E5E7EB;
+}
+.navegacion button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #D1D5DB;
+  background: #FFF;
+  color: #374151;
+}
+.navegacion button.primario {
+  background: #1A3C6B;
+  color: #FFF;
+  border-color: #1A3C6B;
+  font-weight: 600;
+}
+.navegacion button.finalizar {
+  background: #10B981;
+  color: #FFF;
+  border-color: #10B981;
+  font-weight: 600;
+}
+.vacio {
+  text-align: center;
+  padding: 60px 20px;
+  color: #9CA3AF;
+  font-size: 14px;
+}
+.error-msg {
+  text-align: center;
+  padding: 60px 20px;
+  color: #DC2626;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+<div class="preview-wrap" id="app"></div>
+<script>
+const STORAGE_KEY = 'editor_form_v1';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function renderCampoHTML(c) {
+  const bg = c.bgColor && c.bgColor !== '#ffffff' ? 'background:'+c.bgColor+';' : '';
+  const fc = c.fontColor ? 'color:'+c.fontColor+';' : '';
+  const fs = c.fontSize ? 'font-size:'+c.fontSize+';' : '';
+  const fw = c.fontWeight ? 'font-weight:'+c.fontWeight+';' : '';
+  const ta = c.textAlign ? 'text-align:'+c.textAlign+';' : '';
+  const brd = c.borderGeneral ? 'border:'+c.borderGeneral+';' : '';
+  const br = c.borderRadius ? 'border-radius:'+c.borderRadius+';' : 'border-radius:4px;';
+  const sh = c.boxShadow ? 'box-shadow:'+c.boxShadow+';' : 'box-shadow:0 1px 3px rgba(0,0,0,0.05);';
+  const op = c.campoOpacity !== undefined && c.campoOpacity < 1 ? 'opacity:'+c.campoOpacity+';' : '';
+  const w = c.width ? 'width:'+c.width+';' : 'min-width:180px;';
+  const h = c.height ? 'height:'+c.height+';' : '';
+  const z = c.zIndex ? 'z-index:'+c.zIndex+';' : '';
+  const btop = c.borderTop ? 'border-top:'+c.borderTop+';' : '';
+  const bbot = c.borderBottom ? 'border-bottom:'+c.borderBottom+';' : '';
+  const bleft = c.borderLeft ? 'border-left:'+c.borderLeft+';' : '';
+  const bright = c.borderRight ? 'border-right:'+c.borderRight+';' : '';
+
+  let inp = '';
+  switch(c.tipo) {
+    case 'text': inp = '<input type="text" placeholder="'+(c.placeholder||'')+'" value="'+(c.valor||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;">'; break;
+    case 'textarea': inp = '<textarea rows="'+(c.rows||3)+'" placeholder="'+(c.placeholder||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;">'+(c.valor||'')+'</textarea>'; break;
+    case 'date': inp = '<input type="date" value="'+(c.valor||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">'; break;
+    case 'time': inp = '<input type="time" value="'+(c.valor||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">'; break;
+    case 'checkbox': inp = '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:default;"><input type="checkbox" '+(c.valor?'checked':'')+'> <span>'+(c.labelCheckbox||c.label||'Opción')+'</span></label>'; break;
+    case 'firma': inp = '<div style="text-align:center;"><div style="height:30px;border-bottom:1px solid #000;margin-bottom:2px;"></div><div style="font-size:10px;color:#666;font-weight:600;">'+(c.firmaLabel||'firma')+'</div></div>'; break;
+    case 'label': inp = '<div style="font-size:'+(c.fontSize||'18px')+';font-weight:'+(c.fontWeight||'700')+';color:'+(c.fontColor||'#1F2937')+';text-align:'+(c.textAlign||'left')+';padding:4px 0;">'+(c.label||'Título')+'</div>'; break;
+    case 'linea': inp = '<hr style="border:none;border-top:'+(c.borderGeneral||'2px solid #ccc')+';margin:4px 0;width:'+(c.width||'100%')+';'+(c.rotacion?'transform:rotate('+c.rotacion+'deg);':'')+(c.difuminado?'-webkit-mask-image:linear-gradient(to right,transparent,#000 15%,#000 85%,transparent);mask-image:linear-gradient(to right,transparent,#000 15%,#000 85%,transparent);':'')+'">'; break;
+    case 'rectangulo': inp = '<div style="width:100%;height:100%;min-height:60px;background:'+(c.bgColor||'#f5f5f5')+';border-radius:'+(c.borderRadius||'8px')+';box-shadow:'+(c.boxShadow||'none')+';border:1px solid #e5e7eb;"></div>'; break;
+    case 'search': inp = '<div style="position:relative;display:flex;align-items:center;"><input type="text" placeholder="'+(c.placeholder||'Buscar...')+'" style="width:100%;padding:8px 36px 8px 10px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;"><span style="position:absolute;right:10px;font-size:14px;color:#9CA3AF;pointer-events:none;">🔍</span></div>'; break;
+  }
+
+  const estilo = 'position:absolute;left:'+(c.x||20)+'px;top:'+(c.y||20)+'px;background:#fff;'+w+h+z+br+sh+brd+btop+bbot+bleft+bright+bg+fc+fs+fw+ta+op;
+
+  return '<div style="'+estilo+'">' +
+    (c.tipo!=='label'&&c.tipo!=='rectangulo'&&c.tipo!=='firma'&&c.tipo!=='checkbox'&&c.tipo!=='linea'&&c.tipo!=='textarea' ? '<div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:4px;">'+(c.label||c.tipo)+'</div>' : '') +
+    inp +
+  '</div>';
+}
+
+let seccionesData = [];
+let currentIdx = 0;
+
+function render() {
+  const app = document.getElementById('app');
+  const data = loadData();
+
+  if (!data || !data.secciones || data.secciones.length === 0) {
+    app.innerHTML = '<div class="error-msg">No hay datos del formulario.<br>Abre primero el editor y guarda el formulario.</div>';
+    return;
+  }
+
+  const { campos } = data;
+  seccionesData = data.secciones;
+  currentIdx = 0;
+
+  let html = '<div class="preview-header"><h1>📋 Vista previa</h1><button onclick="window.close()">✕ Cerrar</button></div>';
+  html += mostrarSeccion(currentIdx, campos);
+  app.innerHTML = html;
+}
+
+function mostrarSeccion(idx, campos) {
+  const s = seccionesData[idx];
+  if (!s) return '';
+  const sc = campos.filter(c => c.seccion === s.id);
+  const secW = s.width || '820px';
+  const secH = (s.minHeight || 500) + 'px';
+  const secBg = s.bgColor || '#ffffff';
+
+  let html = '<div class="seccion-wrapper">';
+  html += '<div class="seccion-header">' +
+    '<span class="seccion-badge">' + (s.label || 'Sección ' + (idx+1)) + ' de ' + seccionesData.length + '</span>' +
+    '<span style="font-size:10px;color:#6B7280;background:#E5E7EB;padding:1px 6px;border-radius:3px;">Wizard</span>' +
+    '<span style="flex:1;height:1px;background:#E5E7EB;"></span>' +
+    '<span style="font-size:11px;color:#6B7280;">' + sc.length + ' campos</span>' +
+  '</div>';
+
+  html += '<div class="seccion-body" style="max-width:'+secW+';min-height:'+secH+';'+(secBg!=='#ffffff'?'background:'+secBg+';':'')+'">';
+  if (sc.length === 0) {
+    html += '<div class="vacio">(sección sin campos)</div>';
+  } else {
+    sc.forEach(c => { html += renderCampoHTML(c); });
+  }
+  html += '</div>';
+
+  if (seccionesData.length >= 2) {
+    html += '<div class="navegacion">';
+    if (idx > 0) {
+      html += '<button onclick="navegar('+(idx-1)+')">← Anterior</button>';
+    } else {
+      html += '<div></div>';
+    }
+    if (idx === seccionesData.length - 1) {
+      html += '<button class="finalizar">✓ Finalizar</button>';
+    } else {
+      html += '<button class="primario" onclick="navegar('+(idx+1)+')">Siguiente →</button>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  return html;
+}
+
+function navegar(idx) {
+  if (idx < 0 || idx >= seccionesData.length) return;
+  currentIdx = idx;
+  const data = loadData();
+  if (!data) return;
+  const secEl = document.querySelector('.seccion-wrapper');
+  if (secEl) {
+    secEl.outerHTML = mostrarSeccion(idx, data.campos);
+  }
+}
+
+render();
+</script>
+</body>
+</html>

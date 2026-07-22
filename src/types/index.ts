@@ -590,3 +590,27 @@ export interface AyudaCatalogoError {
   creado_en: string;
   actualizado_en: string;
 }
+
+// ════════════════════════════════════════════════════════════
+// ⚕️ ACCIDENTES ESCOLARES
+// ════════════════════════════════════════════════════════════
+
+export interface AccidenteEscolar {
+  id: string;
+  id_establecimiento: string;
+  id_estudiante: string;
+  id_funcionario: string;
+  fecha_accidente: string;
+  hora_accidente: string;
+  lugar_accidente: string;
+  descripcion_accidente: string | null;
+  naturaleza_accidente: string | null;
+  consecuencia_accidente: string | null;
+  parte_cuerpo_afectada: string | null;
+  tipo_lesion: string | null;
+  primeros_auxilios: string | null;
+  testigos: string | null;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}

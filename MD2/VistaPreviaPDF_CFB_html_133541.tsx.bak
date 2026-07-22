@@ -1,0 +1,338 @@
+// src/components/VistaPreviaPDF.tsx
+// CFB — Vista previa imprimible del formulario (alternativa HTML al PDF)
+
+import { X, Printer } from 'lucide-react';
+
+interface Props {
+  datos: {
+    // Sección A
+    nombreEstablecimiento: string;
+    ciudad: string;
+    comuna: string;
+    tipoEstablecimiento: string;
+    curso: string;
+    horario: string;
+    fechaRegistro: string;
+
+    // Sección B
+    apellidoPaterno: string;
+    apellidoMaterno: string;
+    nombres: string;
+    sexo: string;
+    anoNacimiento: string;
+    edad: string;
+    calle: string;
+    numero: string;
+    poblacion: string;
+    comunaResidencia: string;
+    ciudadResidencia: string;
+    codifCom: string;
+
+    // Sección C
+    hora: string;
+    minutos: string;
+    fechaAccidente: string;
+    diaSemana: string;
+    accidenteTipo: string;
+    testigo1Nombre: string;
+    testigo1Cedula: string;
+    testigo2Nombre: string;
+    testigo2Cedula: string;
+    circunstancia: string;
+  };
+  cerrar: () => void;
+}
+
+const linea = (v: string) => v || '';
+
+const VistaPreviaPDF = ({ datos, cerrar }: Props) => {
+  const handlePrint = () => window.print();
+
+  return (
+    <>
+      {/* Overlay */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(0,0,0,0.5)', display: 'flex',
+        justifyContent: 'center', alignItems: 'flex-start',
+        padding: '20px', overflowY: 'auto'
+      }} className="print-preview">
+        {/* Toolbar (se oculta al imprimir) */}
+        <div className="no-print" style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000,
+          display: 'flex', justifyContent: 'center', gap: 12, padding: '10px 16px',
+          background: '#1A3C6B', color: '#fff'
+        }}>
+          <button onClick={handlePrint}
+            style={{
+              padding: '8px 24px', background: '#fff', color: '#1A3C6B',
+              border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6
+            }}>
+            <Printer size={16} /> Imprimir
+          </button>
+          <button onClick={cerrar}
+            style={{
+              padding: '8px 16px', background: 'transparent', color: '#fff',
+              border: '1px solid rgba(255,255,255,0.4)', borderRadius: 6,
+              fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6
+            }}>
+            <X size={16} /> Cerrar
+          </button>
+        </div>
+
+        {/* Formulario imprimible */}
+        <div className="print-form" style={{
+          background: '#fff', width: '210mm', minHeight: '297mm',
+          margin: '50px auto 20px', padding: '20mm 15mm',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+          fontSize: '11px', fontFamily: '"Times New Roman", "Georgia", serif',
+          lineHeight: 1.6, color: '#000', position: 'relative'
+        }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>
+              DECLARACION INDIVIDUAL DE ACCIDENTE ESCOLAR
+            </div>
+            <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>
+              Antes de registrar los datos lea las instrucciones al reverso
+            </div>
+            <div style={{
+              float: 'right', fontSize: 9, marginTop: -18,
+              border: '1px solid #000', padding: '2px 8px'
+            }}>
+              {datos.tipoEstablecimiento === '1' ? 'FISCAL O MUNICIPAL = 1' :
+               datos.tipoEstablecimiento === '2' ? 'PARTICULAR = 2' : ''}
+            </div>
+          </div>
+
+          {/* ── SECCIÓN A ── */}
+          <div style={{ border: '1px solid #000', padding: '10px 12px', marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, fontSize: 11, marginBottom: 6 }}>
+              A. INDIVIDUALIZACION DEL ESTABLECIMIENTO
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '2px 4px', width: '45%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>NOMBRE DEL ESTABLECIMIENTO</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.nombreEstablecimiento)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '25%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>CIUDAD</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.ciudad)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '30%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>COMUNA</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.comuna)}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '2px 4px', width: '35%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>CURSO</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.curso)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '30%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>HORARIO</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.horario)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '35%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>FECHA REGISTRO (DÍA / MES / AÑO)</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.fechaRegistro)}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── SECCIÓN B ── */}
+          <div style={{ border: '1px solid #000', padding: '10px 12px', marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, fontSize: 11, marginBottom: 6 }}>
+              B. INDIVIDUALIZACION DEL ACCIDENTADO
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '2px 4px', width: '28%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>APELLIDO PATERNO</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.apellidoPaterno)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '28%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>APELLIDO MATERNO</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.apellidoMaterno)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '29%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>NOMBRES</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.nombres)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '15%', textAlign: 'center' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>SEXO</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 12, textAlign: 'center' }}>
+                      {datos.sexo === '1' ? 'M' : datos.sexo === '2' ? 'F' : ''}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '2px 4px' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>AÑO DE NACIMIENTO</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.anoNacimiento)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>EDAD</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.edad)}
+                    </div>
+                  </td>
+                  <td colSpan={2} style={{ padding: '2px 4px' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>RESIDENCIA HABITUAL</div>
+                    <div style={{ fontSize: 10, padding: '1px 4px', minHeight: 18 }}>
+                      {[
+                        datos.calle && `Calle ${datos.calle}`,
+                        datos.numero && `N° ${datos.numero}`,
+                        datos.poblacion && `Pob. ${datos.poblacion}`,
+                        datos.comunaResidencia && `Com. ${datos.comunaResidencia}`,
+                        datos.ciudadResidencia && `Cd. ${datos.ciudadResidencia}`,
+                        datos.codifCom && `Cód. ${datos.codifCom}`
+                      ].filter(Boolean).join(', ')}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── SECCIÓN C ── */}
+          <div style={{ border: '1px solid #000', padding: '10px 12px' }}>
+            <div style={{ fontWeight: 700, fontSize: 11, marginBottom: 6 }}>
+              C. INFORME SOBRE EL ACCIDENTE
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '2px 4px', width: '15%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>HORA</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {datos.hora && datos.minutos ? `${datos.hora}:${datos.minutos}` : ''}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '25%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>FECHA ACCIDENTE (AÑO / MES / DÍA)</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.fechaAccidente)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '25%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>DÍA ACCIDENTE (1-7)</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {datos.diaSemana ? `${datos.diaSemana} (${['','LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO','DOMINGO'][Number(datos.diaSemana)] || ''})` : ''}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '35%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>ACCIDENTE</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {datos.accidenteTipo === '1' ? 'DE TRAYECTO = 1' :
+                       datos.accidenteTipo === '2' ? 'EN LA ESCUELA = 2' : ''}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Testigos */}
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 4 }}>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '2px 4px', width: '10%', verticalAlign: 'top' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>TESTIGOS</div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '45%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>NOMBRE - APELLIDO</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.testigo1Nombre)}
+                    </div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11, marginTop: 2 }}>
+                      {linea(datos.testigo2Nombre)}
+                    </div>
+                  </td>
+                  <td style={{ padding: '2px 4px', width: '45%' }}>
+                    <div style={{ fontSize: 8, color: '#666' }}>C. NAC. DE IDENTIDAD</div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11 }}>
+                      {linea(datos.testigo1Cedula)}
+                    </div>
+                    <div style={{ borderBottom: '1px solid #000', minHeight: 18, padding: '1px 4px', fontSize: 11, marginTop: 2 }}>
+                      {linea(datos.testigo2Cedula)}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Circunstancia */}
+            <div style={{ marginTop: 6, padding: '2px 4px' }}>
+              <div style={{ fontSize: 8, color: '#666' }}>
+                CIRCUNSTANCIA DEL ACCIDENTE (DESCRIBA CÓMO OCURRIO - CAUSAL)
+              </div>
+              <div style={{
+                border: '1px solid #000', minHeight: 50, padding: '4px 6px',
+                fontSize: 10, marginTop: 2
+              }}>
+                {linea(datos.circunstancia)}
+              </div>
+            </div>
+
+            {/* Firma */}
+            <div style={{
+              marginTop: 12, display: 'flex', justifyContent: 'flex-end',
+              alignItems: 'center', gap: 8
+            }}>
+              <div style={{ fontSize: 9, fontWeight: 600 }}>FIRMA Y TIMBRE</div>
+              <div style={{ borderBottom: '1px solid #000', width: 180, minHeight: 24 }}></div>
+              <div style={{ fontSize: 8, color: '#666' }}>RECTOR O REPRESENTANTE ESTABLEC.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          .print-preview {
+            background: white !important;
+            padding: 0 !important;
+            position: static !important;
+            overflow: visible !important;
+          }
+          .print-form {
+            box-shadow: none !important;
+            margin: 0 auto !important;
+            padding: 15mm 12mm !important;
+          }
+          body { margin: 0; padding: 0; }
+          @page { size: A4; margin: 0; }
+        }
+      `}</style>
+    </>
+  );
+};
+
+export default VistaPreviaPDF;

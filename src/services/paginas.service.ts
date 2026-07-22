@@ -55,5 +55,6 @@ export function obtenerTodasLasPaginas(): PermisosPagina[] {
     { ruta: '/monitoreo-correos', nombre: 'Monitoreo Correos', descripcion: 'Monitoreo de envío de correos' },
     { ruta: '/monitoreo-fallos', nombre: 'Monitoreo Fallos', descripcion: 'Registro de fallos del sistema' },
     { ruta: '/ayuda', nombre: 'Ayuda', descripcion: 'Centro de ayuda del sistema' },
+    { ruta: '/registrar-accidente', nombre: 'Registrar Accidente', descripcion: 'Formulario de constancia de accidente escolar' },
   ];
 }
