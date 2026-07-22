@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Contenido de la App (Lógica de Autenticación)
+// AGIL – Contenido de la App (Lógica de Autenticación)
 // src/AppContent.tsx
 // ============================================================
 
@@ -254,7 +254,7 @@ export default function AppContent() {
     return (
       <div style={styles.pantallaCarga}>
         <p style={styles.spinner}>⏳</p>
-        <p style={styles.textoCarga}>Cargando SGJA...</p>
+        <p style={styles.textoCarga}>Cargando AGIL...</p>
       </div>
     );
   }

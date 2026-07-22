@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Monitor de Lecturas
+// AGIL – Monitor de Lecturas
 // src/components/MonitorLecturas.tsx
 // Muestra en tiempo real: cache hits vs Supabase reads
 // ============================================================

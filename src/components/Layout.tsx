@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Layout Principal con Sidebar
+// AGIL – Layout Principal con Sidebar
 // src/components/Layout.tsx
 // ============================================================
 
@@ -40,7 +40,7 @@ interface MenuItem {
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { icono: <LayoutDashboard size={20}/>, etiqueta: 'Inicio',          ruta: '/dashboard',    roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR, Rol.ESTUDIANTE, Rol.APODERADO] },
+  { icono: <LayoutDashboard size={20}/>, etiqueta: 'Inicio',          ruta: '/dashboard',    roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE, Rol.ESTUDIANTE, Rol.APODERADO] },
    { 
     icono: <Users size={20}/>, 
     etiqueta: 'Secretaría',   
@@ -56,10 +56,10 @@ const MENU_ITEMS: MenuItem[] = [
     icono: <BookOpen         size={20}/>, 
     etiqueta: 'Justificaciones', 
     ruta: '/justificaciones',
-    roles: [Rol.INSPECTOR, Rol.ADMIN, Rol.PROFESOR],
+    roles: [Rol.INSPECTOR, Rol.ADMIN, Rol.PROFESOR, Rol.PARADOCENTE],
     submenu: [
-      { icono: <ClipboardList size={20}/>, etiqueta: 'Registrar',         ruta: '/registrar',              roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
-      { icono: <BookOpen size={20}/>, etiqueta: 'Ver Justificaciones',   ruta: '/ver-justificaciones',    roles: [Rol.ADMIN, Rol.INSPECTOR] },
+      { icono: <ClipboardList size={20}/>, etiqueta: 'Registrar',         ruta: '/registrar',              roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE] },
+      { icono: <BookOpen size={20}/>, etiqueta: 'Ver Justificaciones',   ruta: '/ver-justificaciones',    roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE] },
       { icono: <ClipboardList size={20}/>, etiqueta: 'Gestión de Pases', ruta: '/gestion-pases',         roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
     ]
   },
@@ -121,7 +121,7 @@ const MENU_ITEMS: MenuItem[] = [
     icono: <HelpCircle size={20}/>,
     etiqueta: 'Ayuda',
     ruta: '/ayuda',
-    roles: [Rol.INSPECTOR, Rol.PROFESOR, Rol.ESTUDIANTE, Rol.APODERADO],
+    roles: [Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE, Rol.ESTUDIANTE, Rol.APODERADO],
   }
 ];
 
@@ -133,7 +133,7 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   const [modalDatosAbierto, setModalDatosAbierto] = useState(false);
   const [establecimientoNombre, setEstablecimientoNombre] = useState('');
-  const [sistemaNombre, setSistemaNombre] = useState('SGJA');
+  const [sistemaNombre, setSistemaNombre] = useState('AGIL');
   const [sistemaSubtitulo, setSistemaSubtitulo] = useState('');
   const [sistemaLogoUrl, setSistemaLogoUrl] = useState('');
 

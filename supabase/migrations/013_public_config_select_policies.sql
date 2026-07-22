@@ -1,5 +1,5 @@
 -- ============================================================
--- SGJA – Migration 013: Permitir SELECT anónimo en tablas
+-- AGIL – Migration 013: Permitir SELECT anónimo en tablas
 --          de configuración pública (login page)
 -- ============================================================
 

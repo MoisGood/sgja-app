@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Helper para TipoRegistro
+// AGIL – Helper para TipoRegistro
 // src/utils/tipoRegistroHelper.ts
 // ============================================================
 

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Pantalla de Login (Supabase Auth - Email/Password)
+// AGIL – Pantalla de Login (Supabase Auth - Email/Password)
 // src/pages/Login.tsx
 // ============================================================
 
@@ -14,7 +14,7 @@ export default function Login() {
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [mantenimientoActivo, setMantenimientoActivo] = useState(false);
   const [mostrarLogin, setMostrarLogin] = useState(false);
-  const [sistema, setSistema] = useState({ nombre_sistema: 'SGJA', subtitulo: '', favicon_url: '' });
+  const [sistema, setSistema] = useState({ nombre_sistema: 'AGIL', subtitulo: '', favicon_url: '' });
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -64,7 +64,7 @@ export default function Login() {
       supabase.from('config_sistema').select('nombre_sistema,subtitulo,favicon_url').eq('id', 1).single(),
       supabase.from('configuracion_sistema').select('mantenimiento_activo').limit(1),
     ]).then(([cs, cm]) => {
-      if (cs.data) setSistema({ nombre_sistema: cs.data.nombre_sistema || 'SGJA', subtitulo: cs.data.subtitulo || '', favicon_url: cs.data.favicon_url || '' });
+      if (cs.data) setSistema({ nombre_sistema: cs.data.nombre_sistema || 'AGIL', subtitulo: cs.data.subtitulo || '', favicon_url: cs.data.favicon_url || '' });
       if (cm.data?.[0]?.mantenimiento_activo) setMantenimientoActivo(true);
     });
   }, []);

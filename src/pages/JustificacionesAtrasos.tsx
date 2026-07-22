@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Justificaciones de Atrasos e Inasistencias (Paradocente)
+// AGIL – Justificaciones de Atrasos e Inasistencias (Paradocente)
 // src/pages/JustificacionesAtrasos.tsx
 // ============================================================
 

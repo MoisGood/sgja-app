@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Índice de Componentes Comunes
+// AGIL – Índice de Componentes Comunes
 // src/components/Common/index.ts
 // ============================================================
 

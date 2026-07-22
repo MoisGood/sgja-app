@@ -1,5 +1,5 @@
 -- ============================================================
--- SGJA Database Schema
+-- AGIL Database Schema
 -- Generated from Supabase project: iyxubvtfhcmlivivdfpt
 -- ============================================================
 

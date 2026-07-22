@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Servicio de Identificación de Dispositivo
+// AGIL – Servicio de Identificación de Dispositivo
 // src/services/deviceId.ts
 // ============================================================
 
@@ -170,9 +170,9 @@ export async function obtenerCanvasFingerprint(): Promise<string> {
     ctx.fillStyle = '#f60';
     ctx.fillRect(125, 1, 62, 20);
     ctx.fillStyle = '#069';
-    ctx.fillText('SGJA Device ID', 2, 15);
+    ctx.fillText('AGIL Device ID', 2, 15);
     ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-    ctx.fillText('SGJA Device ID', 4, 17);
+    ctx.fillText('AGIL Device ID', 4, 17);
 
     const fingerprint = canvas.toDataURL();
     return fingerprint.substring(0, 50); // Retornar primeros 50 caracteres

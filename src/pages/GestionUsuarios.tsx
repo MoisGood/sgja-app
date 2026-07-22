@@ -25,6 +25,7 @@ const ROL_COLORES: Record<Rol, string> = {
   [Rol.ADMIN]: '#7C3AED',
   [Rol.INSPECTOR]: '#F59E0B',
   [Rol.PROFESOR]: '#10B981',
+  [Rol.PARADOCENTE]: '#6B21A8',
   [Rol.ESTUDIANTE]: '#F97316',
   [Rol.APODERADO]: '#EC4899',
 };

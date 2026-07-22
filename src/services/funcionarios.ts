@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Servicio de Funcionarios (CRUD)
+// AGIL – Servicio de Funcionarios (CRUD)
 // src/services/funcionarios.ts
 // ============================================================
 

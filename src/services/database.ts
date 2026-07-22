@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Barrel de Servicios de Base de Datos
+// AGIL – Barrel de Servicios de Base de Datos
 // src/services/database.ts
 // ============================================================
 // Re-exports from domain-specific service files.

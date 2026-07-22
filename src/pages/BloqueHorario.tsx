@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Mantenedor de Bloques de Horario
+// AGIL – Mantenedor de Bloques de Horario
 // src/pages/BloqueHorario.tsx
 // ============================================================
 

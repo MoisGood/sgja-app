@@ -1,5 +1,5 @@
 -- ============================================================
--- SGJA – Migration 012: RLS Policies for Core Tables
+-- AGIL – Migration 012: RLS Policies for Core Tables
 -- Habilita Row Level Security en tablas principales.
 -- Cada bloque verifica que la tabla exista antes de actuar.
 -- ============================================================

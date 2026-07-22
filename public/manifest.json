@@ -1,6 +1,6 @@
 {
-  "name": "SGJA - Sistema de Gestión de Justificaciones de Atrasos e Inasistencias",
-  "short_name": "SGJA",
+  "name": "AGIL - Sistema de Gestión de Justificaciones de Atrasos e Inasistencias",
+  "short_name": "AGIL",
   "description": "Sistema para registrar y gestionar justificaciones de atrasos e inasistencias de estudiantes",
   "start_url": "/",
   "scope": "/",

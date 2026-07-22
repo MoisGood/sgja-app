@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Sistema de Rutas Centralizado
+// AGIL – Sistema de Rutas Centralizado
 // src/router.tsx
 // ============================================================
 

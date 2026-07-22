@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Servicio de Documentos de Funcionarios
+// AGIL – Servicio de Documentos de Funcionarios
 // src/services/funcionarioDocumentos.ts
 // ============================================================
 

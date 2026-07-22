@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Hook para obtener permisos del usuario actual
+// AGIL – Hook para obtener permisos del usuario actual
 // src/hooks/usePermisosUsuario.ts
 // ============================================================
 
@@ -88,6 +88,7 @@ function obtenerPermisosDefecto(rol: Rol): string[] {
       '/bloque-horario',
       '/asignar-permisos',
     ],
+    [Rol.PARADOCENTE]: [],
     [Rol.INSPECTOR]: [],
     [Rol.PROFESOR]: [],
     [Rol.ESTUDIANTE]: [],

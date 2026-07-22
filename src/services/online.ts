@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Servicio de Estado En Línea (Migrado a Supabase)
+// AGIL – Servicio de Estado En Línea (Migrado a Supabase)
 // src/services/online.ts
 // ============================================================
 

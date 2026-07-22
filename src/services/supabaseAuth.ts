@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Autenticación con Supabase
+// AGIL – Autenticación con Supabase
 // src/services/supabaseAuth.ts
 // ============================================================
 

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Gestión de Pases (Atrasos/Inasistencias) - v2
+// AGIL – Gestión de Pases (Atrasos/Inasistencias) - v2
 // src/pages/GestionPases.tsx
 // ============================================================
 

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Cache Local Service (IndexedDB)
+// AGIL – Cache Local Service (IndexedDB)
 // src/services/cacheService.ts
 // Reduce lecturas de Firestore usando almacenamiento local
 // ============================================================

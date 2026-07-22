@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Dashboard Inspector
+// AGIL – Dashboard Inspector
 // src/pages/DashboardInspector.tsx
 // ============================================================
 
@@ -9,7 +9,8 @@ import {
   obtenerSolicitudesDelEstablecimiento,
   actualizarEstadoSolicitud,
 } from '../services/database';
-import type { Solicitud, EstadoSolicitud } from '../types';
+import type { Solicitud } from '../types';
+import { EstadoSolicitud } from '../types';
 import { getEmojiTipo, getLabelSimple } from '../utils/tipoRegistroHelper';
 
 interface Props {

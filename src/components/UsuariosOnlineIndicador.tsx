@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Indicador de Conectividad
+// AGIL – Indicador de Conectividad
 // Consulta Cloudflare Worker para verificar estado del servidor
 // ============================================================
 

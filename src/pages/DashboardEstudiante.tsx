@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Dashboard Estudiante
+// AGIL – Dashboard Estudiante
 // src/pages/DashboardEstudiante.tsx
 // ============================================================
 

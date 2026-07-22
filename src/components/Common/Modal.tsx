@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Componente Modal
+// AGIL – Componente Modal
 // src/components/Common/Modal.tsx
 // ============================================================
 

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Componente Input
+// AGIL – Componente Input
 // src/components/Common/Input.tsx
 // ============================================================
 

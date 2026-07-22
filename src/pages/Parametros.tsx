@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Parámetros del Sistema
+// AGIL – Parámetros del Sistema
 // src/pages/Parametros.tsx
 // ============================================================
 

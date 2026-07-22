@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function MantenedorSistema() {
-  const [nombreSistema, setNombreSistema] = useState('SGJA');
+  const [nombreSistema, setNombreSistema] = useState('AGIL');
   const [subtitulo, setSubtitulo] = useState('');
   const [version, setVersion] = useState('1.0.0');
   const [faviconUrl, setFaviconUrl] = useState('');
@@ -17,7 +17,7 @@ export default function MantenedorSistema() {
     (async () => {
       const { data } = await supabase.from('config_sistema').select('*').eq('id', 1).single();
       if (data) {
-        setNombreSistema(data.nombre_sistema || 'SGJA');
+        setNombreSistema(data.nombre_sistema || 'AGIL');
         setSubtitulo(data.subtitulo || '');
         setVersion(data.version || '1.0.0');
         setFaviconUrl(data.favicon_url || '');

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Servicio de Acceso a Supabase
+// AGIL – Servicio de Acceso a Supabase
 // src/services/supabaseService.ts
 // ============================================================
 

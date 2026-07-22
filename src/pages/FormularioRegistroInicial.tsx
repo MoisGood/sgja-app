@@ -57,7 +57,7 @@ export default function FormularioRegistroInicial({ uid, email, nombre: nombreIn
     <div style={styles.pantalla}>
       <div style={styles.card}>
         <p style={styles.iconoGrande}>👋</p>
-        <h2 style={styles.titulo}>Bienvenido a SGJA</h2>
+        <h2 style={styles.titulo}>Bienvenido a AGIL</h2>
         <p style={styles.texto}>
           Tu cuenta de Google ({email}) aún no está registrada en el sistema.
         </p>

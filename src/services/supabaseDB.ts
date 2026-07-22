@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Servicios de Base de Datos con Supabase
+// AGIL – Servicios de Base de Datos con Supabase
 // src/services/supabaseDB.ts
 // ============================================================
 

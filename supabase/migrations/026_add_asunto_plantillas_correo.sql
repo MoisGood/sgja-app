@@ -1,5 +1,5 @@
 -- ============================================================
--- SGJA – Migration 026: Add asunto (subject) to plantillas
+-- AGIL – Migration 026: Add asunto (subject) to plantillas
 -- ============================================================
 
 ALTER TABLE plantillas_correo_tecnico

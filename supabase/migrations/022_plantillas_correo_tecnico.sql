@@ -1,5 +1,5 @@
 -- ============================================================
--- SGJA – Migration 022: Plantillas de correo para técnicos
+-- AGIL – Migration 022: Plantillas de correo para técnicos
 -- Almacena plantillas de correo para notificación de cierre
 -- de tickets, con placeholders:
 --   {codigo}, {fecha}, {falla}, {diagnostico}, {solucion},

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Test Monitor de Lecturas
+// AGIL – Test Monitor de Lecturas
 // src/components/TestMonitor.tsx
 // Componente de prueba para generar lecturas automáticas
 // ============================================================

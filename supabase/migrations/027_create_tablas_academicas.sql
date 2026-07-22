@@ -1,5 +1,5 @@
 -- ============================================================
--- SGJA – Migration 027: Academic Module Tables (Phase 1)
+-- AGIL – Migration 027: Academic Module Tables (Phase 1)
 -- salas_aprendizaje, asignaturas, periodos, actividades,
 -- desempeno, promedios
 -- ============================================================

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Indicador de Conexión
+// AGIL – Indicador de Conexión
 // src/components/IndicadorConexion.tsx
 // Muestra círculo verde/negro según conexión a internet
 // ============================================================

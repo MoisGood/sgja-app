@@ -10,7 +10,7 @@ const labelStyle: React.CSSProperties = { display: 'block', fontSize: '13px', fo
 export default function Correos({ idEstablecimiento }: Props) {
   const [email, setEmail] = useState('');
   const [appPassword, setAppPassword] = useState('');
-  const [displayName, setDisplayName] = useState('SGJA Biblioteca');
+  const [displayName, setDisplayName] = useState('AGIL Biblioteca');
   const [replyTo, setReplyTo] = useState('');
   const [puerto, setPuerto] = useState(587);
   const [ssl, setSsl] = useState(false);
@@ -27,7 +27,7 @@ export default function Correos({ idEstablecimiento }: Props) {
       if (data) {
         setEmail(data.email || '');
         setAppPassword(data.app_password || '');
-        setDisplayName(data.display_name || 'SGJA Biblioteca');
+        setDisplayName(data.display_name || 'AGIL Biblioteca');
         setReplyTo(data.reply_to || '');
         if (data.smtp_port) setPuerto(data.smtp_port);
         setSsl(data.smtp_port === 465);
@@ -65,8 +65,8 @@ export default function Correos({ idEstablecimiento }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: toTest.trim(),
-          subject: '🔧 Prueba de configuración de correo - SGJA',
-          html: `<h2 style="color:#10B981;">✅ Prueba exitosa</h2><p>La configuración de correo electrónico funciona correctamente.</p><hr><p style="font-size:12px;color:#6B7280;">SGJA - Sistema de Gestión de Biblioteca</p>`,
+          subject: '🔧 Prueba de configuración de correo - AGIL',
+          html: `<h2 style="color:#10B981;">✅ Prueba exitosa</h2><p>La configuración de correo electrónico funciona correctamente.</p><hr><p style="font-size:12px;color:#6B7280;">AGIL - Sistema de Gestión de Biblioteca</p>`,
           emailConfig: { email: email.trim(), appPassword: appPassword.trim(), displayName: displayName.trim(), port: puerto, ssl: ssl },
         }),
       });
@@ -107,7 +107,7 @@ export default function Correos({ idEstablecimiento }: Props) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div>
               <label style={labelStyle}>Nombre del remitente</label>
-              <input style={inputStyle} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="SGJA Biblioteca" />
+              <input style={inputStyle} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="AGIL Biblioteca" />
             </div>
             <div>
               <label style={labelStyle}>Responder a (opcional)</label>

@@ -40,7 +40,7 @@ export default function MenuTecnico({ idEstablecimiento: _idEst }: Props) {
     <div style={{ padding: 16, maxWidth: 500, margin: '0 auto' }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1A3C6B', margin: '0 0 2px' }}>📋 Menú Técnico</h1>
       <p style={{ color: '#6B7280', fontSize: 12, marginBottom: 16 }}>
-        {usuario ? `Bienvenido, ${usuario}` : 'SGJA — Soporte y mantención'}
+        {usuario ? `Bienvenido, ${usuario}` : 'AGIL — Soporte y mantención'}
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -75,7 +75,7 @@ export default function MenuTecnico({ idEstablecimiento: _idEst }: Props) {
       </button>
 
       <p style={{ color: '#9CA3AF', fontSize: 10, textAlign: 'center', marginTop: 16 }}>
-        SGJA · Módulo Técnico v1
+        AGIL · Módulo Técnico v1
       </p>
     </div>
   );

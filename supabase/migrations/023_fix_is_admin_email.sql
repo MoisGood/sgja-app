@@ -1,5 +1,5 @@
 -- ============================================================
--- SGJA – Fix is_admin / es_admin to use auth.email()
+-- AGIL – Fix is_admin / es_admin to use auth.email()
 -- El admin tiene usuarios.id (550e8400-...) ≠ auth.uid()
 -- (c88e105c-...), por lo que id = auth.uid() nunca funciona
 -- para el admin real. Se cambia a email = auth.email().

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Contexto del Tema (separado para Fast Refresh)
+// AGIL – Contexto del Tema (separado para Fast Refresh)
 // src/contexts/ThemeContextDef.ts
 // ============================================================
 

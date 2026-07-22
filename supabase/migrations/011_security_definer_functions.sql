@@ -1,5 +1,5 @@
 -- ============================================================
--- SGJA – Migration 011: SECURITY DEFINER Functions + RLS Fixes
+-- AGIL – Migration 011: SECURITY DEFINER Functions + RLS Fixes
 -- Reemplaza la dependencia de service_role key con RPCs
 -- seguros que verifican rol ADMIN via auth.uid()
 -- ============================================================

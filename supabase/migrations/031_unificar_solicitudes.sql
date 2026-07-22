@@ -1,5 +1,5 @@
 -- ========================================================================
--- SGJA - Migration 031: Unificar solicitudes en una sola tabla
+-- AGIL - Migration 031: Unificar solicitudes en una sola tabla
 -- 
 -- Cambios:
 --   1. ALTER tabla solicitudes existente (nuevos estados + columnas)

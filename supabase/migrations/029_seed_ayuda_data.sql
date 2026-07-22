@@ -3,7 +3,7 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.ayuda_faq LIMIT 1) THEN
     INSERT INTO public.ayuda_faq (rol, modulo, categoria, titulo, contenido, orden) VALUES
       ('{PROFESOR,INSPECTOR,ESTUDIANTE}', 'general', 'General', '¿Cómo usar este sistema?',
-       'Bienvenido al SGJA. Puedes navegar usando el menú lateral izquierdo y acceder a cada módulo según tu rol.', 1),
+       'Bienvenido al AGIL. Puedes navegar usando el menú lateral izquierdo y acceder a cada módulo según tu rol.', 1),
       ('{PROFESOR,INSPECTOR}', 'justificaciones', 'Ausencias', '¿Cómo registro una ausencia?',
        'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.', 2),
       ('{PROFESOR,INSPECTOR}', 'justificaciones', 'Ausencias', '¿Puedo registrar ausencias de días anteriores?',

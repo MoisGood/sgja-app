@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Dashboard Apoderado
+// AGIL – Dashboard Apoderado
 // src/pages/DashboardApoderado.tsx
 // ============================================================
 
@@ -8,7 +8,7 @@ import { Card, EstadoBadge } from '../components/Common';
 import { obtenerSolicitudesPorEstudiante, obtenerEstudiantesPorApoderado } from '../services/database';
 import { obtenerPrestamosActivos } from '../services/library';
 import type { Solicitud, Estudiante } from '../types';
-import { TipoRegistro } from '../types';
+import { TipoRegistro, EstadoSolicitud } from '../types';
 import { getEmojiTipo, getLabelSimple } from '../utils/tipoRegistroHelper';
 
 interface Props {
@@ -245,7 +245,7 @@ export default function DashboardApoderado({ idApoderado, idEstablecimiento }: P
                 {sol.motivo_descripcion && (
                   <p style={styles.motivo}>{sol.motivo_descripcion}</p>
                 )}
-                {sol.estado === 'Rechazada' && sol.observaciones && (
+                {sol.estado === EstadoSolicitud.RECHAZADA && sol.observaciones && (
                   <div style={styles.razonRechazo}>
                     <p style={styles.razonLabel}>Razón del rechazo:</p>
                     <p style={styles.razonTexto}>{sol.observaciones}</p>

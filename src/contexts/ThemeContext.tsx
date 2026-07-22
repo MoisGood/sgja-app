@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Contexto Global de Tema (Provider)
+// AGIL – Contexto Global de Tema (Provider)
 // src/contexts/ThemeContext.tsx
 // ============================================================
 

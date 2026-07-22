@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – EstadoBadge Componente Compartido
+// AGIL – EstadoBadge Componente Compartido
 // src/components/Common/EstadoBadge.tsx
 // ============================================================
 

@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Mantenedor de Roles Personalizados
+// AGIL – Mantenedor de Roles Personalizados
 // src/components/MantenedorRoles.tsx
 // ============================================================
 

@@ -25,7 +25,7 @@ interface Props {
 export default function Sidebar({
   sidebarAbierto, setSidebarAbierto, itemsFiltrados,
   submenuAbierto, setSubmenuAbierto, handleLogout,
-  sistemaNombre = 'SGJA', sistemaSubtitulo = '', sistemaLogoUrl = '',
+  sistemaNombre = 'AGIL', sistemaSubtitulo = '', sistemaLogoUrl = '',
 }: Props) {
   const location = useLocation();
   const navigate = useNavigate();

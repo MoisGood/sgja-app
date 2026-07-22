@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Mantenedor de Estudiantes (Mejorado)
+// AGIL – Mantenedor de Estudiantes (Mejorado)
 // src/pages/MantenedorEstudiantes.tsx
 // ============================================================
 

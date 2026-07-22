@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Hook para Registrar Actividad de Usuario
+// AGIL – Hook para Registrar Actividad de Usuario
 // src/hooks/useRegistrarActividad.ts
 // ============================================================
 

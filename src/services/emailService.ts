@@ -37,7 +37,7 @@ export function generarHtmlNotificacion(
         <p>Estimado(a) <strong>${datos.estudiante || 'usuario'}</strong>,</p>
         <p>El libro <strong>"${datos.libro}"</strong> tenía fecha de devolución el <strong>${datos.fecha}</strong> y se encuentra vencido.</p>
         <p>Te solicitamos devolverlo a la brevedad para evitar multas.</p>
-        <hr><p style="font-size:12px;color:#6B7280;">SGJA - Sistema de Gestión de Biblioteca</p>`
+        <hr><p style="font-size:12px;color:#6B7280;">AGIL - Sistema de Gestión de Biblioteca</p>`
     },
     devuelto: {
       subject: `✅ Libro devuelto - ${datos.libro || ''}`,
@@ -45,7 +45,7 @@ export function generarHtmlNotificacion(
         <h2 style="color:#10B981;">Devolución confirmada</h2>
         <p>El libro <strong>"${datos.libro}"</strong> ha sido devuelto correctamente.</p>
         ${datos.monto ? `<p>Multa aplicada: <strong>$${datos.monto}</strong></p>` : ''}
-        <hr><p style="font-size:12px;color:#6B7280;">SGJA - Sistema de Gestión de Biblioteca</p>`
+        <hr><p style="font-size:12px;color:#6B7280;">AGIL - Sistema de Gestión de Biblioteca</p>`
     },
     multa: {
       subject: `💰 Multa aplicada - ${datos.libro || ''}`,
@@ -54,7 +54,7 @@ export function generarHtmlNotificacion(
         <p>Se ha registrado una multa por el libro <strong>"${datos.libro}"</strong>.</p>
         <p>Monto: <strong>$${datos.monto}</strong></p>
         ${datos.dias ? `<p>Días de suspensión: <strong>${datos.dias}</strong></p>` : ''}
-        <hr><p style="font-size:12px;color:#6B7280;">SGJA - Sistema de Gestión de Biblioteca</p>`
+        <hr><p style="font-size:12px;color:#6B7280;">AGIL - Sistema de Gestión de Biblioteca</p>`
     },
     disponible: {
       subject: `📖 Libro disponible - ${datos.libro || ''}`,
@@ -62,7 +62,7 @@ export function generarHtmlNotificacion(
         <h2 style="color:#3B82F6;">Libro disponible</h2>
         <p>El libro <strong>"${datos.libro}"</strong> que solicitaste ya está disponible.</p>
         <p>Puedes acercarte a la biblioteca para retirarlo.</p>
-        <hr><p style="font-size:12px;color:#6B7280;">SGJA - Sistema de Gestión de Biblioteca</p>`
+        <hr><p style="font-size:12px;color:#6B7280;">AGIL - Sistema de Gestión de Biblioteca</p>`
     },
   };
 

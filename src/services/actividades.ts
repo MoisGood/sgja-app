@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Servicio de Actividades de Usuarios
+// AGIL – Servicio de Actividades de Usuarios
 // src/services/actividades.ts
 // ============================================================
 

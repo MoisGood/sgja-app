@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Dashboard Profesor
+// AGIL – Dashboard Profesor
 // src/pages/DashboardProfesor.tsx
 // ============================================================
 

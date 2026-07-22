@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Switch Ausente/Presente
+// AGIL – Switch Ausente/Presente
 // src/components/SwitchAusente.tsx
 // ============================================================
 

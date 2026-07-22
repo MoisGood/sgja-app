@@ -495,7 +495,7 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
                 {solicitudesPaginadas.map((solicitud) => {
                   const estudiante = estudiantes.find(e => e.id_estudiante === solicitud.id_estudiante);
                   let estadoBadge = styles.badgeInjustificado;
-                  let etiquetaEstado = solicitud.estado;
+                  let etiquetaEstado: string = solicitud.estado;
 
                   if (estadosJustificados.includes(solicitud.estado)) {
                     estadoBadge = styles.badgeJustificado;

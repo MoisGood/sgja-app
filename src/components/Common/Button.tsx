@@ -1,5 +1,5 @@
 // ============================================================
-// SGJA – Componente Button
+// AGIL – Componente Button
 // src/components/Common/Button.tsx
 // ============================================================
 

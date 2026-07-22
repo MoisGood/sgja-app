@@ -6,11 +6,11 @@ import { useOfflineSync } from '../hooks/useOfflineSync';
 
 const ROL_COLORES: Record<Rol, string> = {
   [Rol.ADMIN]: '#7C3AED', [Rol.INSPECTOR]: '#0369A1', [Rol.PROFESOR]: '#065F46',
-  [Rol.ESTUDIANTE]: '#92400E', [Rol.APODERADO]: '#9D174D',
+  [Rol.PARADOCENTE]: '#6B21A8', [Rol.ESTUDIANTE]: '#92400E', [Rol.APODERADO]: '#9D174D',
 };
 const ROL_BG: Record<Rol, string> = {
   [Rol.ADMIN]: '#EDE9FE', [Rol.INSPECTOR]: '#E0F2FE', [Rol.PROFESOR]: '#D1FAE5',
-  [Rol.ESTUDIANTE]: '#FEF3C7', [Rol.APODERADO]: '#FCE7F3',
+  [Rol.PARADOCENTE]: '#F3E8FF', [Rol.ESTUDIANTE]: '#FEF3C7', [Rol.APODERADO]: '#FCE7F3',
 };
 
 interface Props {
