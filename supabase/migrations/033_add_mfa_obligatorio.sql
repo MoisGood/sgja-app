@@ -1,0 +1,2 @@
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS mfa_obligatorio BOOLEAN DEFAULT false;
+NOTIFY pgrst, 'reload schema';
