@@ -57,6 +57,10 @@ const JERARQUIA: GrupoPaginas[] = [
     titulo: 'Ayuda',
     rutas: ['/ayuda'],
   },
+  {
+    titulo: 'Accidentes',
+    rutas: ['/registrar-accidente'],
+  },
 ];
 
 function expandirRutasHijas(padre: string, permisos: string[]): string[] {

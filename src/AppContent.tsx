@@ -66,6 +66,7 @@ import QrRedirect from './pages/QrRedirect';
 import Configurar2FA from './pages/Configurar2FA';
 import AyudaPage from './pages/AyudaPage';
 import AdminAyuda from './pages/AdminAyuda';
+import RegistroAccidente from './pages/RegistrarAccidente';
 
 export default function AppContent() {
   const { uid, rol, idEstablecimiento, cargando, autorizado, usuarioInactivo, documentoExiste, nombre, apellidos, email, datosPendientes, mantenimientoBloqueo, mttoHorario } = useAuth();
@@ -611,6 +612,7 @@ export default function AppContent() {
           <Route path="/tecnico/configuracion" element={puedeVer('/tecnico', 'ADMIN') ? <ConfiguracionTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/ayuda" element={<AyudaPage />} />
           <Route path="/ayuda/admin" element={rol === 'ADMIN' ? <AdminAyuda /> : <AyudaPage />} />
+          <Route path="/registrar-accidente" element={rol === 'ADMIN' || rol === 'PROFESOR' || rol === 'INSPECTOR' ? <RegistroAccidente idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="*" element={renderRoleDashboard()} />
         </Routes>
       </Layout>

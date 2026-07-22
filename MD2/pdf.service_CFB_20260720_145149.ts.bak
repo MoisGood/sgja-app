@@ -1,0 +1,227 @@
+// src/services/pdf.service.ts
+// CFB — Servicio para rellenar el PDF "Declaración Individual de Accidente Escolar"
+// M-CFB #8: Dibuja texto en las secciones A, B, C del PDF oficial
+
+import { PDFDocument, StandardFonts, rgb, type PDFFont } from 'pdf-lib';
+
+export interface DatosPDF {
+  // Sección A — Individualización del Establecimiento
+  nombreEstablecimiento: string;
+  ciudad: string;
+  comuna: string;
+  tipoEstablecimiento: string; // "1" = fiscal/municipal, "2" = particular
+  curso: string;
+  horario: string;
+  fechaRegistroDia: string;
+  fechaRegistroMes: string;
+  fechaRegistroAno: string;
+
+  // Sección B — Individualización del Accidentado
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  nombres: string;
+  sexo: string; // "1" = M, "2" = F
+  anoNacimiento: string;
+  edad: string;
+  calle: string;
+  numero: string;
+  poblacion: string;
+  comunaResidencia: string;
+  ciudadResidencia: string;
+  codifCom: string;
+
+  // Sección C — Informe del Accidente
+  hora: string;
+  minutos: string;
+  fechaAccidenteAno: string;
+  fechaAccidenteMes: string;
+  fechaAccidenteDia: string;
+  diaSemana: string; // 1=Lunes … 7=Domingo
+  accidenteTipo: string; // "1" = trayecto, "2" = escuela
+  testigo1Nombre: string;
+  testigo1Cedula: string;
+  testigo2Nombre: string;
+  testigo2Cedula: string;
+  circunstancia: string;
+}
+
+// ═══════════════════════════════════════════════
+// Coordenadas estimadas sobre A4 (595 × 842 pt)
+// Origen (0,0) = esquina inferior-izquierda
+// ═══════════════════════════════════════════════
+
+interface Campo {
+  key: keyof DatosPDF;
+  x: number;
+  y: number;
+  size?: number;
+  maxWidth?: number;
+}
+
+const CAMPOS: Campo[] = [
+  // ── Sección A ──
+  { key: 'tipoEstablecimiento', x: 519, y: 720, size: 10 },
+  { key: 'nombreEstablecimiento', x: 70, y: 702, maxWidth: 230 },
+  { key: 'ciudad', x: 252, y: 703, maxWidth: 120 },
+  { key: 'comuna', x: 346, y: 705, maxWidth: 100 },
+  { key: 'curso', x: 88, y: 671, maxWidth: 100 },
+  { key: 'horario', x: 202, y: 672, maxWidth: 100 },
+  { key: 'fechaRegistroDia', x: 336, y: 660, size: 8, maxWidth: 25 },
+  { key: 'fechaRegistroMes', x: 363, y: 660, size: 8, maxWidth: 25 },
+  { key: 'fechaRegistroAno', x: 399, y: 660, size: 8, maxWidth: 35 },
+
+  // ── Sección B ──
+  { key: 'apellidoPaterno', x: 82, y: 617, maxWidth: 120 },
+  { key: 'apellidoMaterno', x: 186, y: 617, maxWidth: 120 },
+  { key: 'nombres', x: 308, y: 619, maxWidth: 130 },
+  { key: 'sexo', x: 422, y: 606, size: 10 },
+  { key: 'anoNacimiento', x: 453, y: 605, maxWidth: 45 },
+  { key: 'edad', x: 514, y: 604, maxWidth: 25 },
+
+  // Residencia habitual
+  { key: 'calle', x: 114, y: 563, maxWidth: 120 },
+  { key: 'numero', x: 221, y: 563, maxWidth: 60 },
+  { key: 'poblacion', x: 288, y: 561, maxWidth: 110 },
+  { key: 'comunaResidencia', x: 377, y: 563, maxWidth: 60 },
+  { key: 'ciudadResidencia', x: 447, y: 565, maxWidth: 50 },
+  { key: 'codifCom', x: 504, y: 565, maxWidth: 40 },
+
+  // ── Sección C ──
+  { key: 'hora', x: 73, y: 487, size: 8, maxWidth: 25 },
+  { key: 'minutos', x: 101, y: 487, size: 8, maxWidth: 25 },
+  { key: 'fechaAccidenteAno', x: 138, y: 486, size: 8, maxWidth: 30 },
+  { key: 'fechaAccidenteMes', x: 203, y: 483, size: 8, maxWidth: 25 },
+  { key: 'fechaAccidenteDia', x: 261, y: 485, size: 8, maxWidth: 25 },
+  { key: 'diaSemana', x: 136, y: 429, size: 9 },
+  { key: 'accidenteTipo', x: 247, y: 431, size: 10 },
+  { key: 'testigo1Nombre', x: 293, y: 449, maxWidth: 180 },
+  { key: 'testigo1Cedula', x: 466, y: 451, maxWidth: 120 },
+  { key: 'testigo2Nombre', x: 292, y: 411, maxWidth: 180 },
+  { key: 'testigo2Cedula', x: 468, y: 412, maxWidth: 120 },
+  { key: 'circunstancia', x: 71, y: 362, size: 8, maxWidth: 490 },
+];
+
+/**
+ * Rellena el PDF oficial con los datos del formulario digital.
+ * @param pdfBytes ArrayBuffer del PDF original
+ * @param datos Datos a dibujar en las secciones A, B, C
+ * @returns PDF modificado como Uint8Array (solo página 1)
+ */
+export async function rellenarPDF(
+  pdfBytes: ArrayBuffer,
+  datos: DatosPDF
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(pdfBytes);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  // Eliminar páginas después de la primera (instrucciones)
+  while (pdfDoc.getPageCount() > 1) {
+    pdfDoc.removePage(pdfDoc.getPageCount() - 1);
+  }
+
+  const page = pdfDoc.getPage(0);
+
+  for (const campo of CAMPOS) {
+    const valor = (datos[campo.key] ?? '').toString().trim();
+    if (!valor) continue;
+
+    const size = campo.size ?? 9;
+    let texto = valor;
+
+    // Truncar si excede el ancho máximo
+    if (campo.maxWidth) {
+      const ancho = font.widthOfTextAtSize(texto, size);
+      if (ancho > campo.maxWidth) {
+        // Reducir tamaño o truncar
+        const sizeAjustado = Math.min(size, (size * campo.maxWidth) / ancho);
+        if (sizeAjustado >= 6) {
+          page.drawText(texto, {
+            x: campo.x,
+            y: campo.y,
+            size: sizeAjustado,
+            font,
+          });
+          continue;
+        }
+        // Si es muy pequeño, truncar
+        while (texto.length > 0 && font.widthOfTextAtSize(texto + '…', size) > campo.maxWidth) {
+          texto = texto.slice(0, -1);
+        }
+        texto += '…';
+      }
+    }
+
+    page.drawText(texto, { x: campo.x, y: campo.y, size, font });
+  }
+
+  return await pdfDoc.save();
+}
+
+/**
+ * Carga el PDF desde el servidor y lo rellena.
+ */
+export async function generarPDF(
+  datos: DatosPDF
+): Promise<Uint8Array> {
+  const resp = await fetch('/DECLARACION INDIVIDUAL DE ACCIDENTE ESCOLAR.pdf');
+  const pdfBytes = await resp.arrayBuffer();
+  return rellenarPDF(pdfBytes, datos);
+}
+
+/**
+  * Convierte un Uint8Array de PDF a una URL de objeto (Blob) para
+  * abrir en el navegador.
+  */
+export function pdfToBlobUrl(pdf: Uint8Array): string {
+  const blob = new Blob([pdf], { type: 'application/pdf' });
+  return URL.createObjectURL(blob);
+}
+
+// ═══════════════════════════════════════════════
+// DEBUG — Genera PDF con marcadores visibles
+// para ajustar coordenadas
+// ═══════════════════════════════════════════════
+
+/**
+ * Genera un PDF con marcadores rojos en cada coordenada de campo.
+ * Útil para afinar posiciones: ves dónde cae cada marcador y dices
+ * "sube 10px", "corre 15px a la derecha", etc.
+ */
+export async function generarPDFDebug(): Promise<Uint8Array> {
+  const resp = await fetch('/DECLARACION INDIVIDUAL DE ACCIDENTE ESCOLAR.pdf');
+  const pdfBytes = await resp.arrayBuffer();
+
+  const pdfDoc = await PDFDocument.load(pdfBytes);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  while (pdfDoc.getPageCount() > 1) {
+    pdfDoc.removePage(pdfDoc.getPageCount() - 1);
+  }
+
+  const page = pdfDoc.getPage(0);
+
+  for (const campo of CAMPOS) {
+    const px = campo.x;
+    const py = campo.y;
+
+    // Cuadrado rojo de 6×6 en la coordenada exacta
+    page.drawRectangle({
+      x: px - 3,
+      y: py - 3,
+      width: 6,
+      height: 6,
+      color: rgb(0.9, 0.1, 0.1),
+    });
+
+    // Nombre del campo al lado
+    page.drawText(campo.key, {
+      x: px + 6,
+      y: py - 2,
+      size: 6,
+      font,
+      color: rgb(0.9, 0.1, 0.1),
+    });
+  }
+
+  return await pdfDoc.save();
+}

@@ -17,7 +17,7 @@ import DatosPersonalesModal from './DatosPersonalesModal';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { handleError } from '../utils/errorHandler';
-import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen, LayoutDashboard, ClipboardList, Users, BookOpen, Settings, Shield, Mail, HelpCircle } from 'lucide-react';
+import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen, LayoutDashboard, ClipboardList, Users, BookOpen, Settings, Shield, Mail, HelpCircle, Activity } from 'lucide-react';
 import FlotanteAyuda from './Ayuda/FlotanteAyuda';
 
 interface Props {
@@ -122,6 +122,13 @@ const MENU_ITEMS: MenuItem[] = [
     etiqueta: 'Ayuda',
     ruta: '/ayuda',
     roles: [Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE, Rol.ESTUDIANTE, Rol.APODERADO],
+  },
+  {
+    icono: <Activity size={20}/>,
+    etiqueta: 'Accidente',
+    ruta: '/registrar-accidente',
+    roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR],
+  }
   }
 ];
 
