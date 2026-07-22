@@ -35,8 +35,8 @@ export default defineConfig({
       devOptions: { enabled: false },
       includeAssets: ['favicon.ico', 'icon.svg'],
       manifest: {
-        name: 'SGJA - Sistema Gestión Justificaciones',
-        short_name: 'SGJA',
+        name: 'AGIL - Sistema Gestión Justificaciones',
+        short_name: 'AGIL',
         description: 'Sistema de Gestión de Justificaciones y Biblioteca',
         theme_color: '#1A3C6B',
         background_color: '#F8FAFC',
@@ -49,8 +49,26 @@ export default defineConfig({
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
+        navigateFallback: '/',
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https?:\/\/[^/]+\.supabase\.co\/rest\/v1\//i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'agil-api-v1',
+              networkTimeoutSeconds: 4,
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 7 * 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
     }),
   ],
