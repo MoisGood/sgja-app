@@ -182,7 +182,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
     // Validar curso contra la colección de cursos
     const cursoRaw = est.curso?.toString().trim() || '';
     const nivelesTexto = ['', '1ro', '2do', '3ro', '4to'];
-    const matchCurso = cursoRaw.toUpperCase().match(/^(\d)\s*([A-D])$/);
+    const matchCurso = cursoRaw.toUpperCase().match(/^(\d)\s*([A-Z])$/);
     const cursoNormalizado = matchCurso
       ? `${nivelesTexto[parseInt(matchCurso[1])] || matchCurso[1]} Grado ${matchCurso[2]}`
       : cursoRaw;
@@ -247,13 +247,26 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       
       reader.onload = (event: ProgressEvent<FileReader>) => {
         try {
-          const text = event.target?.result;
+          const result = event.target?.result;
+          let processedText: string;
           
-          if (typeof text !== 'string' || text.length === 0) {
-            throw new Error('El archivo está vacío');
+          if (result instanceof ArrayBuffer) {
+            // Intentar UTF-8 primero, si hay caracteres de reemplazo, probar Latin-1
+            const utf8 = new TextDecoder('utf-8', { fatal: false }).decode(result);
+            if (utf8.indexOf('\uFFFD') === -1) {
+              processedText = utf8;
+            } else {
+              processedText = new TextDecoder('latin-1').decode(result);
+            }
+          } else if (typeof result === 'string') {
+            processedText = result;
+          } else {
+            throw new Error('No se pudo leer el archivo');
           }
           
-          let processedText = text;
+          if (!processedText || processedText.length === 0) {
+            throw new Error('El archivo está vacío');
+          }
           
           // Remover BOM si existe (UTF-8 BOM: EF BB BF)
           if (processedText.charCodeAt(0) === 0xFEFF) {
@@ -357,7 +370,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       
       // Leer archivo como UTF-8
       try {
-        reader.readAsText(file, 'UTF-8');
+        reader.readAsArrayBuffer(file);
       } catch (err) {
         console.error('Error al iniciar lectura:', err);
         setError('No se pudo leer el archivo. Verifica que sea un archivo CSV válido guardado en UTF-8.');
