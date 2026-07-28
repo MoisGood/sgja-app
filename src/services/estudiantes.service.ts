@@ -151,6 +151,15 @@ export async function eliminarEstudiante(id: string): Promise<void> {
       .from('estudiantes')
       .delete()
       .eq('id', id);
+    if (error && error.code === '23503') {
+      // Tiene registros relacionados — soft-delete
+      const { error: updateError } = await supabase
+        .from('estudiantes')
+        .update({ activo: false })
+        .eq('id', id);
+      if (updateError) throw updateError;
+      return;
+    }
     if (error) throw error;
   } catch (error) {
     console.error('Error al eliminar estudiante:', error);

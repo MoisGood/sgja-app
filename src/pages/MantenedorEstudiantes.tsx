@@ -572,7 +572,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
   };
 
   const eliminarEstudiante = async (id: string) => {
-    if (!confirm('¿Eliminar este estudiante?')) return;
+    if (!confirm('¿Desactivar este estudiante? (tiene registros asociados)')) return;
     try {
       await eliminarEstudianteDB(id);
       cargarEstudiantes();
