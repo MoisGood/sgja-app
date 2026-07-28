@@ -927,8 +927,6 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
             <div style={styles.modalBody}>
               <div style={styles.formulario}>
                 <div>
-                  <label style={styles.label}>RUT *</label>
-                <div>
                   <label style={styles.label}>N° (orden)</label>
                   <input
                     type="number"
@@ -939,6 +937,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
                   />
                 </div>
                 <div>
+                  <label style={styles.label}>RUT *</label>
                   <input
                     type="text"
                     value={formData.rut}
