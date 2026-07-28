@@ -256,7 +256,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
             if (utf8.indexOf('\uFFFD') === -1) {
               processedText = utf8;
             } else {
-              processedText = new TextDecoder('latin-1').decode(result);
+              processedText = new TextDecoder('iso-8859-1').decode(result);
             }
           } else if (typeof result === 'string') {
             processedText = result;
