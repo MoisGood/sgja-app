@@ -49,6 +49,7 @@ export default function MantenedorCursos() {
   const [formData, setFormData] = useState({
     nivel: 1,
     letra: 'A',
+    descripcion: '',
     opcional: '',
   });
 
@@ -142,9 +143,9 @@ export default function MantenedorCursos() {
     if (!validarCurso()) return;
 
     try {
-      const { nivel, letra } = formData;
+      const { nivel, letra, descripcion: descManual } = formData;
       const nombre = `${nivel}${letra.toUpperCase()}`;
-      const descripcion = `${NOMBRES_NIVEL[nivel - 1]} ${letra.toUpperCase()}`;
+      const descripcion = descManual || `${NOMBRES_NIVEL[nivel - 1]} ${letra.toUpperCase()}`;
 
       const { error } = await supabase.from('cursos').insert({
         codigo: nombre,
@@ -158,7 +159,7 @@ export default function MantenedorCursos() {
 
       cargarCursos();
       setMostraModalAgregar(false);
-      setFormData({ nivel: 1, letra: 'A', opcional: '' });
+      setFormData({ nivel: 1, letra: 'A', descripcion: '', opcional: '' });
     } catch (err) {
       setError('Error al agregar curso');
       console.error(err);
@@ -171,6 +172,7 @@ export default function MantenedorCursos() {
     setFormData({
       nivel: curso.nivel,
       letra: curso.letra,
+      descripcion: curso.descripcion || '',
       opcional: curso.opcional,
     });
     setMostraModalAgregar(true);
@@ -182,9 +184,9 @@ export default function MantenedorCursos() {
     if (!validarCurso() || !cursoEditando) return;
 
     try {
-      const { nivel, letra, opcional } = formData;
+      const { nivel, letra, descripcion: descManual, opcional } = formData;
       const nombre = `${nivel}${letra.toUpperCase()}`;
-      const descripcion = `${NOMBRES_NIVEL[nivel - 1]} ${letra.toUpperCase()}`;
+      const descripcion = descManual || `${NOMBRES_NIVEL[nivel - 1]} ${letra.toUpperCase()}`;
 
       const { error } = await supabase
         .from('cursos')
@@ -207,7 +209,7 @@ export default function MantenedorCursos() {
       cargarCursos();
       setMostraModalAgregar(false);
       setCursoEditando(null);
-      setFormData({ nivel: 1, letra: 'A', opcional: '' });
+      setFormData({ nivel: 1, letra: 'A', descripcion: '', opcional: '' });
     } catch (err) {
       setError('Error al actualizar curso');
       console.error(err);
@@ -290,7 +292,7 @@ export default function MantenedorCursos() {
       <div style={styles.botones}>
         <button type="button" onClick={() => {
           setCursoEditando(null);
-          setFormData({ nivel: 1, letra: 'A', opcional: '' });
+          setFormData({ nivel: 1, letra: 'A', descripcion: '', opcional: '' });
           setMostraModalAgregar(true);
         }} style={styles.botonPrimario}>
           ➕ Agregar Curso
@@ -420,6 +422,17 @@ export default function MantenedorCursos() {
                 </div>
 
                 <div>
+                  <label style={styles.label}>Descripcion (opcional)</label>
+                  <input
+                    type="text"
+                    value={formData.descripcion}
+                    onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                    placeholder={['Primero','Segundo','Tercero','Cuarto'][formData.nivel-1]+' '+formData.letra}
+                    style={styles.input}
+                  />
+                </div>
+
+                <div>
                   <label style={styles.label}>Opcional (Ej: 1°A)</label>
                   <input
                     type="text"
@@ -433,7 +446,7 @@ export default function MantenedorCursos() {
                 <div style={styles.preview}>
                   <p><strong>Previsualizacion:</strong></p>
                   <p>• Nombre: {formData.nivel}{formData.letra}</p>
-                  <p>• Descripción: {['Primero', 'Segundo', 'Tercero', 'Cuarto'][formData.nivel - 1]} {formData.letra}</p>
+                  <p>• Descripción: {formData.descripcion || (['Primero', 'Segundo', 'Tercero', 'Cuarto'][formData.nivel - 1] + ' ' + formData.letra)}</p>
                   <p>• Opcional: {formData.opcional || `${formData.nivel}°${formData.letra}`}</p>
                 </div>
               </div>
