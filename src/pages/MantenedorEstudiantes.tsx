@@ -873,7 +873,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
 
           {estudiantes.filter(est => {
             const cumpleCurso = filtroCurso === 'TODOS' || est.curso === filtroCurso;
-            const cumpleAnio = filtroAnio === 'TODOS' || est.anno_ingreso.toString() === filtroAnio;
+            const cumpleAnio = filtroAnio === 'TODOS' || (est.anno_ingreso && est.anno_ingreso.toString() === filtroAnio);
             return cumpleCurso && cumpleAnio;
           }).length === 0 && (
             <div style={styles.sinResultados}>
