@@ -12,7 +12,7 @@ interface SupabaseCursoRow {
   activo?: boolean;
 }
 
-const LETRAS_VALIDAS = ['A', 'B', 'C', 'D'] as const;
+const LETRAS_VALIDAS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'] as const;
 const NOMBRES_NIVEL = ['Primero', 'Segundo', 'Tercero', 'Cuarto'];
 
 function obtenerLetraDesdeCodigo(codigo?: string): string {
@@ -115,7 +115,7 @@ export default function MantenedorCursos() {
     }
     
     if (!letra || !LETRAS_VALIDAS.includes(letra.toUpperCase() as (typeof LETRAS_VALIDAS)[number])) {
-      setError('Letra debe ser A, B, C o D');
+      setError('Letra debe ser A-Z');
       return false;
     }
 
@@ -247,8 +247,8 @@ export default function MantenedorCursos() {
       }> = [];
 
       for (let nivel = 1; nivel <= 4; nivel++) {
-        for (let letraIdx = 0; letraIdx < 4; letraIdx++) {
-          const letra = String.fromCharCode(65 + letraIdx); // A, B, C, D
+        for (let letraIdx = 0; letraIdx < 26; letraIdx++) {
+          const letra = String.fromCharCode(65 + letraIdx); // A-Z
           const codigo = `${nivel}${letra}`;
           cursosPredeterminados.push({
             codigo,
