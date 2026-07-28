@@ -405,16 +405,18 @@ export default function MantenedorCursos() {
 
                 <div>
                   <label style={styles.label}>Letra *</label>
-                  <select
-                    value={formData.letra}
-                    onChange={(e) => setFormData({ ...formData, letra: e.target.value })}
-                    style={styles.input}
-                  >
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                  </select>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:'4px'}}>
+                    {Array.from({length:26},(_,i)=>String.fromCharCode(65+i)).map(letra => (
+                      <button key={letra} type="button" onClick={() => setFormData({...formData,letra})}
+                        style={{
+                          width:32,height:32,border:`2px solid ${formData.letra===letra?'#3B82F6':'#D1D5DB'}`,
+                          borderRadius:6,background:formData.letra===letra?'#DBEAFE':'#fff',
+                          color:formData.letra===letra?'#1E40AF':'#374151',
+                          fontWeight:formData.letra===letra?700:400,cursor:'pointer',fontSize:13,
+                        }}
+                      >{letra}</button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
