@@ -23,7 +23,7 @@ function escucharSolicitudes(
     fetchSolicitudes(idEstablecimiento, callback);
 
     const subscription = supabase
-      .channel(`solicitudes:${idEstablecimiento}`)
+      .channel(`solicitudes:${idEstablecimiento}:${Date.now()}:${Math.random()}`)
       .on(
         'postgres_changes',
         {
