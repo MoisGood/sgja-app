@@ -308,10 +308,11 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                             }}
                           />
                         )}
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1F2937' }}>
-                          {est.nombre_completo?.split(' ')[0] || idx + 1}
+                        <div style={{ fontSize: 16, fontWeight: 700, color: '#1F2937' }}>
+                          {est.numero ?? idx + 1}
                         </div>
                         <div style={{ fontSize: 9, color: '#6B7280' }}>{est.rut}</div>
+                        <div style={{ fontSize: 8, color: '#9CA3AF' }}>{est.nombre_completo?.split(' ')[0]}</div>
                       </div>
                     );
                   })}
