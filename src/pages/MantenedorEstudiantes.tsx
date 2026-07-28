@@ -26,8 +26,10 @@ interface EstudianteValidacion {
   rut: string;
   nombre: string;
   apellidos: string;
+  nombre_completo: string;
   curso: string;
   anno_ingreso: string;
+  email: string;
   estado: string;
   valido: boolean;
   errores: string[];
@@ -155,11 +157,8 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
   const validarEstudiante = (est: any): EstudianteValidacion => {
     const errores: string[] = [];
 
-    // Validar número
+    // Número de fila (opcional, se asigna automáticamente)
     const numero = est.numero?.toString().trim() || '';
-    if (!numero) {
-      errores.push('Número requerido');
-    }
 
     // Validar RUT
     const rut = est.rut?.toString().trim() || '';
@@ -169,19 +168,16 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       errores.push('RUT inválido');
     }
 
-    // Validar nombres (puede venir como 'nombre' o 'nombres')
-    const nombresRaw = (est.nombres || est.nombre)?.toString().trim() || '';
-    const nombres = normalizarTexto(nombresRaw);
-    if (!nombres) {
-      errores.push('Nombres requerido');
+    // Validar nombre_completo
+    const nombreCompleto = (est.nombre_completo || est.nombres || est.nombre)?.toString().trim() || '';
+    if (!nombreCompleto) {
+      errores.push('Nombre completo requerido');
     }
 
-    // Validar apellidos
-    const apellidosRaw = est.apellidos?.toString().trim() || '';
-    const apellidos = normalizarTexto(apellidosRaw);
-    if (!apellidos) {
-      errores.push('Apellidos requeridos');
-    }
+    // Separar nombre_completo en nombre y apellidos
+    const partes = nombreCompleto.split(' ');
+    const nombres = partes.slice(0, -1).join(' ') || nombreCompleto;
+    const apellidos = partes.slice(-1).join(' ') || '';
 
     // Validar curso contra la colección de cursos
     const cursoRaw = est.curso?.toString().trim().toUpperCase() || '';
@@ -199,20 +195,21 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       errores.push('Año de ingreso inválido');
     }
 
-    // Validar estado
-    const estadosValidos = ['activo', 'inactivo'];
-    const estadoLower = (est.estado?.toString() || '').toLowerCase().trim();
-    if (!estadoLower || !estadosValidos.includes(estadoLower)) {
-      errores.push('Estado inválido (activo o inactivo)');
-    }
+    // Email (opcional)
+    const email = est.email?.toString().trim() || '';
+
+    // Estado (por defecto activo)
+    const estadoLower = 'activo';
 
     return {
       numero: numero,
       rut: rut,
       nombre: nombres,
       apellidos: apellidos,
+      nombre_completo: nombreCompleto,
       curso: cursoRaw,
       anno_ingreso: est.anno_ingreso?.toString() || '',
+      email,
       estado: estadoLower,
       valido: errores.length === 0,
       errores,
@@ -220,8 +217,8 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
   };
 
   const descargarTemplate = () => {
-    const headers = ['numero', 'rut', 'nombres', 'apellidos', 'curso', 'anno_ingreso', 'estado'];
-    const filaEjemplo = ['1', '191234567', 'Juan', 'Perez', '1A', new Date().getFullYear().toString(), 'activo'];
+    const headers = ['rut', 'nombre_completo', 'curso', 'anno_ingreso', 'email'];
+    const filaEjemplo = ['19.123.456-7', 'Juan Perez', '1A', new Date().getFullYear().toString(), 'juan.perez@ejemplo.com'];
     
     const csv = [
       headers.join(','),
@@ -265,7 +262,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
           const encabezados = lines[0].split(',').map((h) => h.trim().toLowerCase());
 
           // Validar que los encabezados sean correctos
-          const encabezadosRequeridos = ['numero', 'rut', 'nombres', 'apellidos', 'curso', 'anno_ingreso', 'estado'];
+          const encabezadosRequeridos = ['rut', 'nombre_completo', 'curso', 'anno_ingreso', 'email'];
           const encabezadosFaltantes = encabezadosRequeridos.filter(e => !encabezados.includes(e));
           
           if (encabezadosFaltantes.length > 0) {
@@ -379,11 +376,10 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       const validado = validarEstudiante({
         numero: v.numero,
         rut: v.rut,
-        nombre: v.nombre,
-        apellidos: v.apellidos,
+        nombre_completo: v.nombre_completo || `${v.nombre} ${v.apellidos}`,
         curso: v.curso,
         anno_ingreso: v.anno_ingreso,
-        estado: v.estado,
+        email: v.email,
       });
       
       // Segunda verificación de duplicados
@@ -410,10 +406,11 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       const estudiantesSubir = validos.map(est => ({
         id_establecimiento: idEstablecimiento,
         rut: est.rut,
-        nombre_completo: `${normalizarTexto(est.nombre)} ${normalizarTexto(est.apellidos)}`,
+        nombre_completo: est.nombre_completo || `${normalizarTexto(est.nombre)} ${normalizarTexto(est.apellidos)}`,
         curso: est.curso,
         anno_ingreso: parseInt(est.anno_ingreso),
-        activo: est.estado === 'activo',
+        email: est.email || null,
+        activo: true,
       }));
 
       await crearEstudiantesBatch(estudiantesSubir);
@@ -1046,7 +1043,8 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
                             {est.valido ? '✅' : '❌'}
                           </span>
                           <span style={styles.itemNombre}>
-                            {est.nombre} {est.apellidos} ({est.rut})
+                            {est.nombre_completo || `${est.nombre} ${est.apellidos}`}
+                            {est.email && <span style={{fontSize:'11px',color:'#6B7280',marginLeft:'8px'}}>({est.email})</span>}
                           </span>
                         </div>
                         {est.errores.length > 0 && (
