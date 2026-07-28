@@ -52,7 +52,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
   const [subiendo, setSubiendo] = useState(false);
 
   // Filtros
-  const [filtroCurso, setFiltroCurso] = useState<string>('TODOS');
+  const [filtroCurso, setFiltroCurso] = useState<string>('1A');
   const [filtroAnio, setFiltroAnio] = useState<string>('TODOS');
 
   // Paginación
