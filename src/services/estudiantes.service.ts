@@ -107,8 +107,9 @@ export async function crearEstudiante(datos: {
   activo?: boolean;
 }): Promise<void> {
   try {
-    const { error } = await supabase.from('estudiantes').insert([{
-      id_estudiante: `EST-${datos.rut?.replace(/[^0-9kK]/g, '') || Date.now()}`,
+    const id_estudiante = `EST-${datos.rut?.replace(/[^0-9kK]/g, '') || Date.now()}`;
+    const { error } = await supabase.from('estudiantes').upsert({
+      id_estudiante,
       id_establecimiento: datos.id_establecimiento,
       rut: datos.rut,
       nombre_completo: datos.nombre_completo,
@@ -118,7 +119,7 @@ export async function crearEstudiante(datos: {
       activo: datos.activo ?? true,
       creado_en: new Date().toISOString(),
       actualizado_en: new Date().toISOString(),
-    }]);
+    }, { onConflict: 'id_estudiante', ignoreDuplicates: true });
     if (error) throw error;
   } catch (error) {
     console.error('Error al crear estudiante:', error);
@@ -232,7 +233,7 @@ export async function crearEstudiantesBatch(
       creado_en: ahora,
       actualizado_en: ahora,
     }));
-    const { error } = await supabase.from('estudiantes').insert(registros);
+    const { error } = await supabase.from('estudiantes').upsert(registros, { onConflict: 'id_estudiante', ignoreDuplicates: true });
     if (error) throw error;
   } catch (error) {
     console.error('Error al crear estudiantes en batch:', error);
