@@ -108,7 +108,7 @@ export async function crearEstudiante(datos: {
 }): Promise<void> {
   try {
     const { error } = await supabase.from('estudiantes').insert([{
-      id_estudiante: `EST-${datos.rut?.replace(/[^0-9kK]/g, '') || Date.now()}`,
+      id_estudiante: datos.rut?.replace(/[^0-9kK]/g, '') || `${Date.now()}`,
       id_establecimiento: datos.id_establecimiento,
       rut: datos.rut,
       nombre_completo: datos.nombre_completo,
@@ -220,7 +220,7 @@ export async function crearEstudiantesBatch(
   try {
     const ahora = new Date().toISOString();
     const registros = estudiantes.map(e => ({
-      id_estudiante: `EST-${e.rut?.replace(/[^0-9kK]/g, '') || Date.now()}`,
+      id_estudiante: e.rut?.replace(/[^0-9kK]/g, '') || `${Date.now()}`,
       id_establecimiento: e.id_establecimiento,
       rut: e.rut,
       nombre_completo: e.nombre_completo,
