@@ -211,6 +211,7 @@ export async function crearEstudiantesBatch(
     nombre_completo: string;
     curso: string;
     anno_ingreso: number;
+    email?: string | null;
     id_apoderado?: string | null;
     activo: boolean;
   }>
@@ -223,6 +224,7 @@ export async function crearEstudiantesBatch(
       nombre_completo: e.nombre_completo,
       curso: e.curso,
       anno_ingreso: e.anno_ingreso,
+      email: e.email ?? null,
       id_apoderado: e.id_apoderado ?? null,
       activo: e.activo,
       creado_en: ahora,

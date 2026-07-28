@@ -181,16 +181,13 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
 
     // Validar curso contra la colección de cursos
     const cursoRaw = est.curso?.toString().trim() || '';
-    const nivelesTexto = ['', '1ro', '2do', '3ro', '4to'];
-    const matchCurso = cursoRaw.toUpperCase().match(/^(\d)\s*([A-Z])$/);
-    const cursoNormalizado = matchCurso
-      ? `${nivelesTexto[parseInt(matchCurso[1])] || matchCurso[1]} Grado ${matchCurso[2]}`
-      : cursoRaw;
     if (!cursoRaw) {
       errores.push('Curso requerido');
     } else {
-      const cursoExiste = cursos.current.some((c) => c.nombre === cursoNormalizado);
-      if (!cursoExiste) {
+      // Buscar curso por código corto (1A) o nombre largo (1ro Grado A)
+      const cursoUpper = cursoRaw.toUpperCase();
+      const cursoMatch = cursos.current.find((c) => c.nombre === cursoUpper || c.codigo === cursoUpper);
+      if (!cursoMatch) {
         errores.push(`Curso "${cursoRaw}" no existe en el sistema (disponibles: ${cursos.current.map(c => c.nombre).join(', ')})`);
       }
     }
@@ -214,7 +211,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       nombre: nombres,
       apellidos: apellidos,
       nombre_completo: nombreCompleto,
-      curso: cursoNormalizado,
+      curso: cursoRaw,
       anno_ingreso: est.anno_ingreso?.toString() || '',
       email,
       estado: estadoLower,
@@ -441,8 +438,8 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       setEstudiantesValidados([]);
       setProgreso(0);
       setError(null);
-    } catch (err) {
-      setError('Error al subir estudiantes');
+    } catch (err: any) {
+      setError(`Error al subir estudiantes: ${err?.message || err?.error?.message || 'desconocido'}`);
       console.error(err);
     } finally {
       setSubiendo(false);
