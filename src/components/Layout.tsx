@@ -17,7 +17,7 @@ import DatosPersonalesModal from './DatosPersonalesModal';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { handleError } from '../utils/errorHandler';
-import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen, LayoutDashboard, ClipboardList, Users, BookOpen, Settings, Shield, Mail, HelpCircle, Activity } from 'lucide-react';
+import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen, LayoutDashboard, ClipboardList, Users, BookOpen, Settings, Shield, Mail, HelpCircle, FileText } from 'lucide-react';
 import FlotanteAyuda from './Ayuda/FlotanteAyuda';
 
 interface Props {
@@ -53,14 +53,14 @@ const MENU_ITEMS: MenuItem[] = [
     ]
   },
   { 
-    icono: <BookOpen         size={20}/>, 
-    etiqueta: 'Justificaciones', 
-    ruta: '/justificaciones',
+    icono: <Shield         size={20}/>, 
+    etiqueta: 'Inspectoria', 
+    ruta: '/inspectoria',
     roles: [Rol.INSPECTOR, Rol.ADMIN, Rol.PROFESOR, Rol.PARADOCENTE],
     submenu: [
-      { icono: <ClipboardList size={20}/>, etiqueta: 'Registrar',         ruta: '/registrar',              roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE] },
-      { icono: <BookOpen size={20}/>, etiqueta: 'Ver Justificaciones',   ruta: '/ver-justificaciones',    roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE] },
-      { icono: <ClipboardList size={20}/>, etiqueta: 'Gestión de Pases', ruta: '/gestion-pases',         roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
+      { icono: <BookOpen size={20}/>, etiqueta: 'Crear Pase',           ruta: '/inspectoria/crear-pase',      roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
+      { icono: <ClipboardList size={20}/>, etiqueta: 'Gestión Pases',       ruta: '/inspectoria/gestion-pases',  roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE] },
+      { icono: <FileText size={20}/>, etiqueta: 'Formulario Accidente', ruta: '/registrar-accidente',          roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
     ]
   },
   {
@@ -123,13 +123,6 @@ const MENU_ITEMS: MenuItem[] = [
     ruta: '/ayuda',
     roles: [Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE, Rol.ESTUDIANTE, Rol.APODERADO],
   },
-  {
-    icono: <Activity size={20}/>,
-    etiqueta: 'Accidente',
-    ruta: '/registrar-accidente',
-    roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR],
-  }
-  }
 ];
 
 export default function Layout({ children, rol, nombre, email, usuarioId, idEstablecimiento, permisos, cargandoPermisos }: Props) {

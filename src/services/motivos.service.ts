@@ -37,10 +37,7 @@ export async function crearMotivoJustificacion(motivo: MotivoJustificacion): Pro
   try {
     const { error } = await supabase
       .from('motivos_justificacion')
-      .insert([{
-        ...motivo,
-        creado_en: new Date().toISOString(),
-      }]);
+      .insert([motivo]);
 
     if (error) throw error;
   } catch (error) {
@@ -56,11 +53,8 @@ export async function actualizarMotivoJustificacion(
   try {
     const { error } = await supabase
       .from('motivos_justificacion')
-      .update({
-        ...datos,
-        actualizado_en: new Date().toISOString(),
-      })
-      .eq('id', id);
+      .update(datos)
+      .eq('id_motivo', id);
 
     if (error) throw error;
   } catch (error) {
@@ -73,11 +67,8 @@ export async function eliminarMotivoJustificacion(id: string): Promise<void> {
   try {
     const { error } = await supabase
       .from('motivos_justificacion')
-      .update({
-        activo: false,
-        actualizado_en: new Date().toISOString(),
-      })
-      .eq('id', id);
+      .update({ activo: false })
+      .eq('id_motivo', id);
 
     if (error) throw error;
   } catch (error) {

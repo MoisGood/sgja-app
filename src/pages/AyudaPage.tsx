@@ -7,14 +7,14 @@ import { ayudaService } from '../services/ayuda.service';
 
 const FALLBACK_FAQ: { categoria: string; items: { titulo: string; contenido: string }[] }[] = [
   { categoria: 'Ausencias', items: [
-    { titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
+    { titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Inspectoria > Justificaciones > pestaña Gestion de Pases. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
     { titulo: '¿Puedo registrar de días anteriores?', contenido: 'Sí, puedes seleccionar una fecha anterior en el calendario antes de registrar.' },
   ]},
   { categoria: 'Pases', items: [
-    { titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Justificaciones > Gestión de Pases. Ahí puedes crear o aprobar pases de estudiantes.' },
+    { titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Inspectoria > Justificaciones > pestaña Crear Pase. Ahi puedes crear o aprobar pases de estudiantes.' },
   ]},
   { categoria: 'Justificaciones', items: [
-    { titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Justificaciones > Ver Justificaciones. Filtra por fecha, curso o estado.' },
+    { titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Inspectoria > Justificaciones. Filtra por fecha, curso o estado.' },
     { titulo: '¿Qué significa cada estado?', contenido: 'Injustificada = sin documento. Justificada = con documento aprobado.' },
   ]},
   { categoria: 'Mi cuenta', items: [

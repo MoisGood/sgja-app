@@ -1,17 +1,16 @@
 // src/pages/RegistrarAccidente.tsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { buscarEstudiantes, guardarAccidente, precargarEstudiantes } from '../services/accidentes.service';
+
+import { buscarEstudiantes, precargarEstudiantes } from '../services/accidentes.service';
 import { obtenerEstablecimiento } from '../services/establecimientos.service';
 import type { Estudiante, Establecimiento } from '../types';
-import { Save, Search, FileText } from 'lucide-react';
+import { Search, FileText, Trash2 } from 'lucide-react';
 import VistaPreviaPDF from '../components/VistaPreviaPDF';
 import { generarPDF, pdfToBlobUrl, generarPDFDebug, type DatosPDF } from '../services/pdf.service';
 
 interface Props { idEstablecimiento: string; }
 
 const RegistroAccidente = ({ idEstablecimiento }: Props) => {
-  const { uid } = useAuth();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeLoaded = useRef(false);
   const [busqueda, setBusqueda] = useState('');
@@ -20,8 +19,6 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
   const [estudianteSel, setEstudianteSel] = useState<Estudiante | null>(null);
   const [establecimiento, setEstablecimiento] = useState<Pick<Establecimiento, 'nombre'> | null>(null);
   const [cargandoBusq, setCargandoBusq] = useState(false);
-  const [guardando, setGuardando] = useState(false);
-  const [exito, setExito] = useState('');
   const [error, setError] = useState('');
   const [mostrarPreview, setMostrarPreview] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -94,47 +91,6 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
     }
   };
 
-  const handleGuardar = async () => {
-    if (!estudianteSel) { setError('Seleccione un estudiante'); return; }
-    setGuardando(true); setError('');
-
-    // Obtener datos del formulario en el iframe
-    const iframe = iframeRef.current;
-    if (!iframe || !iframe.contentDocument) { setError('Error al acceder al formulario'); setGuardando(false); return; }
-
-    const doc = iframe.contentDocument;
-    const form = doc?.querySelector('form');
-    if (!form) { setError('Error al leer el formulario'); setGuardando(false); return; }
-
-    const formData = new FormData(form);
-    const datos: Record<string, string> = {};
-    formData.forEach((val, key) => { datos[key] = val.toString(); });
-
-    try {
-      await guardarAccidente({
-        id_establecimiento: idEstablecimiento,
-        id_estudiante: estudianteSel.id_estudiante,
-        id_funcionario: uid || '',
-        fecha_accidente: datos['campo_6'] || datos['campo_20'] || new Date().toISOString().split('T')[0],
-        hora_accidente: datos['campo_19'] || '',
-        lugar_accidente: '',
-        descripcion_accidente: datos['area_1'] || '',
-        naturaleza_accidente: '',
-        consecuencia_accidente: '',
-        parte_cuerpo_afectada: '',
-        tipo_lesion: '',
-        primeros_auxilios: '',
-        testigos: '',
-        activo: true,
-      });
-      setExito('Guardado correctamente');
-      setTimeout(() => setExito(''), 3000);
-    } catch {
-      setError('Error al guardar');
-    }
-    finally { setGuardando(false); }
-  };
-
   const handleVistaPrevia = async () => {
     if (!estudianteSel) { setError('Seleccione un estudiante primero'); return; }
     setError('');
@@ -146,32 +102,15 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
       const fd = form ? new FormData(form) : new FormData();
       const getVal = (name: string) => fd.get(name)?.toString() || '';
 
-      const esTrayecto = getVal('chk_15') === 'true' || getVal('chk_15') === 'on';
-      const esEscuela = getVal('chk_16') === 'true' || getVal('chk_16') === 'on';
-
-      // Día de la semana: primero checkbox, luego calculado desde fecha
-      const diasMap: Record<string, string> = {
-        chk_8: '1', chk_9: '2', chk_10: '3', chk_11: '4',
-        chk_12: '5', chk_13: '6', chk_14: '7',
-      };
-      let diaSemana = '';
-      for (const [chk, val] of Object.entries(diasMap)) {
-        if (getVal(chk) === 'true' || getVal(chk) === 'on') { diaSemana = val; break; }
-      }
-      if (!diaSemana) {
-        const fechaAcc = getVal('fecha_7') || '';
-        if (fechaAcc) {
-          const d = new Date(fechaAcc + 'T12:00:00');
-          diaSemana = String(d.getDay() === 0 ? 7 : d.getDay());
-        }
-      }
+      const esTrayecto = getVal('tipo_accidente') === 'TRAYECTO';
+      const esEscuela = getVal('tipo_accidente') === 'ESCUELA';
 
       const datos: DatosPDF = {
         // Sección A
         nombreEstablecimiento: establecimiento?.nombre || getVal('nombre_establecimiento') || '',
         ciudad: getVal('ciudad') || '',
         comuna: getVal('comuna') || '',
-        tipoEstablecimiento: getVal('chk_2') ? '1' : getVal('chk_3') ? '2' : '',
+        tipoEstablecimiento: getVal('tipo_establecimiento') === 'MUNICIPAL' ? '1' : getVal('tipo_establecimiento') === 'PARTICULAR' ? '2' : '',
         curso: estudianteSel.curso || getVal('curso') || '',
         horario: getVal('horario') || '',
         fechaRegistroDia: new Date().getDate().toString(),
@@ -182,8 +121,8 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
         apellidoPaterno: getVal('apellido_paterno') || '',
         apellidoMaterno: getVal('apellido_materno') || '',
         nombres: getVal('nombres') || '',
-        sexo: getVal('chk_4') ? '2' : getVal('chk_5') ? '1' : '',
-        anoNacimiento: getVal('ano_de_nacimiento') || '',
+        sexo: getVal('sexo') === 'M' ? '1' : getVal('sexo') === 'F' ? '2' : '',
+        anoNacimiento: getVal('ano_nacimiento') || '',
         edad: getVal('edad') || '',
         calle: getVal('calle') || '',
         numero: getVal('numero') || '',
@@ -193,17 +132,17 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
         codifCom: getVal('codif_com') || '',
 
         // Sección C
-        hora: getVal('hora_6')?.split(':')[0] || '',
-        minutos: getVal('hora_6')?.split(':')[1] || '',
-        fechaAccidenteAno: (getVal('fecha_7') || '').split('-')[0] || '',
-        fechaAccidenteMes: (getVal('fecha_7') || '').split('-')[1] || '',
-        fechaAccidenteDia: (getVal('fecha_7') || '').split('-')[2] || '',
-        diaSemana,
+        hora: getVal('hora')?.split(':')[0] || '',
+        minutos: getVal('hora')?.split(':')[1] || '',
+        fechaAccidenteAno: (getVal('fecha_accidente') || '').split('-')[0] || '',
+        fechaAccidenteMes: (getVal('fecha_accidente') || '').split('-')[1] || '',
+        fechaAccidenteDia: (getVal('fecha_accidente') || '').split('-')[2] || '',
+        diaSemana: getVal('dia_semana') || '',
         accidenteTipo: esTrayecto ? '1' : esEscuela ? '2' : '',
-        testigo1Nombre: getVal('nombre__apellido') || '',
-        testigo1Cedula: getVal('cedula_de_identidad') || '',
-        testigo2Nombre: '',
-        testigo2Cedula: '',
+        testigo1Nombre: getVal('testigo_nombre') || '',
+        testigo1Cedula: getVal('testigo_rut') || '',
+        testigo2Nombre: getVal('testigo_nombre_2') || '',
+        testigo2Cedula: getVal('testigo_rut_2') || '',
         circunstancia: getVal('descripcion') || '',
       };
 
@@ -216,17 +155,6 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
       setError('Error al generar el PDF');
     }
   };
-
-  // Escuchar "Finalizar" desde el iframe → generar PDF
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      if (e.data?.action === 'generar-pdf') {
-        handleVistaPrevia();
-      }
-    };
-    window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
-  }, [estudianteSel, establecimiento]);
 
   const handleDebugCoords = async () => {
     try {
@@ -297,16 +225,22 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
           🎯
         </span>
 
-        <button onClick={handleGuardar} disabled={guardando}
+        <button onClick={() => {
+          const iframe = iframeRef.current;
+          if (!iframe?.contentDocument) return;
+          const form = iframe.contentDocument.querySelector('form');
+          if (!form) return;
+          form.reset();
+          try { sessionStorage.removeItem('agil_form'); } catch(e) {}
+        }}
           style={{
-            padding: '8px 20px', background: '#1A3C6B', color: '#fff', border: 'none',
+            padding: '8px 20px', background: '#FFF', color: '#DC2626', border: '1px solid #DC2626',
             borderRadius: '6px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap'
           }}>
-          <Save size={14} /> {guardando ? 'Guardando...' : 'Guardar'}
+          <Trash2 size={14} /> Limpiar
         </button>
 
-        {exito && <span style={{ color: '#065F46', fontSize: 12, fontWeight: 500 }}>✅ {exito}</span>}
         {error && <span style={{ color: '#DC2626', fontSize: 12, fontWeight: 500 }}>{error}</span>}
       </div>
 

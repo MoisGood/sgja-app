@@ -1,12 +1,27 @@
 import { supabase } from '../lib/supabase';
 import type { Solicitud } from '../types';
 
+async function fetchSolicitudes(
+  idEstablecimiento: string,
+  callback: (solicitudes: Solicitud[]) => void
+) {
+  const { data } = await supabase
+    .from('solicitudes')
+    .select('*')
+    .eq('id_establecimiento', idEstablecimiento)
+    .eq('activo', true);
+
+  callback((data || []) as Solicitud[]);
+}
+
 /** Suscribe a cambios en la tabla `solicitudes` (todos los eventos) */
 function escucharSolicitudes(
   idEstablecimiento: string,
   callback: (solicitudes: Solicitud[]) => void
 ): () => void {
   try {
+    fetchSolicitudes(idEstablecimiento, callback);
+
     const subscription = supabase
       .channel(`solicitudes:${idEstablecimiento}`)
       .on(
@@ -18,13 +33,7 @@ function escucharSolicitudes(
           filter: `id_establecimiento=eq.${idEstablecimiento}`,
         },
         async () => {
-          const { data } = await supabase
-            .from('solicitudes')
-            .select('*')
-            .eq('id_establecimiento', idEstablecimiento)
-            .eq('activo', true);
-
-          callback((data || []) as Solicitud[]);
+          fetchSolicitudes(idEstablecimiento, callback);
         }
       )
       .subscribe();

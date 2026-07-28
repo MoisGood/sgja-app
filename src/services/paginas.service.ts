@@ -12,10 +12,8 @@ export function obtenerTodasLasPaginas(): PermisosPagina[] {
     { ruta: '/secretaria/enviar-correo', nombre: 'Enviar Correo', descripcion: 'Envío de correos a funcionarios' },
 
     { ruta: '/mantenedor-funcionarios', nombre: 'Funcionarios', descripcion: 'Mantenedor de funcionarios' },
-    { ruta: '/justificaciones', nombre: 'Justificaciones', descripcion: 'Panel de justificaciones' },
-    { ruta: '/registrar', nombre: 'Registrar', descripcion: 'Registrar justificación' },
-    { ruta: '/ver-justificaciones', nombre: 'Ver Justificaciones', descripcion: 'Listado de justificaciones' },
-    { ruta: '/gestion-pases', nombre: 'Gestión de Pases', descripcion: 'Administrar pases' },
+    { ruta: '/inspectoria/crear-pase', nombre: 'Crear Pase', descripcion: 'Crear pase de atraso o inasistencia' },
+    { ruta: '/inspectoria/gestion-pases', nombre: 'Gestión Pases', descripcion: 'Gestión de pases y justificaciones' },
     { ruta: '/seguridad', nombre: 'Seguridad', descripcion: 'Configuración de seguridad' },
     { ruta: '/configuracion', nombre: 'Configuración', descripcion: 'Panel de configuración' },
     { ruta: '/en-linea', nombre: 'En Línea', descripcion: 'Usuarios en línea' },
@@ -55,6 +53,6 @@ export function obtenerTodasLasPaginas(): PermisosPagina[] {
     { ruta: '/monitoreo-correos', nombre: 'Monitoreo Correos', descripcion: 'Monitoreo de envío de correos' },
     { ruta: '/monitoreo-fallos', nombre: 'Monitoreo Fallos', descripcion: 'Registro de fallos del sistema' },
     { ruta: '/ayuda', nombre: 'Ayuda', descripcion: 'Centro de ayuda del sistema' },
-    { ruta: '/registrar-accidente', nombre: 'Registrar Accidente', descripcion: 'Formulario de constancia de accidente escolar' },
+    { ruta: '/registrar-accidente', nombre: 'Formulario Accidente', descripcion: 'Formulario de constancia de accidente escolar' },
   ];
 }

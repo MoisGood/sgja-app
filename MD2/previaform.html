@@ -34,6 +34,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#e8ecf1;min-heigh
 .nav .btn-end{background:#10B981;color:#fff;border-color:#10B981}
 .vacio{text-align:center;padding:60px 20px;color:#9CA3AF;font-size:14px}
 .error-msg{text-align:center;padding:60px 20px;color:#DC2626;font-size:14px}
+.card-presente{background:linear-gradient(135deg,#D1FAE5,#A7F3D0) !important;border-color:#34D399 !important}
+.card-ausente{background:linear-gradient(135deg,#FEE2E2,#FCA5A5) !important;border-color:#F87171 !important}
+.card-toggle{cursor:pointer;transition:all 0.2s}
 @media(max-width:640px){body{padding:8px 6px}.sec-body{padding:12px;gap:10px}.field-row{flex-direction:column;gap:8px}.nav{flex-wrap:wrap;gap:8px;justify-content:center}}
 </style>
 </head>
@@ -55,7 +58,7 @@ function loadData() {
 
 function obtenerFilas(campos, secId) {
   const filas = [];
-  campos.filter(c => c.seccion === secId).forEach(c => {
+  campos.filter(c => c.seccion === secId && !c.cardParent).forEach(c => {
     if (c.fila && !filas.includes(c.fila)) filas.push(c.fila);
   });
   return filas;
@@ -71,10 +74,14 @@ function campoHTML(c) {
       return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="text" name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + ' autocomplete="off"></div>';
     case 'textarea':
       return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><textarea name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + '></textarea></div>';
-    case 'date':
-      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="date" name="' + (c.name||'') + '"></div>';
-    case 'time':
-      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="time" name="' + (c.name||'') + '"></div>';
+    case 'date': {
+      var hoy = new Date().toISOString().split('T')[0];
+      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="date" name="' + (c.name||'') + '" value="' + hoy + '"></div>';
+    }
+    case 'time': {
+      var ahora = new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit',hour12:false});
+      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="time" name="' + (c.name||'') + '" value="' + ahora + '"></div>';
+    }
     case 'checkbox':
       return '<div class="campo fx1"' + st + '><label class="chk-item"><input type="checkbox" name="' + (c.name||'') + '" value="1"> ' + (c.labelCheckbox || lbl || 'Casilla') + '</label></div>';
     case 'label':
@@ -92,6 +99,10 @@ function campoHTML(c) {
       return '<div style="width:100%;height:'+lWidth+';margin:4px 0;' + lBg + lFade + lZ + '"></div>';
     case 'spacer':
       return '<div class="' + fx + '"' + st + '></div>';
+    case 'heading':
+      var hTag = c.headingLevel || 'h2';
+      var hSt = 'margin:0;font-weight:700;color:#1F2937;' + (c.textAlign ? 'text-align:' + c.textAlign + ';' : '') + (c.fontColor ? 'color:' + c.fontColor + ';' : '');
+      return '<' + hTag + ' style="' + hSt + '">' + (c.label || 'Heading') + '</' + hTag + '>';
     case 'buscarut':
       return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;gap:4px;align-items:center;"><input type="text" name="' + (c.name||'rut') + '" placeholder="12.345.678-9" pattern="[0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}-[0-9kK]" autocomplete="off" style="flex:1;"><button type="button" style="padding:7px 14px;background:#1A3C6B;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">' + (c.botonLabel || 'Buscar') + '</button></div></div>';
     case 'tabla':
@@ -101,6 +112,38 @@ function campoHTML(c) {
       for (var ti=0;ti<nfilas;ti++) { tbl += '<tr>' + cab.map(function(){return '<td style="border:1px solid #e5e7eb;padding:6px 8px;height:28px;"></td>';}).join('') + '</tr>'; }
       tbl += '</tbody></table>';
       return '<div class="campo ' + fx + '"><label>' + lbl + '</label>' + tbl + '</div>';
+    case 'curso': {
+      var cursoOpts = c.cursoOpciones || ['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia'];
+      return '<div class="campo ' + fx + '"' + st + '><label>' + (c.label || 'Curso') + '</label><select name="' + (c.name||'curso') + '" style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;">' +
+        '<option value="">' + (c.placeholder || 'Selecciona curso') + '</option>' +
+        cursoOpts.map(function(o) { return '<option value="' + o + '">' + o + '</option>'; }).join('') + '</select></div>';
+    }
+    case 'boton':
+      return '<div class="campo ' + fx + '"' + st + ' style="border:none;background:transparent;text-align:center;"><label>' + (c.label || 'Boton') + '</label><button type="' + (c.botonTipo || 'button') + '" style="padding:8px 24px;background:#1A3C6B;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">' + (c.botonTexto || c.label || '') + '</button></div>';
+    case 'card':
+      var cardData = loadData();
+      var allCampos = cardData ? cardData.campos : [];
+      var cardEst = c.cardEstado || '';
+      var cardEstBg = cardEst === 'ausente' ? 'linear-gradient(135deg,#FEE2E2,#FCA5A5)' : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)';
+      var cardSt = 'background:' + cardEstBg + ';border-radius:' + (c.borderRadius || '10px') + ';box-shadow:' + (c.boxShadow || '0 2px 12px rgba(0,0,0,0.08)') + ';border:' + (c.borderGeneral || '1px solid #e5e7eb') + ';overflow:hidden;margin-bottom:8px;';
+      var dotHtml = cardEst === 'ausente' ? '<span style="position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:' + (c.cardJustificado ? '#3B82F6' : '#fff') + ';border:1px solid ' + (c.cardJustificado ? '#2563EB' : '#D1D5DB') + ';z-index:5;cursor:pointer;" onclick="event.stopPropagation();var d=loadData();var cx=d.campos.find(function(x){return x.id===\'' + c.id + '\';});if(cx){cx.cardJustificado=!cx.cardJustificado;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch(e){}render();}"></span>' : '';
+      var cardHtml = '<div class="card-preview card-toggle" style="' + cardSt + ';position:relative;" onclick="toggleCardEstadoPreview(\'' + c.id + '\')">' +
+        dotHtml;
+      if (c.cardTitle) cardHtml += '<div style="padding:0 16px 8px;font-size:15px;font-weight:700;color:#1F2937;">' + c.cardTitle + '</div>';
+      var cardChildren = allCampos.filter(function(ch) { return ch.cardParent === c.id; });
+      var bodyBg = c.cardBodyBg ? 'background:' + c.cardBodyBg + ';' : '';
+      if (cardChildren.length > 0) {
+        cardHtml += '<div class="card-body" style="padding:12px 16px;' + bodyBg + '">';
+        if (c.cardLabel) cardHtml += '<div style="font-size:14px;color:#6B7280;font-weight:500;text-align:center;margin-bottom:12px;">' + c.cardLabel + '</div>';
+        cardChildren.forEach(function(ch) { cardHtml += '<div style="text-align:left;">' + campoHTML(ch) + '</div>'; });
+        cardHtml += '</div>';
+      } else {
+        cardHtml += '<div class="card-body" style="padding:24px 16px;text-align:center;' + bodyBg + '">';
+        if (c.cardLabel) cardHtml += '<div style="font-size:14px;color:#6B7280;font-weight:500;margin-bottom:6px;">' + c.cardLabel + '</div>';
+        cardHtml += '<div style="font-size:11px;color:#9CA3AF;">Contenido de la tarjeta</div></div>';
+      }
+      cardHtml += '</div>';
+      return cardHtml;
     default:
       return '<div class="campo fx1"><label>' + lbl + '</label><input type="text" name="' + (c.name||'') + '"></div>';
   }
@@ -132,9 +175,10 @@ function mostrarSeccion(idx, campos) {
   const filas = obtenerFilas(campos, s.id);
 
   let html = '<div class="sec">';
+  const multi = seccionesData.length > 1;
   html += '<div class="sec-hdr">' +
-    '<span class="badge">' + (s.label || 'Seccion ' + (idx+1)) + ' de ' + seccionesData.length + '</span>' +
-    '<span class="tipo">' + (seccionesData.length > 1 ? 'Wizard' : 'Simple') + '</span>' +
+    '<span class="badge">' + (multi ? (s.label || 'Seccion ' + (idx+1)) + ' de ' + seccionesData.length : 'Formulario') + '</span>' +
+    (multi ? '<span class="tipo">Wizard</span>' : '') +
     '<span class="cnt">' + campos.filter(c => c.seccion === s.id).length + ' campos</span>' +
   '</div>';
 
@@ -143,11 +187,22 @@ function mostrarSeccion(idx, campos) {
     html += '<div class="vacio">(seccion sin campos)</div>';
   } else {
     filas.forEach(filaId => {
-      const camposFila = campos.filter(c => c.fila === filaId && c.seccion === s.id);
-      html += '<div class="field-row">';
+      const camposFila = campos.filter(c => c.fila === filaId && c.seccion === s.id && !c.cardParent);
+      var filaCentrar = s.filasData && s.filasData[filaId] && s.filasData[filaId].centrar;
+      html += '<div class="field-row"' + (filaCentrar ? ' style="justify-content:center;"' : '') + '>';
       camposFila.forEach(c => { html += campoHTML(c); });
       html += '</div>';
     });
+  }
+  if (idx === seccionesData.length - 1 && campos.filter(function(x) { return x.tipo === 'card'; }).length > 0) {
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;font-size:11px;">' +
+      '<span style="font-weight:600;color:#374151;">Cards:</span>' +
+      '<span style="display:inline-flex;align-items:center;gap:3px;color:#059669;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);"></span> Presente</span>' +
+      '<span style="display:inline-flex;align-items:center;gap:3px;color:#DC2626;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(135deg,#FEE2E2,#FCA5A5);"></span> Ausente</span>' +
+      '<span style="flex:1;"></span>' +
+      '<button onclick="bulkCardEstadoPrev(\'presente\')" style="padding:2px 10px;font-size:10px;border:1px solid #34D399;border-radius:4px;background:#D1FAE5;color:#065F46;cursor:pointer;">Todos verde</button>' +
+      '<button onclick="bulkCardEstadoPrev(\'ausente\')" style="padding:2px 10px;font-size:10px;border:1px solid #F87171;border-radius:4px;background:#FEE2E2;color:#991B1B;cursor:pointer;">Todos rojo</button>' +
+      '</div>';
   }
   html += '</div>';
 
@@ -176,10 +231,28 @@ function navegar(idx) {
   const data = loadData();
   if (!data) return;
   const app = document.getElementById('app');
-  const header = app.querySelector('.preview-header');
-  app.innerHTML = '';
-  app.appendChild(header);
-  app.insertAdjacentHTML('beforeend', mostrarSeccion(idx, data.campos));
+  app.innerHTML = '<div class="preview-header"><h1>Vista previa</h1><button onclick="window.close()">Cerrar</button></div>' +
+    mostrarSeccion(idx, data.campos);
+}
+
+function toggleCardEstadoPreview(id) {
+  var data = loadData();
+  if (!data) return;
+  var c = data.campos.find(function(x) { return x.id === id; });
+  if (!c) return;
+  if (c.cardEstado === 'presente') c.cardEstado = 'ausente';
+  else if (c.cardEstado === 'ausente') c.cardEstado = null;
+  else c.cardEstado = 'presente';
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  render();
+}
+
+function bulkCardEstadoPrev(estado) {
+  var data = loadData();
+  if (!data) return;
+  data.campos.forEach(function(c) { if (c.tipo === 'card') c.cardEstado = estado; });
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  render();
 }
 
 render();

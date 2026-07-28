@@ -19,10 +19,8 @@ import DashboardEstudiante from './pages/DashboardEstudiante';
 import DashboardApoderado from './pages/DashboardApoderado';
 import GestionUsuariosPage from './pages/GestionUsuariosPage';
 import Mantenedores from './pages/Mantenedores';
-import RegistrarJustificacion from './pages/RegistrarJustificacion';
-import VerJustificaciones from './pages/VerJustificaciones';
 import GestionPases from './pages/GestionPases';
-import JustificacionesAtrasos from './pages/JustificacionesAtrasos';
+import RegistrarJustificacion from './pages/RegistrarJustificacion';
 import Parametros from './pages/Parametros';
 import EnLinea from './pages/EnLinea';
 import Seguridad from './pages/Seguridad';
@@ -569,10 +567,10 @@ export default function AppContent() {
           <Route path="/gestion-usuarios" element={puedeVer('/gestion-usuarios', 'ADMIN') ? <GestionUsuariosPage idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/gestion" element={puedeVer('/gestion', 'ADMIN') ? <GestionUsuariosPage idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/mantenedores" element={puedeVer('/mantenedores', 'ADMIN') ? <Mantenedores idEstablecimiento={idEstablecimiento!} /> : null} />
-          <Route path="/registrar" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
-          <Route path="/ver-justificaciones" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <VerJustificaciones idEstablecimiento={idEstablecimiento!} rol={rol} idUsuario={uid || ''} /> : null} />
-          <Route path="/gestion-pases" element={(rol === 'ADMIN' || rol === 'PROFESOR' || rol === 'INSPECTOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol} idUsuarioActual={uid || ''} /> : null} />
-          <Route path="/justificaciones" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <JustificacionesAtrasos idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/inspectoria" element={<Navigate to="/inspectoria/gestion-pases" replace />} />
+          <Route path="/inspectoria/justificaciones" element={<Navigate to="/inspectoria/gestion-pases" replace />} />
+          <Route path="/inspectoria/crear-pase" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
+          <Route path="/inspectoria/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PARADOCENTE') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
           <Route path="/parametros" element={puedeVer('/parametros', 'ADMIN') ? <Parametros idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/en-linea" element={puedeVer('/en-linea', 'ADMIN') ? <EnLinea /> : null} />
           <Route path="/seguridad" element={puedeVer('/seguridad', 'ADMIN') ? <Seguridad /> : null} />

@@ -41,7 +41,11 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#e8ecf1;height:10
 .campo{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:3px;cursor:pointer;position:relative;transition:box-shadow 0.15s}
 .campo:hover{box-shadow:0 2px 8px rgba(0,0,0,0.1)}
 .campo.seleccionado{outline:2px solid #1A3C6B;outline-offset:1px}
+.field-row.seleccionado{outline:2px dashed #1A3C6B;outline-offset:1px;background:#F0F7FF;border-radius:6px;padding:4px 0;}
 .campo.dragging{opacity:0.4}
+.card-presente{background:linear-gradient(135deg,#D1FAE5,#A7F3D0) !important;border-color:#34D399 !important}
+.card-ausente{background:linear-gradient(135deg,#FEE2E2,#FCA5A5) !important;border-color:#F87171 !important}
+.card-toggle{cursor:pointer;transition:all 0.2s}
 .fila-insert-zone:hover{background:#EFF6FF!important;height:28px!important;}
 .fila-insert-zone:hover span{opacity:1!important;}
 .campo>label{font-size:9px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.3px}
@@ -72,6 +76,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#e8ecf1;height:10
 .preview-mobile{max-width:375px;margin:0 auto;border:8px solid #1F2937;border-radius:20px;padding:20px 12px;background:#fff}
 .preview-desktop{max-width:860px}
 .name-ok{color:#10B981;font-size:9px}.name-err{color:#DC2626;font-size:9px}
+.card-body{min-height:40px}
 </style>
 </head>
 <body>
@@ -79,7 +84,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#e8ecf1;height:10
 <div class="toolbar">
   <span style="font-size:14px;font-weight:700;color:#1A3C6B;white-space:nowrap;">SGJA Editor</span>
   <input type="text" id="nombre-form" placeholder="Nombre del formulario" value="formulario" style="width:160px;padding:4px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;">
+  <button onclick="nuevoFormulario()">Nuevo</button>
   <button onclick="exportarHTML()" style="background:#1A3C6B;color:#fff;border-color:#1A3C6B;font-weight:600;">Exportar HTML</button>
+  <button onclick="document.getElementById('htmlIn').click()" style="background:#059669;color:#fff;border-color:#059669;font-weight:600;">Importar HTML</button>
+  <input type="file" id="htmlIn" accept=".html,.htm" style="display:none" onchange="importarHTML(event)">
   <button onclick="guardar();window.open('previaform.html','_blank')">Vista previa</button>
   <button onclick="exportarJSON()" title="Guardar disenio como JSON para editar despues">Guardar JSON</button>
   <button onclick="document.getElementById('fileIn').click()">Cargar JSON</button>
@@ -105,6 +113,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#e8ecf1;height:10
     <button onclick="agregar('spacer')">Spacer</button>
     <button onclick="agregar('buscarut')">Buscar RUT</button>
     <button onclick="agregar('tabla')">Tabla</button>
+    <button onclick="agregar('heading')">Heading</button>
+    <button onclick="agregar('curso')">Curso</button>
+    <button onclick="agregar('boton')">Boton</button>
+    <button onclick="agregar('card')">Card</button>
     </div>
     <h4>Templates</h4>
     <button class="template-btn" onclick="agregarTemplate('nombre_rut')">Nombre + RUT</button>
@@ -133,6 +145,7 @@ let campos = [];
 let seleccionado = null;
 let secciones = [{ id: 's1', label: 'Seccion 1', bgColor: '#ffffff' }];
 let seccionActiva = 's1';
+let filaSeleccionada = null; // { secId, filaId } o null
 const STORAGE_KEY = 'editor_form_v2';
 
 // ─── Undo/Redo ─────────────────────────────────────────────
@@ -199,7 +212,7 @@ function agregar(tipo) {
   const ultimaFila = filasSec.length > 0 ? filasSec[filasSec.length - 1] : null;
   const camposUltima = ultimaFila ? campos.filter(c => c.fila === ultimaFila) : [];
   let fx = 'fx1';
-  if (tipo === 'label' || tipo === 'linea') fx = 'fx3';
+  if (tipo === 'label' || tipo === 'linea' || tipo === 'card' || tipo === 'boton') fx = 'fx3';
   else if (camposUltima.length === 0) fx = 'fx1';
   else if (camposUltima.length === 1) fx = 'fx2';
   else fx = 'fx1';
@@ -207,7 +220,7 @@ function agregar(tipo) {
   const campo = {
     id: uid(),
     tipo,
-    label: tipo === 'label' ? 'Titulo' : tipo === 'firma' ? 'Firma' : tipo === 'checkbox' ? 'Casilla' : tipo === 'buscarut' ? 'RUT' : '',
+    label: tipo === 'label' ? 'Titulo' : tipo === 'firma' ? 'Firma' : tipo === 'checkbox' ? 'Casilla' : tipo === 'buscarut' ? 'RUT' : tipo === 'card' ? 'Card' : tipo === 'heading' ? 'Heading' : tipo === 'curso' ? 'Curso' : tipo === 'boton' ? 'Boton' : '',
     name: '',
     fx,
     placeholder: '',
@@ -219,14 +232,18 @@ function agregar(tipo) {
     labelCheckbox: '',
     firmaLabel: 'Firma',
     valor: '',
-    bgColor: '',
+    headingLevel: 'h2',
+    cardParent: null,
+    bgColor: '#ffffff',
     fontColor: '',
     fontSize: '',
     fontWeight: '',
     textAlign: '',
-    borderRadius: '',
-    boxShadow: '',
-    borderGeneral: ''
+    borderRadius: '8px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    borderGeneral: '',
+    cardTitle: '',
+    cardBodyBg: ''
   };
   campos.push(campo);
   seleccionado = campo.id;
@@ -239,7 +256,7 @@ function agregar(tipo) {
 // ─── Filas ──────────────────────────────────────────────────
 function obtenerFilas(secId) {
   const filas = [];
-  campos.filter(c => c.seccion === secId).forEach(c => {
+  campos.filter(c => c.seccion === secId && !c.cardParent).forEach(c => {
     if (!filas.includes(c.fila)) filas.push(c.fila);
   });
   return filas;
@@ -251,7 +268,7 @@ function agregarFila(secId) {
   popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:16px;z-index:10000;min-width:260px;';
   popup.innerHTML = '<div style="font-size:13px;font-weight:700;color:#1F2937;margin-bottom:10px;">Tipo de campo</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">' +
-    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla'].map(t =>
+    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla','heading','curso','boton','card'].map(t =>
       '<button onclick="this.closest(\'div[style*=fixed]\').remove();crearFilaConTipo(\''+secId+'\',\''+t+'\')" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;font-size:11px;cursor:pointer;text-align:left;color:#374151;">'+t+'</button>'
     ).join('') + '</div>' +
     '<div style="text-align:right;margin-top:8px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:4px 12px;font-size:11px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;">Cancelar</button></div>';
@@ -271,9 +288,11 @@ function eliminarFila(secId, filaId) {
 function crearFilaConTipo(secId, tipo) {
   saveState();
   const nuevaFila = uid();
-  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3 };
-  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
-  const campo = { id: uid(), tipo, label: labelDefault, name:'', fx: (tipo==='label'||tipo==='linea')?'fx3':'fx1', seccion: secId, fila: nuevaFila, ...defaults };
+  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3, cardParent:null, cardTitle:'', cardLabel:'', cardBodyBg:'', cardEstado:'presente', cardJustificado:false, headingLevel:'h2', cursoOpciones:['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia'], botonTipo:'button' };
+  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':tipo==='card'?'Card':tipo==='heading'?'Heading':tipo==='curso'?'Curso':tipo==='boton'?'Boton':'';
+  const fx = (tipo==='label'||tipo==='linea'||tipo==='heading'||tipo==='card'||tipo==='boton')?'fx3':'fx1';
+  const campo = { id: uid(), tipo, label: labelDefault, name:'', fx, seccion: secId, fila: nuevaFila, ...defaults };
+  if (tipo==='card') { campo.bgColor='#ffffff'; campo.borderRadius='8px'; campo.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; }
   campos.push(campo);
   seleccionado = campo.id;
   guardar();
@@ -286,7 +305,7 @@ function agregarFilaEn(secId, beforeFilaId) {
   popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:16px;z-index:10000;min-width:260px;';
   popup.innerHTML = '<div style="font-size:13px;font-weight:700;color:#1F2937;margin-bottom:10px;">Tipo de campo</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">' +
-    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla'].map(t =>
+    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla','heading','curso','boton','card'].map(t =>
       '<button onclick="this.closest(\'div[style*=fixed]\').remove();crearFilaEnPos(\''+secId+'\',\''+t+'\',\''+beforeFilaId+'\')" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;font-size:11px;cursor:pointer;text-align:left;color:#374151;">'+t+'</button>'
     ).join('') + '</div>' +
     '<div style="text-align:right;margin-top:8px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:4px 12px;font-size:11px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;">Cancelar</button></div>';
@@ -297,9 +316,11 @@ function agregarFilaEn(secId, beforeFilaId) {
 function crearFilaEnPos(secId, tipo, beforeFilaId) {
   saveState();
   const nuevaFila = uid();
-  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3 };
-  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
-  const campo = { id: uid(), tipo, label: labelDefault, name:'', fx: (tipo==='label'||tipo==='linea')?'fx3':'fx1', seccion: secId, fila: nuevaFila, ...defaults };
+  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3, cardParent:null, cardTitle:'', cardLabel:'', cardBodyBg:'', cardEstado:'presente', cardJustificado:false, headingLevel:'h2', cursoOpciones:['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia'], botonTipo:'button' };
+  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':tipo==='card'?'Card':tipo==='heading'?'Heading':tipo==='curso'?'Curso':tipo==='boton'?'Boton':'';
+  const fx = (tipo==='label'||tipo==='linea'||tipo==='heading'||tipo==='card'||tipo==='boton')?'fx3':'fx1';
+  const campo = { id: uid(), tipo, label: labelDefault, name:'', fx, seccion: secId, fila: nuevaFila, ...defaults };
+  if (tipo==='card') { campo.bgColor='#ffffff'; campo.borderRadius='8px'; campo.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; }
   const idx = campos.findIndex(x => x.fila === beforeFilaId && x.seccion === secId);
   if (idx >= 0) campos.splice(idx, 0, campo); else campos.push(campo);
   seleccionado = campo.id;
@@ -367,27 +388,30 @@ function render() {
     html += '<div class="sec' + (esActiva ? ' sec-activa' : '') + '" data-sec="' + s.id + '">';
     html += '<div class="sec-hdr" onclick="seccionActiva=\'' + s.id + '\';guardar();render();mostrarPropiedadesSeccion();">';
     html += '<span class="badge">' + s.label + '</span>';
-    html += '<span class="tipo">' + (secciones.length > 1 ? 'Wizard' : 'Simple') + '</span>';
+    html += '<span class="tipo">' + (secciones.length > 1 ? 'Wizard' : 'Formulario') + '</span>';
     html += '<span class="cnt">' + camposSec.length + ' campos</span>';
     if (secciones.length > 1) {
       html += '<button onclick="event.stopPropagation();eliminarSeccion(\'' + s.id + '\')" style="margin-left:auto;padding:2px 6px;font-size:9px;border:1px solid #fca5a5;background:#fef2f2;color:#ef4444;border-radius:3px;cursor:pointer;">X</button>';
     }
     html += '</div>';
 
-    html += '<div class="sec-body" data-sec-body="' + s.id + '" style="gap:' + (s.rowGap||12) + 'px;" ondragover="filaDragOver(event)" ondrop="filaDrop(event,\'' + s.id + '\',null)">';
+    html += '<div class="sec-body" data-sec-body="' + s.id + '" style="gap:' + (s.rowGap||12) + 'px;" ondragover="filaDragOver(event)" ondrop="filaDrop(event,\'' + s.id + '\',null)" onclick="filaSeleccionada=null;render();mostrarPropiedades();">';
     if (filas.length === 0) {
       html += '<div class="sec-body vacia" style="min-height:80px;">Arrastra campos aqui o agrega desde el panel</div>';
     } else {
       filas.forEach((filaId, filaIdx) => {
-        const camposFila = campos.filter(c => c.fila === filaId && c.seccion === s.id);
+        const camposFila = campos.filter(c => c.fila === filaId && c.seccion === s.id && !c.cardParent);
         html += '<div class="fila-insert-zone" ondragover="event.preventDefault();this.style.background=\'#EFF6FF\';this.style.height=\'28px\';" ondragleave="this.style.background=\'\';this.style.height=\'4px\';" ondrop="filaInsertDrop(event,\''+s.id+'\',\''+filaId+'\');this.style.background=\'\';this.style.height=\'4px\';" onclick="agregarFilaEn(\'' + s.id + '\',\'' + filaId + '\')" title="Insertar fila aqui" style="height:4px;border-radius:3px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;"><span style="opacity:0;font-size:11px;color:#1A3C6B;transition:opacity 0.15s;">+ fila</span></div>';
-        html += '<div class="field-row" data-fila="' + filaId + '" data-sec="' + s.id + '" draggable="true" ondragstart="filaDragStart(event,\'' + filaId + '\',\'' + s.id + '\')" ondragend="filaDragEnd(event)" ondragover="filaDragOver(event)" ondrop="filaDrop(event,\'' + s.id + '\',\'' + filaId + '\')">';
+        var filaSel = filaSeleccionada && filaSeleccionada.filaId === filaId && filaSeleccionada.secId === s.id;
+        var filaCentrar = s.filasData && s.filasData[filaId] && s.filasData[filaId].centrar;
+        html += '<div class="field-row' + (filaSel ? ' seleccionado' : '') + '" data-fila="' + filaId + '" data-sec="' + s.id + '" draggable="true" ondragstart="filaDragStart(event,\'' + filaId + '\',\'' + s.id + '\')" ondragend="filaDragEnd(event)" ondragover="filaDragOver(event)" ondrop="filaDrop(event,\'' + s.id + '\',\'' + filaId + '\')" onclick="event.stopPropagation();seleccionarFila(\'' + s.id + '\',\'' + filaId + '\')" style="' + (filaCentrar ? 'justify-content:center;' : '') + '">';
         camposFila.forEach((c, ci) => {
           if (ci === 0) html += campoDropZone(filaId, s.id, c.id);
           html += renderCampoHTML(c);
           html += campoDropZone(filaId, s.id, camposFila[ci+1] ? camposFila[ci+1].id : null);
         });
         html += '<button class="add-row-btn" onclick="agregarCampoAFila(\'' + s.id + '\',\'' + filaId + '\')" title="Agregar campo" style="width:auto;padding:4px 8px;margin:0;border:none;align-self:center;">+</button>';
+        html += '<button class="add-row-btn" onclick="duplicarFila(\'' + s.id + '\',\'' + filaId + '\')" title="Duplicar fila" style="width:auto;padding:4px 6px;margin:0;border:none;align-self:center;color:#1A3C6B;font-size:10px;">⧉</button>';
         html += '<button class="add-row-btn" onclick="eliminarFila(\'' + s.id + '\',\'' + filaId + '\')" title="Eliminar fila" style="width:auto;padding:4px 6px;margin:0;border:none;align-self:center;color:#ef4444;font-size:10px;">X</button>';
         html += '</div>';
       });
@@ -400,6 +424,16 @@ function render() {
       html += i > 0 ? '<button onclick="seccionActiva=\'' + secciones[i-1].id + '\';guardar();render();">Anterior</button>' : '<div></div>';
       html += i === secciones.length - 1 ? '<button class="btn-end">Finalizar</button>' : '<button onclick="seccionActiva=\'' + secciones[i+1].id + '\';guardar();render();">Siguiente</button>';
       html += '</div>';
+    }
+    if (i === secciones.length - 1 && campos.some(function(x) { return x.tipo === 'card'; })) {
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;font-size:11px;">' +
+        '<span style="font-weight:600;color:#374151;">Cards:</span>' +
+        '<span style="display:inline-flex;align-items:center;gap:3px;color:#059669;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);"></span> Presente</span>' +
+        '<span style="display:inline-flex;align-items:center;gap:3px;color:#DC2626;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(135deg,#FEE2E2,#FCA5A5);"></span> Ausente</span>' +
+        '<span style="flex:1;"></span>' +
+        '<button onclick="bulkCardEstado(\'presente\')" style="padding:2px 10px;font-size:10px;border:1px solid #34D399;border-radius:4px;background:#D1FAE5;color:#065F46;cursor:pointer;">Todos verde</button>' +
+        '<button onclick="bulkCardEstado(\'ausente\')" style="padding:2px 10px;font-size:10px;border:1px solid #F87171;border-radius:4px;background:#FEE2E2;color:#991B1B;cursor:pointer;">Todos rojo</button>' +
+        '</div>';
     }
     html += '</div>';
   });
@@ -455,10 +489,58 @@ function renderCampoHTML(c) {
       thtml += '</tbody></table>';
       inner = thtml;
       break;
+    case 'curso':
+      var cursoOpts = c.cursoOpciones || ['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia'];
+      inner = '<label>' + (c.label || 'Curso') + '</label><select style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;">' +
+        '<option value="">' + (c.placeholder || 'Selecciona curso') + '</option>' +
+        cursoOpts.map(function(o) { return '<option value="' + o + '">' + o + '</option>'; }).join('') + '</select>';
+      break;
+    case 'boton':
+      inner = '<label>' + (c.label || 'Boton') + '</label><div style="text-align:center;"><button type="' + (c.botonTipo || 'button') + '" style="padding:8px 24px;background:#1A3C6B;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">' + (c.botonTexto || c.label || '') + '</button></div>';
+      break;
+    case 'heading':
+      var hTag = c.headingLevel || 'h2';
+      var hSt = 'margin:0;font-weight:700;color:#1F2937;' + (c.textAlign ? 'text-align:' + c.textAlign + ';' : '') + (c.fontColor ? 'color:' + c.fontColor + ';' : '');
+      inner = '<' + hTag + ' style="' + hSt + '">' + (c.label || 'Heading') + '</' + hTag + '>';
+      break;
+    case 'card':
+      var isCardSel = c.id === seleccionado;
+      var cardBorder = isCardSel ? '2px solid #1A3C6B' : (c.borderGeneral || '1px solid #e5e7eb');
+      var cardEst = c.cardEstado || '';
+      var cardEstClass = cardEst === 'ausente' ? ' card-ausente' : ' card-presente';
+      var cardEstBg = cardEst === 'ausente' ? 'linear-gradient(135deg,#FEE2E2,#FCA5A5)' : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)';
+      var cardSt = 'background:' + cardEstBg + ';border-radius:' + (c.borderRadius || '10px') + ';box-shadow:' + (c.boxShadow || '0 2px 12px rgba(0,0,0,0.08)') + ';border:' + cardBorder + ';overflow:hidden;' + (c.padding ? 'padding:' + c.padding + ';' : '') + (c.margin ? 'margin:' + c.margin + ';' : '');
+      var children = campos.filter(function(ch) { return ch.cardParent === c.id; });
+      var bodyBg = c.cardBodyBg ? 'background:' + c.cardBodyBg + ';' : '';
+      var bodyContent;
+      if (children.length === 0) {
+        bodyContent = '<div style="padding:24px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;' + bodyBg + '">';
+        if (c.cardLabel) bodyContent += '<div style="font-size:14px;color:#6B7280;font-weight:500;text-align:center;margin-bottom:6px;">' + c.cardLabel + '</div>';
+        bodyContent += '<div style="font-size:11px;color:#9CA3AF;">Arrastra campos aqui</div></div>';
+      } else {
+        bodyContent = '<div style="padding:12px 16px;' + bodyBg + '">';
+        if (c.cardLabel) bodyContent += '<div style="font-size:14px;color:#6B7280;font-weight:500;text-align:center;margin-bottom:12px;">' + c.cardLabel + '</div>';
+        bodyContent += '<div style="display:flex;flex-direction:column;gap:8px;">' + children.map(function(ch) { return renderCampoHTML(ch); }).join('') + '</div></div>';
+      }
+      var dotHtml = cardEst === 'ausente' ? '<span style="position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:' + (c.cardJustificado ? '#3B82F6' : '#fff') + ';border:1px solid ' + (c.cardJustificado ? '#2563EB' : '#D1D5DB') + ';z-index:5;cursor:pointer;" onclick="event.stopPropagation();var cx=campos.find(function(x){return x.id===\'' + c.id + '\';});if(cx){cx.cardJustificado=!cx.cardJustificado;guardar();render();}"></span>' : '';
+      inner = '<div class="card-toggle' + cardEstClass + '" style="' + cardSt + ';position:relative;" onclick="event.stopPropagation();toggleCardEstado(\'' + c.id + '\')">' +
+        dotHtml +
+        (c.cardTitle ? '<div style="padding:0 16px 8px;font-size:15px;font-weight:700;color:#1F2937;">' + c.cardTitle + '</div>' : '') +
+        '<div ondrop="cardBodyDrop(event,\'' + c.id + '\')" ondragover="event.preventDefault();" onclick="event.stopPropagation();seleccionar(\'' + c.id + '\')" style="position:relative;">' +
+        bodyContent +
+        '<button type="button" onclick="event.stopPropagation();agregarCampoEnCard(\'' + c.id + '\')" style="position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:26px;height:26px;border-radius:50%;border:2px solid #1A3C6B;background:#fff;color:#1A3C6B;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);z-index:10;line-height:1;">+</button>' +
+        '</div>' +
+        '</div>';
+      break;
     default:
       inner = '<label>' + (c.label || 'Label') + '</label><input type="text" placeholder="' + (c.placeholder || '') + '" readonly>';
   }
 
+  if (c.tipo === 'card') {
+    return '<div style="position:relative;" data-id="' + c.id + '" onclick="event.stopPropagation();seleccionar(\'' + c.id + '\')" draggable="true" ondragstart="campoDragStart(event,\'' + c.id + '\')" ondragend="campoDragEnd(event)">' +
+      '<button class="campo-eliminar" onclick="event.stopPropagation();eliminar(\'' + c.id + '\')">X</button>' +
+      inner + '</div>';
+  }
   var campoSt = (c.padding ? 'padding:'+c.padding+';' : '') + (c.margin ? 'margin:'+c.margin+';' : '') + (c.zIndex ? 'position:relative;z-index:'+c.zIndex+';' : '');
   return '<div class="campo ' + fx + sel + '"' + (campoSt ? ' style="'+campoSt+'"' : '') + ' data-id="' + c.id + '" onclick="event.stopPropagation();seleccionar(\'' + c.id + '\')" draggable="true" ondragstart="campoDragStart(event,\'' + c.id + '\')" ondragend="campoDragEnd(event)">' +
     '<button class="campo-eliminar" onclick="event.stopPropagation();eliminar(\'' + c.id + '\')">X</button>' +
@@ -468,6 +550,14 @@ function renderCampoHTML(c) {
 // ─── Seleccion ──────────────────────────────────────────────
 function seleccionar(id) {
   seleccionado = id;
+  filaSeleccionada = null;
+  render();
+  mostrarPropiedades();
+}
+
+function seleccionarFila(secId, filaId) {
+  filaSeleccionada = { secId: secId, filaId: filaId };
+  seleccionado = null;
   render();
   mostrarPropiedades();
 }
@@ -544,6 +634,7 @@ function filaDrop(e, secId, filaId) {
   if (dragData.type === 'campo') {
     const c = campos.find(x => x.id === dragData.id);
     if (!c) return;
+    c.cardParent = null;
     if (filaId) {
       // Mover campo a otra fila
       c.fila = filaId;
@@ -579,12 +670,150 @@ function filaDrop(e, secId, filaId) {
   render();
 }
 
+// ─── Duplicar ──────────────────────────────────────────────
+function duplicar(id) {
+  saveState();
+  var orig = campos.find(function(x) { return x.id === id; });
+  if (!orig) return;
+  var group = [orig];
+  if (orig.tipo === 'card') {
+    var children = campos.filter(function(ch) { return ch.cardParent === orig.id; });
+    group = group.concat(children);
+  }
+  var lastIdx = campos.indexOf(group[group.length - 1]);
+  var idMap = {};
+  var copies = group.map(function(f) {
+    var newId = uid();
+    idMap[f.id] = newId;
+    var copy = JSON.parse(JSON.stringify(f));
+    copy.id = newId;
+    return copy;
+  });
+  copies.forEach(function(c) {
+    if (c.cardParent) c.cardParent = idMap[c.cardParent];
+  });
+  for (var ci = copies.length - 1; ci >= 0; ci--) {
+    campos.splice(lastIdx + 1, 0, copies[ci]);
+  }
+  seleccionado = idMap[orig.id];
+  guardar();
+  render();
+  mostrarPropiedades();
+  toast('Duplicado');
+}
+
+function duplicarFila(secId, filaId) {
+  saveState();
+  var origs = campos.filter(function(f) { return f.fila === filaId && f.seccion === secId && !f.cardParent; });
+  if (origs.length === 0) return;
+  var all = origs.slice();
+  origs.filter(function(f) { return f.tipo === 'card'; }).forEach(function(card) {
+    var chs = campos.filter(function(ch) { return ch.cardParent === card.id; });
+    all = all.concat(chs);
+  });
+  var lastIdx = Math.max.apply(null, all.map(function(f) { return campos.indexOf(f); }));
+  var idMap = {};
+  var newFila = uid();
+  var copies = all.map(function(f) {
+    var newId = uid();
+    idMap[f.id] = newId;
+    var copy = JSON.parse(JSON.stringify(f));
+    copy.id = newId;
+    if (f.fila === filaId) copy.fila = newFila;
+    return copy;
+  });
+  copies.forEach(function(c) {
+    if (c.cardParent) c.cardParent = idMap[c.cardParent];
+  });
+  for (var ci = copies.length - 1; ci >= 0; ci--) {
+    campos.splice(lastIdx + 1, 0, copies[ci]);
+  }
+  guardar();
+  render();
+  toast('Fila duplicada');
+}
+
+// ─── Agregar campo a card ──────────────────────────────────
+function agregarCampoEnCard(cardId) {
+  var popup = document.createElement('div');
+  popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:16px;z-index:10000;min-width:260px;';
+  popup.innerHTML = '<div style="font-size:13px;font-weight:700;color:#1F2937;margin-bottom:10px;">Agregar campo a card</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">' +
+    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla','heading'].map(function(t) {
+      return '<button onclick="this.closest(\'div[style*=fixed]\').remove();crearCampoEnCard(\''+cardId+'\',\''+t+'\')" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;font-size:11px;cursor:pointer;text-align:left;color:#374151;">'+t+'</button>'
+    }).join('') + '</div>' +
+    '<div style="text-align:right;margin-top:8px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:4px 12px;font-size:11px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;">Cancelar</button></div>';
+  document.body.appendChild(popup);
+  popup.addEventListener('click', function(e) { if (e.target === popup) popup.remove(); });
+}
+
+function crearCampoEnCard(cardId, tipo) {
+  saveState();
+  var card = campos.find(function(x) { return x.id === cardId; });
+  if (!card) return;
+  var defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3, cardParent:null, cardTitle:'', cardLabel:'', cardBodyBg:'', cardEstado:'presente', cardJustificado:false, headingLevel:'h2', cursoOpciones:['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia'], botonTipo:'button' };
+  var labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':tipo==='card'?'Card':tipo==='heading'?'Heading':tipo==='curso'?'Curso':tipo==='boton'?'Boton':'';
+  var fx = (tipo==='label'||tipo==='linea'||tipo==='heading'||tipo==='card')?'fx3':'fx1';
+  var campo = { id: uid(), tipo, label: labelDefault, name:'', fx, seccion: card.seccion, fila: card.fila, cardParent: cardId, ...defaults };
+  if (tipo==='card') { campo.bgColor='#ffffff'; campo.borderRadius='8px'; campo.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; }
+  campos.push(campo);
+  seleccionado = campo.id;
+  guardar();
+  render();
+  mostrarPropiedades();
+  toast(tipo + ' en card');
+}
+
+// ─── Card drop ──────────────────────────────────────────────
+function cardBodyDrop(e, cardId) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (!dragData || dragData.type !== 'campo') return;
+  saveState();
+  var c = campos.find(function(x) { return x.id === dragData.id; });
+  if (!c) return;
+  c.cardParent = cardId;
+  c.seccion = campos.find(function(x) { return x.id === cardId; }).seccion;
+  dragData = null;
+  guardar();
+  render();
+}
+
+function cardBodyRemove(id) {
+  saveState();
+  var c = campos.find(function(x) { return x.id === id; });
+  if (!c) return;
+  c.cardParent = null;
+  guardar();
+  render();
+}
+
+function toggleCardEstado(id) {
+  saveState();
+  var c = campos.find(function(x) { return x.id === id; });
+  if (!c) return;
+  if (c.cardEstado === 'presente') c.cardEstado = 'ausente';
+  else if (c.cardEstado === 'ausente') c.cardEstado = null;
+  else c.cardEstado = 'presente';
+  guardar();
+  render();
+}
+
+function bulkCardEstado(estado) {
+  saveState();
+  var changed = false;
+  campos.forEach(function(c) {
+    if (c.tipo === 'card') { c.cardEstado = estado; changed = true; }
+  });
+  if (changed) { guardar(); render(); toast('Cards en ' + (estado === 'presente' ? 'verde' : 'rojo')); }
+}
+
 function agregarCampoAFila(secId, filaId) {
   const popup = document.createElement('div');
   popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:16px;z-index:10000;min-width:260px;';
   popup.innerHTML = '<div style="font-size:13px;font-weight:700;color:#1F2937;margin-bottom:10px;">Tipo de campo</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">' +
-    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla'].map(t =>
+    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla','heading','curso','boton','card'].map(t =>
       '<button onclick="this.closest(\'div[style*=fixed]\').remove();crearCampoEnFila(\''+secId+'\',\''+filaId+'\',\''+t+'\')" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;font-size:11px;cursor:pointer;text-align:left;color:#374151;">'+t+'</button>'
     ).join('') + '</div>' +
     '<div style="text-align:right;margin-top:8px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:4px 12px;font-size:11px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;">Cancelar</button></div>';
@@ -594,9 +823,11 @@ function agregarCampoAFila(secId, filaId) {
 
 function crearCampoEnFila(secId, filaId, tipo) {
   saveState();
-  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3 };
-  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
-  const campo = { id: uid(), tipo, label: labelDefault, name:'', fx: (tipo==='label'||tipo==='linea')?'fx3':'fx1', seccion: secId, fila: filaId, ...defaults };
+  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3, cardParent:null, cardTitle:'', cardLabel:'', cardBodyBg:'', cardEstado:'presente', cardJustificado:false, headingLevel:'h2', cursoOpciones:['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia'], botonTipo:'button' };
+  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':tipo==='card'?'Card':tipo==='heading'?'Heading':tipo==='curso'?'Curso':tipo==='boton'?'Boton':'';
+  const fx = (tipo==='label'||tipo==='linea'||tipo==='heading'||tipo==='card'||tipo==='boton')?'fx3':'fx1';
+  const campo = { id: uid(), tipo, label: labelDefault, name:'', fx, seccion: secId, fila: filaId, ...defaults };
+  if (tipo==='card') { campo.bgColor='#ffffff'; campo.borderRadius='8px'; campo.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; }
   campos.push(campo);
   seleccionado = campo.id;
   guardar();
@@ -607,8 +838,9 @@ function crearCampoEnFila(secId, filaId, tipo) {
 // ─── Propiedades ────────────────────────────────────────────
 function mostrarPropiedades() {
   const p = document.getElementById('panel-propiedades');
+  if (filaSeleccionada && !seleccionado) { mostrarPropiedadesFila(); return; }
   const c = campos.find(x => x.id === seleccionado);
-  if (!c) { p.innerHTML = '<h4>Propiedades</h4><p style="font-size:11px;color:#999;">Selecciona un campo</p>'; return; }
+  if (!c) { p.innerHTML = '<h4>Propiedades</h4><p style="font-size:11px;color:#999;">Selecciona un campo o fila</p>'; return; }
 
   const ac = (id, tit, cont, abierto) =>
     '<div style="margin-bottom:4px;"><div class="acordeon-btn" onclick="toggleAcordeon(\''+id+'\')">'+tit+' <span id="ico-'+id+'" style="font-size:9px;'+(abierto?'transform:rotate(180deg);':'')+'transition:transform 0.2s;">v</span></div><div id="acd-'+id+'" class="acordeon-content'+(abierto?' abierto':'')+'">'+cont+'</div></div>';
@@ -652,6 +884,14 @@ function mostrarPropiedades() {
     props += '<label>Cabeceras (1 por linea)</label><textarea rows="3" oninput="actualizarProp(\''+c.id+'\',\'tablaCabeceras\',this.value.split(\'\\n\').filter(Boolean))" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;font-family:inherit;">' + (c.tablaCabeceras||['Columna 1','Columna 2','Columna 3']).join('\n') + '</textarea>';
     props += '<label>Filas</label><input type="number" min="1" max="50" value="' + (c.tablaFilas||3) + '" onchange="actualizarProp(\''+c.id+'\',\'tablaFilas\',parseInt(this.value)||3)" style="width:60px;">';
   }
+  if (c.tipo==='curso') {
+    props += '<label>Placeholder</label><input value="' + (c.placeholder||'') + '" oninput="actualizarProp(\''+c.id+'\',\'placeholder\',this.value)">';
+    props += '<label>Opciones (1 por linea)</label><textarea rows="4" oninput="actualizarProp(\''+c.id+'\',\'cursoOpciones\',this.value.split(\'\\n\').filter(Boolean))" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;font-family:inherit;">' + (c.cursoOpciones||['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia']).join('\n') + '</textarea>';
+  }
+  if (c.tipo==='boton') {
+    props += '<label>Texto del boton</label><input value="' + (c.botonTexto||c.label||'') + '" oninput="actualizarProp(\''+c.id+'\',\'botonTexto\',this.value);actualizarProp(\''+c.id+'\',\'label\',this.value)">';
+    props += '<label>Tipo</label><select onchange="actualizarProp(\''+c.id+'\',\'botonTipo\',this.value)"><option value="button" '+(c.botonTipo!=='submit'?'selected':'')+'>Button</option><option value="submit" '+(c.botonTipo==='submit'?'selected':'')+'>Submit</option></select>';
+  }
 
   // Opciones de estilo para label
   if (c.tipo==='label') {
@@ -669,9 +909,48 @@ function mostrarPropiedades() {
     props += '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" '+(c.lineFade?'checked':'')+' onchange="actualizarProp(\''+c.id+'\',\'lineFade\',this.checked)" style="width:auto;"> Degradado extremos</label>';
   }
 
+  if (c.tipo==='heading') {
+    props += '<label>Nivel</label><select onchange="actualizarProp(\''+c.id+'\',\'headingLevel\',this.value)">' +
+      '<option value="h1" '+(c.headingLevel==='h1'?'selected':'')+'>H1</option>' +
+      '<option value="h2" '+(c.headingLevel==='h2'||!c.headingLevel?'selected':'')+'>H2</option>' +
+      '<option value="h3" '+(c.headingLevel==='h3'?'selected':'')+'>H3</option>' +
+      '<option value="h4" '+(c.headingLevel==='h4'?'selected':'')+'>H4</option>' +
+      '<option value="h5" '+(c.headingLevel==='h5'?'selected':'')+'>H5</option>' +
+      '<option value="h6" '+(c.headingLevel==='h6'?'selected':'')+'>H6</option>' +
+      '</select>';
+    props += '<label>Color texto</label><input type="color" value="' + (c.fontColor||'#1F2937') + '" onchange="actualizarProp(\''+c.id+'\',\'fontColor\',this.value)" style="height:28px;">';
+    props += '<label>Alineacion</label><select onchange="actualizarProp(\''+c.id+'\',\'textAlign\',this.value)"><option value="left" '+(c.textAlign!=='center'&&c.textAlign!=='right'?'selected':'')+'>Izquierda</option><option value="center" '+(c.textAlign==='center'?'selected':'')+'>Centro</option><option value="right" '+(c.textAlign==='right'?'selected':'')+'>Derecha</option></select>';
+  }
+
+  if (c.tipo==='card') {
+    props += '<label>Titulo (opcional)</label><input value="' + (c.cardTitle||'') + '" placeholder="Titulo de la tarjeta" oninput="actualizarProp(\''+c.id+'\',\'cardTitle\',this.value)">';
+    props += '<label>Texto / Label</label><textarea rows="2" placeholder="Texto descriptivo dentro de la tarjeta" oninput="actualizarProp(\''+c.id+'\',\'cardLabel\',this.value)" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;font-family:inherit;">' + (c.cardLabel||'') + '</textarea>';
+    props += '<label>Fondo</label><input type="color" value="' + (c.bgColor||'#ffffff') + '" onchange="actualizarProp(\''+c.id+'\',\'bgColor\',this.value)" style="height:28px;">';
+    props += '<label>Fondo interno</label><input type="color" value="' + (c.cardBodyBg||'') + '" onchange="actualizarProp(\''+c.id+'\',\'cardBodyBg\',this.value)" style="height:28px;">';
+    props += '<label>Borde radio</label><input type="number" min="0" max="30" value="' + (parseInt(c.borderRadius)||8) + '" onchange="actualizarProp(\''+c.id+'\',\'borderRadius\',this.value+\'px\')" style="width:60px;">';
+    props += '<label>Sombra</label><select onchange="actualizarProp(\''+c.id+'\',\'boxShadow\',this.value)">' +
+      '<option value="none"'+(c.boxShadow==='none'?'selected':'')+'>Sin sombra</option>' +
+      '<option value="0 1px 3px rgba(0,0,0,0.1)"'+(c.boxShadow==='0 1px 3px rgba(0,0,0,0.1)'?'selected':'')+'>Sutil</option>' +
+      '<option value="0 2px 8px rgba(0,0,0,0.08)"'+(c.boxShadow==='0 2px 8px rgba(0,0,0,0.08)'||!c.boxShadow?'selected':'')+'>Normal</option>' +
+      '<option value="0 4px 16px rgba(0,0,0,0.12)"'+(c.boxShadow==='0 4px 16px rgba(0,0,0,0.12)'?'selected':'')+'>Fuerte</option>' +
+      '</select>';
+    props += '<label>Borde CSS</label><input value="' + (c.borderGeneral||'') + '" placeholder="1px solid #e5e7eb" onchange="actualizarProp(\''+c.id+'\',\'borderGeneral\',this.value)">';
+    props += '<div style="margin-top:6px;display:flex;gap:12px;align-items:center;font-size:10px;"><span style="display:inline-flex;align-items:center;gap:3px;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);"></span> Presente</span><span style="display:inline-flex;align-items:center;gap:3px;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(135deg,#FEE2E2,#FCA5A5);"></span> Ausente</span><span style="color:#9CA3AF;">(click toggle)</span></div>';
+  }
+
+  var cardParentInfo = '';
+  if (c.cardParent) {
+    var parentCard = campos.find(function(x) { return x.id === c.cardParent; });
+    cardParentInfo = '<div style="margin-top:8px;padding:8px;background:#F3F4F6;border-radius:4px;font-size:10px;">' +
+      'Dentro de: <strong>' + (parentCard ? parentCard.cardTitle || parentCard.label || 'Card' : '(card)') + '</strong>' +
+      '<button onclick="cardBodyRemove(\''+c.id+'\')" style="display:block;margin-top:4px;width:100%;padding:4px;background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;border-radius:4px;font-size:10px;cursor:pointer;">Sacar de la tarjeta</button></div>';
+  }
+
   p.innerHTML = '<h4>Propiedades</h4>' +
+    cardParentInfo +
     ac('props', 'Propiedades', props, true) +
-    '<button onclick="eliminar(\''+c.id+'\')" style="margin-top:8px;width:100%;padding:6px;background:#FEF2F2;color:#DC2626;border:1px solid #FCA5A5;border-radius:4px;font-size:11px;cursor:pointer;">Eliminar campo</button>';
+    '<button onclick="duplicar(\''+c.id+'\')" style="margin-top:8px;width:100%;padding:6px;background:#EFF6FF;color:#1A3C6B;border:1px solid #93C5FD;border-radius:4px;font-size:11px;cursor:pointer;">Duplicar campo</button>' +
+    '<button onclick="eliminar(\''+c.id+'\')" style="margin-top:6px;width:100%;padding:6px;background:#FEF2F2;color:#DC2626;border:1px solid #FCA5A5;border-radius:4px;font-size:11px;cursor:pointer;">Eliminar campo</button>';
 }
 
 function actualizarProp(id, prop, val) {
@@ -708,6 +987,48 @@ function actualizarSeccionProp(id, prop, val) {
   render();
 }
 
+function mostrarPropiedadesFila() {
+  const p = document.getElementById('panel-propiedades');
+  if (!filaSeleccionada) { p.innerHTML = ''; return; }
+  const s = secciones.find(x => x.id === filaSeleccionada.secId);
+  if (!s) return;
+  var fd = s.filasData || {};
+  var filaData = fd[filaSeleccionada.filaId] || {};
+  var centrado = filaData.centrar || false;
+  p.innerHTML = '<h4>Propiedades fila</h4>' +
+    '<label>Alineacion</label><select onchange="actualizarFilaProp(\''+s.id+'\',\''+filaSeleccionada.filaId+'\',\'centrar\',this.value===\'center\')">' +
+    '<option value="left" '+(centrado?'':'selected')+'>Izquierda</option>' +
+    '<option value="center" '+(centrado?'selected':'')+'>Centro</option>' +
+    '</select>';
+}
+
+function actualizarFilaProp(secId, filaId, prop, val) {
+  const s = secciones.find(x => x.id === secId);
+  if (!s) return;
+  s.filasData = s.filasData || {};
+  s.filasData[filaId] = s.filasData[filaId] || {};
+  s.filasData[filaId][prop] = val;
+  guardar();
+  render();
+  mostrarPropiedades();
+}
+
+// ─── Nuevo formulario ──────────────────────────────────────
+function nuevoFormulario() {
+  if (campos.length > 0 && !confirm('Perderas el disenio actual. Crear nuevo formulario?')) return;
+  saveState();
+  campos = [];
+  secciones = [{ id: uid(), label: 'Seccion 1', bgColor: '#ffffff' }];
+  seccionActiva = secciones[0].id;
+  seleccionado = null;
+  filaSeleccionada = null;
+  document.getElementById('nombre-form').value = 'formulario';
+  guardar();
+  render();
+  mostrarPropiedades();
+  toast('Nuevo formulario');
+}
+
 // ─── Exportar HTML ──────────────────────────────────────────
 function exportarHTML() {
   const nom = document.getElementById('nombre-form').value || 'formulario';
@@ -723,9 +1044,11 @@ function exportarHTML() {
       case 'textarea':
         return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><textarea name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + '></textarea></div>';
       case 'date':
-        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="date" name="' + (c.name||'') + '"></div>';
+        var hoy = new Date().toISOString().split('T')[0];
+        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="date" name="' + (c.name||'') + '" value="' + hoy + '"></div>';
       case 'time':
-        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="time" name="' + (c.name||'') + '"></div>';
+        var ahora = new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit',hour12:false});
+        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="time" name="' + (c.name||'') + '" value="' + ahora + '"></div>';
       case 'checkbox':
         return '<div class="campo fx1"' + st + '><label class="chk-item"><input type="checkbox" name="' + (c.name||'') + '" value="1"> ' + (c.labelCheckbox || lbl || 'Casilla') + '</label></div>';
       case 'label':
@@ -741,6 +1064,10 @@ function exportarHTML() {
         var lineaBg = lineaStyle==='dashed' ? 'background-image:repeating-linear-gradient(90deg,'+lineaColor+' 0,'+lineaColor+' 8px,transparent 8px,transparent 14px);background-color:transparent;' : lineaStyle==='dotted' ? 'background-image:radial-gradient(circle,'+lineaColor+' 1px,transparent 1px);background-size:6px 1px;background-color:transparent;' : 'background:'+lineaColor+';';
         var lineaFade = c.lineFade ? '-webkit-mask-image:linear-gradient(to right,transparent,#000 15%,#000 85%,transparent);mask-image:linear-gradient(to right,transparent,#000 15%,#000 85%,transparent);' : '';
         return '<div style="width:100%;height:'+lineaWidth+';margin:4px 0;' + lineaBg + lineaFade + lineaZ + '"></div>';
+      case 'heading':
+        var hTag = c.headingLevel || 'h2';
+        var hSt = 'margin:0;font-weight:700;color:#1F2937;' + (c.textAlign ? 'text-align:' + c.textAlign + ';' : '') + (c.fontColor ? 'color:' + c.fontColor + ';' : '');
+        return '<' + hTag + ' style="' + hSt + '">' + (c.label || 'Heading') + '</' + hTag + '>';
       case 'spacer':
         return '<div class="' + fx + '"' + st + '></div>';
       case 'buscarut':
@@ -752,6 +1079,37 @@ function exportarHTML() {
         for (var ti=0;ti<nfilas;ti++) { tbl += '<tr>' + cab.map(function(){return '<td style="border:1px solid #e5e7eb;padding:6px 8px;height:28px;"></td>';}).join('') + '</tr>'; }
         tbl += '</tbody></table>';
         return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label>' + tbl + '</div>';
+      case 'curso': {
+        var cursoOpts = c.cursoOpciones || ['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia'];
+        return '<div class="campo ' + fx + '"' + st + '><label>' + (c.label || 'Curso') + '</label><select name="' + (c.name||'curso') + '" style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;">' +
+          '<option value="">' + (c.placeholder || 'Selecciona curso') + '</option>' +
+          cursoOpts.map(function(o) { return '<option value="' + o + '">' + o + '</option>'; }).join('') + '</select></div>';
+      }
+      case 'card':
+        var cardEst = c.cardEstado || '';
+        var cardEstClass = cardEst === 'ausente' ? ' card-ausente' : cardEst === 'presente' ? ' card-presente' : '';
+        var cardSt = 'background:' + (c.bgColor || '#ffffff') + ';border-radius:' + (c.borderRadius || '10px') + ';box-shadow:' + (c.boxShadow || '0 2px 12px rgba(0,0,0,0.08)') + ';border:' + (c.borderGeneral || '1px solid #e5e7eb') + ';overflow:hidden;' + pSt;
+        var justif = c.cardJustificado ? true : false;
+        var dotHtml = cardEst === 'ausente' ? '<span style="position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:' + (justif ? '#3B82F6' : '#fff') + ';border:1px solid ' + (justif ? '#2563EB' : '#D1D5DB') + ';z-index:5;cursor:pointer;" onclick="event.stopPropagation();var j=this;if(j){j.style.background=j.style.background==\'rgb(59, 130, 246)\'?\'#fff\':\'#3B82F6\';j.style.borderColor=j.style.borderColor==\'rgb(37, 99, 235)\'?\'#D1D5DB\':\'#2563EB\';}"></span>' : '';
+        var cardHtml = '<div class="card card-toggle' + cardEstClass + '" style="' + cardSt + ';position:relative;" onclick="toggleCardEstado(\'' + c.id + '\')">' +
+          dotHtml;
+        if (c.cardTitle) cardHtml += '<div style="padding:0 16px 8px;font-size:15px;font-weight:700;color:#1F2937;">' + c.cardTitle + '</div>';
+        var cardChildren = campos.filter(function(ch) { return ch.cardParent === c.id; });
+        var bodyBg = c.cardBodyBg ? 'background:' + c.cardBodyBg + ';' : '';
+        if (cardChildren.length > 0) {
+          cardHtml += '<div class="card-body" style="padding:12px 16px;' + bodyBg + '">';
+          if (c.cardLabel) cardHtml += '<div style="font-size:14px;color:#6B7280;font-weight:500;text-align:center;margin-bottom:12px;">' + c.cardLabel + '</div>';
+          cardChildren.forEach(function(ch) { cardHtml += '<div style="text-align:left;">' + campoHTML(ch) + '</div>'; });
+          cardHtml += '</div>';
+        } else {
+          cardHtml += '<div class="card-body" style="padding:24px 16px;text-align:center;' + bodyBg + '">';
+          if (c.cardLabel) cardHtml += '<div style="font-size:14px;color:#6B7280;font-weight:500;margin-bottom:6px;">' + c.cardLabel + '</div>';
+          cardHtml += '<div style="font-size:11px;color:#9CA3AF;">Contenido de la tarjeta</div></div>';
+        }
+        cardHtml += '</div>';
+        return cardHtml;
+      case 'boton':
+        return '<div class="campo ' + fx + '"' + st + ' style="border:none;background:transparent;text-align:center;"><label>' + (c.label || 'Boton') + '</label><button type="' + (c.botonTipo || 'button') + '" style="padding:8px 24px;background:#1A3C6B;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">' + (c.botonTexto || c.label || '') + '</button></div>';
       default:
         return '<div class="campo fx1"' + st + '><label>' + lbl + '</label><input type="text" name="' + (c.name||'') + '"></div>';
     }
@@ -763,16 +1121,18 @@ function exportarHTML() {
     var camposSec = campos.filter(function(c) { return c.seccion === s.id; });
 
     body += '<div class="sec" id="sec-' + s.id + '"' + (secciones.length > 1 ? ' data-paso="' + (i+1) + '"' : '') + '>';
-    body += '<div class="sec-hdr"><span class="badge">' + s.label + ' de ' + secciones.length + '</span><span class="tipo">' + (secciones.length > 1 ? 'Wizard' : 'Simple') + '</span><span class="cnt">' + camposSec.length + ' campos</span></div>';
+    var multi = secciones.length > 1;
+    body += '<div class="sec-hdr"><span class="badge">' + (multi ? s.label + ' de ' + secciones.length : 'Formulario') + '</span>' + (multi ? '<span class="tipo">Wizard</span>' : '') + '<span class="cnt">' + camposSec.length + ' campos</span></div>';
     body += '<div class="sec-body" style="gap:' + (s.rowGap||12) + 'px;">';
 
     if (filas.length === 0) {
       body += '<div style="text-align:center;padding:40px;color:#9CA3AF;font-size:12px;">(seccion sin campos)</div>';
     } else {
       filas.forEach(function(filaId) {
-        var camposFila = campos.filter(function(c) { return c.fila === filaId && c.seccion === s.id; });
-        if (camposFila.length === 0) return; // Skip empty rows in export
-        body += '<div class="field-row">';
+        var camposFila = campos.filter(function(c) { return c.fila === filaId && c.seccion === s.id && !c.cardParent; });
+        if (camposFila.length === 0) return;
+        var filaCentrar = s.filasData && s.filasData[filaId] && s.filasData[filaId].centrar;
+        body += '<div class="field-row"' + (filaCentrar ? ' style="justify-content:center;"' : '') + '>';
         camposFila.forEach(function(c) { body += campoHTML(c); });
         body += '</div>';
       });
@@ -788,9 +1148,13 @@ function exportarHTML() {
     body += '</div>';
   });
 
-  var navJS = secciones.length >= 2
-    ? 'function irA(n){document.querySelectorAll(".sec").forEach(function(e){e.style.display=e.dataset.paso==n?"block":"none"});window.scrollTo(0,0);}function finalizar(){alert("Formulario completado");}function toast(m){var t=document.createElement("div");t.textContent=m;t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;z-index:9999;";document.body.appendChild(t);setTimeout(function(){t.remove();},2000);}function buscarPorRut(btn){var wrap=btn.parentElement;var inp=wrap.querySelector("input");var rut=inp.value.trim();if(!rut){inp.focus();return;}btn.textContent="Buscando...";btn.disabled=true;setTimeout(function(){btn.textContent="Buscar";btn.disabled=false;toast("RUT "+rut+" no encontrado");},1500);}document.addEventListener("DOMContentLoaded",function(){irA(1);});'
-    : 'function finalizar(){alert("Formulario completado");}function toast(m){var t=document.createElement("div");t.textContent=m;t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;z-index:9999;";document.body.appendChild(t);setTimeout(function(){t.remove();},2000);}function buscarPorRut(btn){var wrap=btn.parentElement;var inp=wrap.querySelector("input");var rut=inp.value.trim();if(!rut){inp.focus();return;}btn.textContent="Buscando...";btn.disabled=true;setTimeout(function(){btn.textContent="Buscar";btn.disabled=false;toast("RUT "+rut+" no encontrado");},1500);}';
+  var toggleJS = 'function toggleCardEstado(id){var el=document.querySelector(\'[onclick*="\'+id+\'"]\');if(!el)return;if(el.classList.contains("card-presente")){el.classList.remove("card-presente");el.classList.add("card-ausente");}else if(el.classList.contains("card-ausente")){el.classList.remove("card-ausente");}else{el.classList.add("card-presente");}}';
+  var navJS = (secciones.length >= 2
+    ? 'function irA(n){document.querySelectorAll(".sec").forEach(function(e){e.style.display=e.dataset.paso==n?"block":"none"});window.scrollTo(0,0);}'
+    : '') +
+    toggleJS +
+    'function finalizar(){alert("Formulario completado");}function toast(m){var t=document.createElement("div");t.textContent=m;t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;z-index:9999;";document.body.appendChild(t);setTimeout(function(){t.remove();},2000);}function buscarPorRut(btn){var wrap=btn.parentElement;var inp=wrap.querySelector("input");var rut=inp.value.trim();if(!rut){inp.focus();return;}btn.textContent="Buscando...";btn.disabled=true;setTimeout(function(){btn.textContent="Buscar";btn.disabled=false;toast("RUT "+rut+" no encontrado");},1500);}' +
+    (secciones.length >= 2 ? 'document.addEventListener("DOMContentLoaded",function(){irA(1);});' : '');
 
   var tit = nom.charAt(0).toUpperCase() + nom.slice(1);
   var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>' + tit + ' - SGJA</title><style>'
@@ -819,6 +1183,10 @@ function exportarHTML() {
     + '.nav{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid #E5E7EB;background:#f9fafb}'
     + '.nav button{padding:8px 22px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #D1D5DB;background:#FFF;color:#374151}'
     + '.nav .btn-end{background:#10B981;color:#fff;border-color:#10B981}'
+    + '.card-body{min-height:40px;}'
+    + '.card-presente{background:linear-gradient(135deg,#D1FAE5,#A7F3D0) !important;border-color:#34D399 !important}'
+    + '.card-ausente{background:linear-gradient(135deg,#FEE2E2,#FCA5A5) !important;border-color:#F87171 !important}'
+    + '.card-toggle{cursor:pointer;transition:all 0.2s}'
     + '@media(max-width:640px){body{padding:8px 6px}.sec-body{padding:12px;gap:10px}.field-row{flex-direction:column;gap:8px}.nav{flex-wrap:wrap;gap:8px;justify-content:center}}'
     + '</style></head><body><div class="wrap">'
     + '<div class="hdr"><h1>' + tit + '</h1></div>'
@@ -834,6 +1202,263 @@ function exportarHTML() {
   a.download = nom + '.html';
   a.click();
   toast('HTML exportado');
+}
+
+// ─── Importar HTML ─────────────────────────────────────────
+function importarHTML(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var html = e.target.result;
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(html, 'text/html');
+    var secs = doc.querySelectorAll('.sec');
+    if (secs.length === 0) { toast('No se encontraron secciones'); return; }
+    if (!confirm('Esto reemplazara el disenio actual. Continuar?')) return;
+    saveState();
+    campos = [];
+    secciones = [];
+    seleccionado = null;
+    secs.forEach(function(sec, si) {
+      var sId = uid();
+      var badge = sec.querySelector('.badge');
+      var label = badge ? badge.textContent.replace(/ de \d+$/, '').trim() : 'Seccion ' + (si+1);
+      if (label === 'Formulario') label = 'Seccion ' + (si+1);
+      var s = { id: sId, label: label, bgColor: '#ffffff', rowGap: 12 };
+      var secBody = sec.querySelector('.sec-body');
+      if (secBody) {
+        var gapMatch = secBody.getAttribute('style');
+        if (gapMatch) {
+          var gm = gapMatch.match(/gap:(\d+)px/);
+          if (gm) s.rowGap = parseInt(gm[1]);
+        }
+      }
+      secciones.push(s);
+      var fieldRows = sec.querySelectorAll('.field-row');
+      fieldRows.forEach(function(row) {
+        var filaId = uid();
+        var campoEls = row.querySelectorAll('.campo, .sub-title, .card, h1, h2, h3, h4, h5, h6');
+        campoEls.forEach(function(el) {
+          var c = parseCampoFromHTML(el, sId, filaId);
+          if (c) {
+            campos.push(c);
+            if (c.tipo === 'card') {
+              var bodyEl = el.querySelector('.card-body');
+              if (bodyEl) {
+                var childEls = bodyEl.querySelectorAll(':scope > .campo, :scope > .sub-title, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6');
+                childEls.forEach(function(childEl) {
+                  var child = parseCampoFromHTML(childEl, sId, filaId);
+                  if (child) { child.cardParent = c.id; campos.push(child); }
+                });
+              }
+            }
+          }
+        });
+      });
+    });
+    if (secciones.length > 0) seccionActiva = secciones[0].id;
+    guardar();
+    render();
+    toast('HTML importado: ' + secciones.length + ' secciones, ' + campos.length + ' campos');
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function parseCampoFromHTML(el, secId, filaId) {
+  var tipo = '';
+  var c = { id: uid(), tipo: '', label: '', name: '', fx: 'fx1', seccion: secId, fila: filaId,
+    placeholder: '', maxlength: null, pattern: '', rows: 3, labelCheckbox: '', firmaLabel: 'Firma',
+    valor: '', bgColor: '', fontColor: '', fontSize: '', fontWeight: '', textAlign: '',
+    borderRadius: '', boxShadow: '', borderGeneral: '', padding: '', margin: '', zIndex: 0,
+    lineColor: '', lineWidth: '', lineStyle: 'solid', lineFade: false,
+    cardParent: null, cardTitle: '', cardLabel: '', cardBodyBg: '',
+    botonLabel: 'Buscar', tablaCabeceras: ['Columna 1', 'Columna 2', 'Columna 3'], tablaFilas: 3,
+    cursoOpciones: ['Matematicas','Lenguaje','Ciencias','Historia','Ingles','Educacion Fisica','Artes','Musica','Tecnologia'],
+    botonTipo: 'button', botonTexto: '', cardJustificado: false };
+
+  // Detect fx class
+  var cls = el.className || '';
+  var fxMatch = cls.match(/\b(fx\d|fx-auto|fx-none)\b/);
+  if (fxMatch) c.fx = fxMatch[1];
+
+  // Detect card
+  if (el.classList.contains('card') || (st.indexOf('border-radius') !== -1 && st.indexOf('box-shadow') !== -1 && el.querySelector('.card-body'))) {
+    c.tipo = 'card';
+    c.label = 'Card';
+    var bgM = st.match(/background:([^;]+)/); if (bgM) c.bgColor = bgM[1];
+    var brM = st.match(/border-radius:([^;]+)/); if (brM) c.borderRadius = brM[1];
+    var bsM = st.match(/box-shadow:([^;]+)/); if (bsM) c.boxShadow = bsM[1];
+    var bdM = st.match(/border:([^;]+)/); if (bdM) c.borderGeneral = bdM[1];
+    var titleEl = el.querySelector(':scope > div[style*="font-weight:700"]');
+    if (titleEl) c.cardTitle = titleEl.textContent.trim();
+    var labelEl = el.querySelector(':scope > div[style*="color:#6B7280"]');
+    if (labelEl) c.cardLabel = labelEl.textContent.trim();
+    var bodyEl = el.querySelector('.card-body');
+    if (bodyEl) {
+      var bodySt = bodyEl.getAttribute('style') || '';
+      var bgBody = bodySt.match(/background:([^;]+)/);
+      if (bgBody) c.cardBodyBg = bgBody[1];
+    }
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect heading (h1-h6)
+  var tagName = el.tagName ? el.tagName.toLowerCase() : '';
+  if (['h1','h2','h3','h4','h5','h6'].indexOf(tagName) >= 0) {
+    c.tipo = 'heading';
+    c.headingLevel = tagName;
+    c.label = el.textContent.trim();
+    var st = el.getAttribute('style') || '';
+    var ta = st.match(/text-align:(\w+)/); if (ta) c.textAlign = ta[1];
+    var fc = st.match(/color:([^;]+)/); if (fc) c.fontColor = fc[1];
+    return c;
+  }
+
+  // Detect sub-title (label)
+  if (el.classList.contains('sub-title')) {
+    c.tipo = 'label';
+    c.label = el.textContent.replace(/X$/, '').trim();
+    var st = el.getAttribute('style') || '';
+    var fs = st.match(/font-size:(\d+)px/); if (fs) c.fontSize = fs[1] + 'px';
+    var fw = st.match(/font-weight:(\d+)/); if (fw) c.fontWeight = fw[1];
+    var ta = st.match(/text-align:(\w+)/); if (ta) c.textAlign = ta[1];
+    var fc = st.match(/color:([^;]+)/); if (fc) c.fontColor = fc[1];
+    var zi = st.match(/z-index:(\d+)/); if (zi) c.zIndex = parseInt(zi[1]);
+    return c;
+  }
+
+  // Detect linea (div with background and height, no .campo class)
+  var st = el.getAttribute('style') || '';
+  if (st.indexOf('height:') !== -1 && st.indexOf('background') !== -1 && !el.classList.contains('campo')) {
+    c.tipo = 'linea';
+    var lc = st.match(/background:([^;]+)/); if (lc) c.lineColor = lc[1];
+    var lw = st.match(/height:([^;]+)/); if (lw) c.lineWidth = lw[1];
+    if (st.indexOf('repeating-linear-gradient') !== -1) c.lineStyle = 'dashed';
+    else if (st.indexOf('radial-gradient') !== -1) c.lineStyle = 'dotted';
+    else c.lineStyle = 'solid';
+    if (st.indexOf('mask-image') !== -1) c.lineFade = true;
+    var zi2 = st.match(/z-index:(\d+)/); if (zi2) c.zIndex = parseInt(zi2[1]);
+    return c;
+  }
+
+  // Detect tabla (has table inside)
+  var table = el.querySelector('table');
+  if (table) {
+    c.tipo = 'tabla';
+    var lbl = el.querySelector('label');
+    c.label = lbl ? lbl.textContent.trim() : 'Tabla';
+    var ths = table.querySelectorAll('th');
+    if (ths.length > 0) c.tablaCabeceras = Array.from(ths).map(function(th){ return th.textContent.trim(); });
+    var trs = table.querySelectorAll('tbody tr');
+    c.tablaFilas = trs.length || 3;
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect curso (input with datalist)
+  var cursoInput = el.querySelector('input[list]');
+  if (cursoInput) {
+    c.tipo = 'curso';
+    var lbl = el.querySelector('label');
+    c.label = lbl ? lbl.textContent.trim() : 'Curso';
+    c.placeholder = cursoInput.getAttribute('placeholder') || '';
+    var dl = el.querySelector('datalist');
+    if (dl) {
+      c.cursoOpciones = Array.from(dl.querySelectorAll('option')).map(function(o) { return o.value; });
+    }
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect boton (has button element)
+  var btnEl = el.querySelector('button');
+  if (btnEl && el.classList.contains('campo')) {
+    c.tipo = 'boton';
+    var lbl = el.querySelector('label');
+    c.label = lbl ? lbl.textContent.trim() : 'Boton';
+    c.botonTexto = btnEl.textContent.trim();
+    c.botonTipo = btnEl.getAttribute('type') || 'button';
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect checkbox
+  var chkInput = el.querySelector('input[type="checkbox"]');
+  if (chkInput) {
+    c.tipo = 'checkbox';
+    var chkLabel = el.querySelector('label');
+    c.labelCheckbox = chkLabel ? chkLabel.textContent.trim() : 'Casilla';
+    c.name = chkInput.getAttribute('name') || '';
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect firma (has border-bottom line + firma label)
+  var firmaLine = el.querySelector('div[style*="border-bottom:1px"]');
+  if (firmaLine) {
+    c.tipo = 'firma';
+    var lbl2 = el.querySelector('label');
+    c.label = lbl2 ? lbl2.textContent.trim() : 'Firma';
+    var firmaTxt = el.querySelectorAll('div');
+    if (firmaTxt.length >= 2) c.firmaLabel = firmaTxt[firmaTxt.length-1].textContent.trim();
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect buscarut (has button "Buscar")
+  var buscarBtn = el.querySelector('button');
+  if (buscarBtn && buscarBtn.textContent.indexOf('Buscar') !== -1) {
+    c.tipo = 'buscarut';
+    var lbl3 = el.querySelector('label');
+    c.label = lbl3 ? lbl3.textContent.trim() : 'RUT';
+    var inp = el.querySelector('input');
+    c.name = inp ? (inp.getAttribute('name') || 'rut') : 'rut';
+    c.botonLabel = buscarBtn.textContent.trim();
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect textarea
+  var ta2 = el.querySelector('textarea');
+  if (ta2) {
+    c.tipo = 'textarea';
+    var lbl4 = el.querySelector('label');
+    c.label = lbl4 ? lbl4.textContent.trim() : '';
+    c.name = ta2.getAttribute('name') || '';
+    c.placeholder = ta2.getAttribute('placeholder') || '';
+    var ml = ta2.getAttribute('maxlength'); if (ml) c.maxlength = parseInt(ml);
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect input types
+  var inp2 = el.querySelector('input');
+  if (inp2) {
+    var itype = inp2.getAttribute('type') || 'text';
+    if (itype === 'date') c.tipo = 'date';
+    else if (itype === 'time') c.tipo = 'time';
+    else c.tipo = 'text';
+    var lbl5 = el.querySelector('label');
+    c.label = lbl5 ? lbl5.textContent.trim() : '';
+    c.name = inp2.getAttribute('name') || '';
+    c.placeholder = inp2.getAttribute('placeholder') || '';
+    var ml2 = inp2.getAttribute('maxlength'); if (ml2) c.maxlength = parseInt(ml2);
+    var pat = inp2.getAttribute('pattern'); if (pat) c.pattern = pat;
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  return null;
+}
+
+function parseCampoStyle(el, c) {
+  var st = el.getAttribute('style') || '';
+  var pm = st.match(/padding:([^;]+)/); if (pm) c.padding = pm[1];
+  var mg = st.match(/margin:([^;]+)/); if (mg) c.margin = mg[1];
+  var zi = st.match(/z-index:(\d+)/); if (zi) c.zIndex = parseInt(zi[1]);
 }
 
 // ─── JSON import/export ─────────────────────────────────────

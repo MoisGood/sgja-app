@@ -28,8 +28,8 @@ const JERARQUIA: GrupoPaginas[] = [
     rutas: ['/secretaria', '/secretaria/ausentes', '/secretaria/enviar-correo', '/mantenedor-funcionarios'],
   },
   {
-    titulo: 'Justificaciones',
-    rutas: ['/justificaciones', '/registrar', '/ver-justificaciones', '/gestion-pases'],
+    titulo: 'Inspectoria',
+    rutas: ['/inspectoria/crear-pase', '/inspectoria/gestion-pases', '/registrar-accidente'],
   },
   {
     titulo: 'Técnico',
@@ -56,10 +56,6 @@ const JERARQUIA: GrupoPaginas[] = [
   {
     titulo: 'Ayuda',
     rutas: ['/ayuda'],
-  },
-  {
-    titulo: 'Accidentes',
-    rutas: ['/registrar-accidente'],
   },
 ];
 

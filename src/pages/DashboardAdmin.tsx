@@ -27,7 +27,7 @@ interface Acceso {
 
 const ACCESOS: Acceso[] = [
   { icono: '👥', titulo: 'Usuarios', descripcion: 'Gestionar cuentas y roles', ruta: '/gestion-usuarios', gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)' },
-  { icono: '📋', titulo: 'Solicitudes', descripcion: 'Crear nueva solicitud', ruta: '/registrar', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' },
+  { icono: '📋', titulo: 'Solicitudes', descripcion: 'Crear nueva solicitud', ruta: '/inspectoria/justificaciones', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' },
   { icono: '🛡️', titulo: 'Seguridad', descripcion: '2FA, inactividad, accesos', ruta: '/seguridad', gradient: 'linear-gradient(135deg, #10b981, #059669)' },
   { icono: '⏰', titulo: 'Bloques', descripcion: 'Configurar horarios', ruta: '/bloque-horario', gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
   { icono: '📚', titulo: 'Cursos', descripcion: 'Mantenedor de cursos', ruta: '/mantenedor-cursos', gradient: 'linear-gradient(135deg, #ec4899, #db2777)' },

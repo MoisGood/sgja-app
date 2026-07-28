@@ -80,6 +80,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#e8ecf1;height:10
   <span style="font-size:14px;font-weight:700;color:#1A3C6B;white-space:nowrap;">SGJA Editor</span>
   <input type="text" id="nombre-form" placeholder="Nombre del formulario" value="formulario" style="width:160px;padding:4px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;">
   <button onclick="exportarHTML()" style="background:#1A3C6B;color:#fff;border-color:#1A3C6B;font-weight:600;">Exportar HTML</button>
+  <button onclick="document.getElementById('htmlIn').click()" style="background:#059669;color:#fff;border-color:#059669;font-weight:600;">Importar HTML</button>
+  <input type="file" id="htmlIn" accept=".html,.htm" style="display:none" onchange="importarHTML(event)">
   <button onclick="guardar();window.open('previaform.html','_blank')">Vista previa</button>
   <button onclick="exportarJSON()" title="Guardar disenio como JSON para editar despues">Guardar JSON</button>
   <button onclick="document.getElementById('fileIn').click()">Cargar JSON</button>
@@ -834,6 +836,186 @@ function exportarHTML() {
   a.download = nom + '.html';
   a.click();
   toast('HTML exportado');
+}
+
+// ─── Importar HTML ─────────────────────────────────────────
+function importarHTML(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var html = e.target.result;
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(html, 'text/html');
+    var secs = doc.querySelectorAll('.sec');
+    if (secs.length === 0) { toast('No se encontraron secciones'); return; }
+    if (!confirm('Esto reemplazara el disenio actual. Continuar?')) return;
+    saveState();
+    campos = [];
+    secciones = [];
+    seleccionado = null;
+    secs.forEach(function(sec, si) {
+      var sId = uid();
+      var badge = sec.querySelector('.badge');
+      var label = badge ? badge.textContent.replace(/ de \d+$/, '').trim() : 'Seccion ' + (si+1);
+      var s = { id: sId, label: label, bgColor: '#ffffff', rowGap: 12 };
+      var secBody = sec.querySelector('.sec-body');
+      if (secBody) {
+        var gapMatch = secBody.getAttribute('style');
+        if (gapMatch) {
+          var gm = gapMatch.match(/gap:(\d+)px/);
+          if (gm) s.rowGap = parseInt(gm[1]);
+        }
+      }
+      secciones.push(s);
+      var fieldRows = sec.querySelectorAll('.field-row');
+      fieldRows.forEach(function(row) {
+        var filaId = uid();
+        var campoEls = row.querySelectorAll('.campo, .sub-title');
+        campoEls.forEach(function(el) {
+          var c = parseCampoFromHTML(el, sId, filaId);
+          if (c) campos.push(c);
+        });
+      });
+    });
+    if (secciones.length > 0) seccionActiva = secciones[0].id;
+    guardar();
+    render();
+    toast('HTML importado: ' + secciones.length + ' secciones, ' + campos.length + ' campos');
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function parseCampoFromHTML(el, secId, filaId) {
+  var tipo = '';
+  var c = { id: uid(), tipo: '', label: '', name: '', fx: 'fx1', seccion: secId, fila: filaId,
+    placeholder: '', maxlength: null, pattern: '', rows: 3, labelCheckbox: '', firmaLabel: 'Firma',
+    valor: '', bgColor: '', fontColor: '', fontSize: '', fontWeight: '', textAlign: '',
+    borderRadius: '', boxShadow: '', borderGeneral: '', padding: '', margin: '', zIndex: 0,
+    lineColor: '', lineWidth: '', lineStyle: 'solid', lineFade: false,
+    botonLabel: 'Buscar', tablaCabeceras: ['Columna 1', 'Columna 2', 'Columna 3'], tablaFilas: 3 };
+
+  // Detect fx class
+  var cls = el.className || '';
+  var fxMatch = cls.match(/\b(fx\d|fx-auto|fx-none)\b/);
+  if (fxMatch) c.fx = fxMatch[1];
+
+  // Detect sub-title (label)
+  if (el.classList.contains('sub-title')) {
+    c.tipo = 'label';
+    c.label = el.textContent.replace(/X$/, '').trim();
+    var st = el.getAttribute('style') || '';
+    var fs = st.match(/font-size:(\d+)px/); if (fs) c.fontSize = fs[1] + 'px';
+    var fw = st.match(/font-weight:(\d+)/); if (fw) c.fontWeight = fw[1];
+    var ta = st.match(/text-align:(\w+)/); if (ta) c.textAlign = ta[1];
+    var fc = st.match(/color:([^;]+)/); if (fc) c.fontColor = fc[1];
+    var zi = st.match(/z-index:(\d+)/); if (zi) c.zIndex = parseInt(zi[1]);
+    return c;
+  }
+
+  // Detect linea (div with background and height, no .campo class)
+  var st = el.getAttribute('style') || '';
+  if (st.indexOf('height:') !== -1 && st.indexOf('background') !== -1 && !el.classList.contains('campo')) {
+    c.tipo = 'linea';
+    var lc = st.match(/background:([^;]+)/); if (lc) c.lineColor = lc[1];
+    var lw = st.match(/height:([^;]+)/); if (lw) c.lineWidth = lw[1];
+    if (st.indexOf('repeating-linear-gradient') !== -1) c.lineStyle = 'dashed';
+    else if (st.indexOf('radial-gradient') !== -1) c.lineStyle = 'dotted';
+    else c.lineStyle = 'solid';
+    if (st.indexOf('mask-image') !== -1) c.lineFade = true;
+    var zi2 = st.match(/z-index:(\d+)/); if (zi2) c.zIndex = parseInt(zi2[1]);
+    return c;
+  }
+
+  // Detect tabla (has table inside)
+  var table = el.querySelector('table');
+  if (table) {
+    c.tipo = 'tabla';
+    var lbl = el.querySelector('label');
+    c.label = lbl ? lbl.textContent.trim() : 'Tabla';
+    var ths = table.querySelectorAll('th');
+    if (ths.length > 0) c.tablaCabeceras = Array.from(ths).map(function(th){ return th.textContent.trim(); });
+    var trs = table.querySelectorAll('tbody tr');
+    c.tablaFilas = trs.length || 3;
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect checkbox
+  var chkInput = el.querySelector('input[type="checkbox"]');
+  if (chkInput) {
+    c.tipo = 'checkbox';
+    var chkLabel = el.querySelector('label');
+    c.labelCheckbox = chkLabel ? chkLabel.textContent.trim() : 'Casilla';
+    c.name = chkInput.getAttribute('name') || '';
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect firma (has border-bottom line + firma label)
+  var firmaLine = el.querySelector('div[style*="border-bottom:1px"]');
+  if (firmaLine) {
+    c.tipo = 'firma';
+    var lbl2 = el.querySelector('label');
+    c.label = lbl2 ? lbl2.textContent.trim() : 'Firma';
+    var firmaTxt = el.querySelectorAll('div');
+    if (firmaTxt.length >= 2) c.firmaLabel = firmaTxt[firmaTxt.length-1].textContent.trim();
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect buscarut (has button "Buscar")
+  var buscarBtn = el.querySelector('button');
+  if (buscarBtn && buscarBtn.textContent.indexOf('Buscar') !== -1) {
+    c.tipo = 'buscarut';
+    var lbl3 = el.querySelector('label');
+    c.label = lbl3 ? lbl3.textContent.trim() : 'RUT';
+    var inp = el.querySelector('input');
+    c.name = inp ? (inp.getAttribute('name') || 'rut') : 'rut';
+    c.botonLabel = buscarBtn.textContent.trim();
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect textarea
+  var ta2 = el.querySelector('textarea');
+  if (ta2) {
+    c.tipo = 'textarea';
+    var lbl4 = el.querySelector('label');
+    c.label = lbl4 ? lbl4.textContent.trim() : '';
+    c.name = ta2.getAttribute('name') || '';
+    c.placeholder = ta2.getAttribute('placeholder') || '';
+    var ml = ta2.getAttribute('maxlength'); if (ml) c.maxlength = parseInt(ml);
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  // Detect input types
+  var inp2 = el.querySelector('input');
+  if (inp2) {
+    var itype = inp2.getAttribute('type') || 'text';
+    if (itype === 'date') c.tipo = 'date';
+    else if (itype === 'time') c.tipo = 'time';
+    else c.tipo = 'text';
+    var lbl5 = el.querySelector('label');
+    c.label = lbl5 ? lbl5.textContent.trim() : '';
+    c.name = inp2.getAttribute('name') || '';
+    c.placeholder = inp2.getAttribute('placeholder') || '';
+    var ml2 = inp2.getAttribute('maxlength'); if (ml2) c.maxlength = parseInt(ml2);
+    var pat = inp2.getAttribute('pattern'); if (pat) c.pattern = pat;
+    parseCampoStyle(el, c);
+    return c;
+  }
+
+  return null;
+}
+
+function parseCampoStyle(el, c) {
+  var st = el.getAttribute('style') || '';
+  var pm = st.match(/padding:([^;]+)/); if (pm) c.padding = pm[1];
+  var mg = st.match(/margin:([^;]+)/); if (mg) c.margin = mg[1];
+  var zi = st.match(/z-index:(\d+)/); if (zi) c.zIndex = parseInt(zi[1]);
 }
 
 // ─── JSON import/export ─────────────────────────────────────

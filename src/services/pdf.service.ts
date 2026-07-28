@@ -2,7 +2,7 @@
 // CFB — Servicio para rellenar el PDF "Declaración Individual de Accidente Escolar"
 // M-CFB #8: Dibuja texto en las secciones A, B, C del PDF oficial
 
-import { PDFDocument, StandardFonts, rgb, type PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 export interface DatosPDF {
   // Sección A — Individualización del Establecimiento
@@ -81,7 +81,7 @@ const CAMPOS: Campo[] = [
   { key: 'edad', x: 514, y: 604, maxWidth: 25 },
 
   // Residencia habitual
-  { key: 'calle', x: 114, y: 563, maxWidth: 120 },
+  { key: 'calle', x: 50, y: 563, maxWidth: 120 },
   { key: 'numero', x: 221, y: 563, maxWidth: 60 },
   { key: 'poblacion', x: 288, y: 561, maxWidth: 110 },
   { key: 'comunaResidencia', x: 370, y: 563, maxWidth: 60 },
@@ -209,7 +209,7 @@ export async function generarPDF(
   * abrir en el navegador.
   */
 export function pdfToBlobUrl(pdf: Uint8Array): string {
-  const blob = new Blob([pdf], { type: 'application/pdf' });
+  const blob = new Blob([new Uint8Array(pdf)], { type: 'application/pdf' });
   return URL.createObjectURL(blob);
 }
 

@@ -4,15 +4,15 @@ import { ayudaService } from '../../services/ayuda.service';
 
 const FALLBACK_HARDCODED: { categoria: string; items: { titulo: string; contenido: string }[] }[] = [
   { categoria: 'Ausencias', items: [
-    { titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Justificaciones > Registrar. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
+    { titulo: '¿Cómo registro una ausencia?', contenido: 'Ve a Inspectoria > Justificaciones > pestaña Gestion de Pases. Selecciona el curso, marca los estudiantes ausentes, elige el motivo y guarda.' },
     { titulo: '¿Puedo registrar ausencias de días anteriores?', contenido: 'Sí, puedes seleccionar una fecha anterior en el calendario antes de registrar.' },
   ]},
   { categoria: 'Justificaciones', items: [
-    { titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Justificaciones > Ver Justificaciones. Puedes filtrar por fecha, curso o estado.' },
+    { titulo: '¿Cómo revisar justificaciones?', contenido: 'Ve a Inspectoria > Justificaciones. Puedes filtrar por fecha, curso o estado.' },
     { titulo: '¿Qué significa cada estado?', contenido: 'Injustificada = sin documento. Justificada = con documento aprobado. Pendiente = en revisión.' },
   ]},
   { categoria: 'Pases', items: [
-    { titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Justificaciones > Gestión de Pases. Ahí puedes crear, aprobar o rechazar pases de estudiantes.' },
+    { titulo: '¿Cómo gestionar un pase?', contenido: 'Ve a Inspectoria > Justificaciones > pestaña Crear Pase. Ahi puedes crear, aprobar o rechazar pases de estudiantes.' },
   ]},
   { categoria: 'Cuenta', items: [
     { titulo: '¿Dónde veo mi información?', contenido: 'Tu perfil está disponible en el menú de configuración. Puedes actualizar tus datos personales.' },

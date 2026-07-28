@@ -10,7 +10,8 @@ import {
   actualizarMotivoJustificacion,
   eliminarMotivoJustificacion,
 } from '../services/database';
-import type { MotivoJustificacion, TipoRegistro } from '../types';
+import { TipoRegistro } from '../types';
+import type { MotivoJustificacion } from '../types';
 import '../styles/universal.css';
 
 interface Props {
@@ -18,18 +19,23 @@ interface Props {
 }
 
 interface FormMotivo {
+  codigo?: string;
   descripcion: string;
   activo: boolean;
   tipo_registro: TipoRegistro;
 }
 
 // Función para generar código automático desde la descripción
-const generarCodigo = (descripcion: string): string => {
-  return descripcion
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '') // Remover caracteres especiales
-    .substring(0, 20) // Limitar a 20 caracteres
-    || 'MOT';
+const generarCodigoAuto = (tipo: TipoRegistro | undefined, motivos: MotivoJustificacion[]): string => {
+  if (!tipo) return '—';
+  const prefix = tipo === TipoRegistro.ATRASO ? 'A' : 'I';
+  const nums = motivos
+    .filter(m => m.tipo_registro === tipo)
+    .map(m => {
+      const n = parseInt((m.codigo || '').replace(prefix, ''), 10);
+      return isNaN(n) ? 0 : n;
+    });
+  return prefix + ((nums.length > 0 ? Math.max(...nums) : 0) + 1);
 };
 
 // Función para obtener etiqueta del tipo de registro
@@ -103,22 +109,22 @@ export default function MantenedorMotivos({ idEstablecimiento }: Props) {
       return;
     }
 
-    const codigoFinal = generarCodigo(formData.descripcion);
+    const codigoFinal = generarCodigoAuto(formData.tipo_registro, motivos);
 
     try {
       setGuardando(true);
 
       if (editandoId) {
-        // Actualizar
+        const motivoOriginal = motivos.find(m => m.id_motivo === editandoId);
+        const codigo = motivoOriginal?.codigo || codigoFinal;
         await actualizarMotivoJustificacion(editandoId, {
-          codigo: codigoFinal,
+          codigo,
           descripcion: formData.descripcion,
           requiere_detalle: false,
           activo: formData.activo,
           tipo_registro: formData.tipo_registro,
         });
       } else {
-        // Crear nuevo
         const nuevoMotivo: MotivoJustificacion = {
           id_motivo: `mot_${Date.now()}`,
           id_establecimiento: idEstablecimiento,
@@ -133,7 +139,7 @@ export default function MantenedorMotivos({ idEstablecimiento }: Props) {
       }
 
       setExito(true);
-      setFormData({ descripcion: '', activo: true, tipo_registro: 'ATRASO' as TipoRegistro });
+      setFormData({ codigo: undefined, descripcion: '', activo: true, tipo_registro: 'ATRASO' as TipoRegistro });
       setEditandoId(null);
       await cargarMotivos();
       setTimeout(() => setExito(false), 3000);
@@ -146,6 +152,7 @@ export default function MantenedorMotivos({ idEstablecimiento }: Props) {
 
   const handleEditar = (motivo: MotivoJustificacion) => {
     setFormData({
+      codigo: motivo.codigo,
       descripcion: motivo.descripcion,
       activo: motivo.activo,
       tipo_registro: (motivo.tipo_registro || 'ATRASO') as TipoRegistro,
@@ -203,7 +210,7 @@ export default function MantenedorMotivos({ idEstablecimiento }: Props) {
 
   const handleCancelar = () => {
     setEditandoId(null);
-    setFormData({ descripcion: '', activo: true, tipo_registro: 'ATRASO' as TipoRegistro });
+    setFormData({ codigo: undefined, descripcion: '', activo: true, tipo_registro: 'ATRASO' as TipoRegistro });
     setError(null);
   };
 
@@ -455,9 +462,9 @@ export default function MantenedorMotivos({ idEstablecimiento }: Props) {
                 <label style={styles.label}>📌 Código (Generado automáticamente)</label>
                 <input
                   type="text"
-                  value={generarCodigo(formData.descripcion)}
+                  value={formData.codigo || generarCodigoAuto(formData.tipo_registro, motivos)}
                   disabled
-                  placeholder="Se genera del nombre"
+                  placeholder="Se genera automáticamente"
                   style={{
                     ...styles.input,
                     backgroundColor: '#f3f4f6',

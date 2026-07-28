@@ -43,6 +43,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   const [exito, setExito] = useState(false);
   const [paginaActual, setPaginaActual] = useState(1);
   const [cursoSeleccionado, setCursoSeleccionado] = useState('');
+  const [cardsEstado, setCardsEstado] = useState<Record<string, 'presente' | 'ausente'>>({});
+  const [cardsJustificado, setCardsJustificado] = useState<Record<string, boolean>>({});
   
   const [formData, setFormData] = useState<FormPase>({
     id_estudiante: '',
@@ -86,52 +88,70 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       nombre_estudiante: '',
       curso: curso,
     });
+    // Reset cards to all present when changing course
+    const nuevosEstados: Record<string, 'presente' | 'ausente'> = {};
+    const nuevosJustif: Record<string, boolean> = {};
+    estudiantes.filter(e => e.curso === curso).forEach(e => {
+      if (e.id_estudiante) {
+        nuevosEstados[e.id_estudiante] = 'presente';
+        nuevosJustif[e.id_estudiante] = false;
+      }
+    });
+    setCardsEstado(nuevosEstados);
+    setCardsJustificado(nuevosJustif);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!formData.id_estudiante) {
-      setError('Debes seleccionar un estudiante');
+    const ausentes = Object.entries(cardsEstado).filter(([, estado]) => estado === 'ausente');
+    if (ausentes.length === 0) {
+      setError('No hay estudiantes marcados como ausentes');
       return;
     }
 
     try {
       setGuardando(true);
+      const creados: string[] = [];
 
-      const id_solicitud = `sol_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      const solicitud: Solicitud = {
-        id_solicitud,
-        id_establecimiento: idEstablecimiento,
-        id_estudiante: formData.id_estudiante,
-        id_profesor: idUsuarioActual || '',
-        tipo: formData.tipo,
-        fecha: formData.fecha,
-        hora: formData.hora,
-        estado: EstadoSolicitud.INJUSTIFICADA,
-        motivo_codigo: null,
-        motivo_descripcion: 'Ausente',
-        observaciones: null,
-        respaldo_recibido: false,
-        tipo_respaldo: null,
-        id_token_qr: null,
-        curso: formData.curso,
-      };
-
-      await crearSolicitud(solicitud);
+      for (const [id_estudiante] of ausentes) {
+        const est = estudiantes.find(s => s.id_estudiante === id_estudiante);
+        if (!est) continue;
+        const id_solicitud = `sol_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const solicitud: Solicitud = {
+          id_solicitud,
+          id_establecimiento: idEstablecimiento,
+          id_estudiante,
+          id_profesor: idUsuarioActual || '',
+          tipo: formData.tipo,
+          fecha: formData.fecha,
+          hora: formData.hora,
+          estado: cardsJustificado[id_estudiante] ? EstadoSolicitud.JUSTIFICADA : EstadoSolicitud.INJUSTIFICADA,
+          motivo_codigo: null,
+          motivo_descripcion: cardsJustificado[id_estudiante] ? 'Justificado' : 'Ausente',
+          observaciones: null,
+          respaldo_recibido: false,
+          tipo_respaldo: null,
+          id_token_qr: null,
+          curso: formData.curso,
+        };
+        await crearSolicitud(solicitud);
+        creados.push(est.nombre_completo);
+      }
 
       setExito(true);
-      setFormData({
-        id_estudiante: '',
-        rut: '',
-        nombre_estudiante: '',
-        curso: cursoSeleccionado,
-        tipo: TipoRegistro.ATRASO,
-        fecha: new Date().toISOString().split('T')[0],
-        hora: new Date().toTimeString().slice(0, 5),
+      // Reset cards
+      const nuevosEstados: Record<string, 'presente' | 'ausente'> = {};
+      const nuevosJustif: Record<string, boolean> = {};
+      estudiantes.filter(e => e.curso === cursoSeleccionado).forEach(e => {
+        if (e.id_estudiante) {
+          nuevosEstados[e.id_estudiante] = 'presente';
+          nuevosJustif[e.id_estudiante] = false;
+        }
       });
+      setCardsEstado(nuevosEstados);
+      setCardsJustificado(nuevosJustif);
       await cargarDatos();
       setTimeout(() => setExito(false), 3000);
     } catch (err) {
@@ -139,6 +159,21 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     } finally {
       setGuardando(false);
     }
+  };
+
+  const toggleCardEstado = (id: string) => {
+    setCardsEstado(prev => {
+      const actual = prev[id];
+      const nuevo = actual === 'ausente' ? 'presente' : 'ausente';
+      if (actual === 'presente' || !actual) {
+        setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
+      }
+      return { ...prev, [id]: nuevo };
+    });
+  };
+
+  const toggleJustificado = (id: string) => {
+    setCardsJustificado(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleAnularPase = async (id_solicitud: string, id_profesor: string) => {
@@ -239,74 +274,55 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
               </div>
             </div>
 
-            {/* Paso 2: Seleccionar Estudiante */}
+            {/* Paso 2: Lista de estudiantes como cards */}
             {cursoSeleccionado && (
               <div style={styles.paso}>
-                <h4 style={styles.numeroPaso}>👤 Paso 2: Selecciona el Estudiante</h4>
-                <div style={styles.grupo}>
-                  <label style={styles.label}>Estudiante *</label>
-                  <select
-                    value={formData.id_estudiante}
-                    onChange={(e) => {
-                      const selectedId = e.target.value;
-                      console.log('=== SELECCIÓN DE ESTUDIANTE ===');
-                      console.log('Seleccionado ID:', selectedId);
-                      console.log('Estudiantes disponibles (full):', JSON.stringify(estudiantesCurso, null, 2));
-                      
-                      if (selectedId) {
-                        const est = estudiantesCurso.find(s => s.id_estudiante === selectedId);
-                        console.log('Búsqueda: buscando id_estudiante =', selectedId);
-                        console.log('Encontrado:', est);
-                        
-                        if (est) {
-                          const nuevoForm = {
-                            ...formData,
-                            id_estudiante: est.id_estudiante || '',
-                            rut: est.rut || '',
-                            nombre_estudiante: est.nombre_completo || '',
-                            curso: est.curso || '',
-                          };
-                          console.log('✓ Actualizando formData:', nuevoForm);
-                          setFormData(nuevoForm);
-                        } else {
-                          console.error('✗ Estudiante NO encontrado con ID:', selectedId);
-                          console.log('Comparación de IDs en array:');
-                          estudiantesCurso.forEach((s, idx) => {
-                            console.log(`  [${idx}] id_estudiante=${s.id_estudiante}, nombre=${s.nombre_completo}`);
-                          });
-                        }
-                      } else {
-                        setFormData({
-                          ...formData,
-                          id_estudiante: '',
-                          rut: '',
-                          nombre_estudiante: '',
-                          curso: cursoSeleccionado,
-                        });
-                      }
-                    }}
-                    style={styles.select}
-                  >
-                    <option value="">-- Selecciona un estudiante --</option>
-                    {estudiantesCurso.map((est) => (
-                      <option key={est.id_estudiante} value={est.id_estudiante || ''}>
-                        {est.nombre_completo} - RUT: {est.rut}
-                      </option>
-                    ))}
-                  </select>
-                  {formData.id_estudiante && (
-                    <div style={styles.datoestudiante}>
-                      <small>RUT: {formData.rut}</small>
-                    </div>
-                  )}
+                <h4 style={styles.numeroPaso}>👤 Paso 2: Marca los ausentes</h4>
+                <div style={styles.cardGrid}>
+                  {estudiantesCurso.map((est, idx) => {
+                    const estId = est.id_estudiante || '';
+                    const estado = cardsEstado[estId] || 'presente';
+                    const justif = cardsJustificado[estId] || false;
+                    const esAusente = estado === 'ausente';
+                    return (
+                      <div
+                        key={estId}
+                        onClick={() => toggleCardEstado(estId)}
+                        style={{
+                          ...styles.cardItem,
+                          background: esAusente
+                            ? 'linear-gradient(135deg,#FEE2E2,#FCA5A5)'
+                            : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)',
+                          borderColor: esAusente ? '#F87171' : '#34D399',
+                        }}
+                      >
+                        {esAusente && (
+                          <span
+                            onClick={(e) => { e.stopPropagation(); toggleJustificado(estId); }}
+                            style={{
+                              position: 'absolute', top: 4, right: 4,
+                              width: 10, height: 10, borderRadius: '50%',
+                              background: justif ? '#3B82F6' : '#fff',
+                              border: `1px solid ${justif ? '#2563EB' : '#D1D5DB'}`,
+                              cursor: 'pointer', zIndex: 5,
+                            }}
+                          />
+                        )}
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1F2937' }}>
+                          {est.nombre_completo?.split(' ')[0] || idx + 1}
+                        </div>
+                        <div style={{ fontSize: 9, color: '#6B7280' }}>{est.rut}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Paso 3: Tipo, Fecha, Hora */}
-            {formData.id_estudiante && (
+            {/* Detalles del pase */}
+            {cursoSeleccionado && (
               <div style={styles.paso}>
-                <h4 style={styles.numeroPaso}>📝 Paso 3: Detalles del Pase</h4>
+                <h4 style={styles.numeroPaso}>📝 Detalles del Pase</h4>
                 <div style={styles.fila3}>
                   <div style={styles.grupo}>
                     <label style={styles.label}>Tipo *</label>
@@ -339,12 +355,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                         const hora = e.target.value;
                         if (hora) {
                           const [horas, minutos] = hora.split(':').map(Number);
-                          // Solo permitir entre 08:00 y 17:00
                           if (horas >= 8 && horas <= 17) {
-                            // Si es las 17, solo permitir 17:00
-                            if (horas === 17 && minutos > 0) {
-                              return;
-                            }
+                            if (horas === 17 && minutos > 0) return;
                             setFormData({ ...formData, hora });
                           }
                         }
@@ -359,9 +371,9 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
             )}
 
             {error && <div style={styles.error}>{error}</div>}
-            {exito && <div style={styles.exito}>✅ Pase creado exitosamente</div>}
+            {exito && <div style={styles.exito}>✅ Pases creados exitosamente</div>}
 
-            {formData.id_estudiante && (
+            {cursoSeleccionado && (
               <button
                 type="submit"
                 disabled={guardando}
@@ -370,7 +382,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                   opacity: guardando ? 0.6 : 1,
                 }}
               >
-                {guardando ? '⏳ Guardando...' : '✓ Crear Pase'}
+                {guardando ? '⏳ Guardando...' : '✓ Registrar Ausentes'}
               </button>
             )}
           </form>
@@ -660,6 +672,27 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '14px',
     fontWeight: '600',
     color: '#374151',
+  },
+  cardGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+    gap: '8px',
+  },
+  cardItem: {
+    position: 'relative' as const,
+    padding: '10px 6px',
+    borderRadius: '8px',
+    border: '2px solid',
+    textAlign: 'center' as const,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    minHeight: '60px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '2px',
+    overflow: 'hidden',
   },
   badge: {
     display: 'inline-block',

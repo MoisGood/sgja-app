@@ -122,6 +122,7 @@ export async function crearSolicitud(solicitud: Solicitud): Promise<void> {
       tipo_respaldo: solicitud.tipo_respaldo || null,
       id_token_qr: solicitud.id_token_qr || null,
       bloques_afectados: solicitud.bloques_afectados || 1,
+      activo: true,
     };
 
     const { error } = await supabase.from('solicitudes').insert([record]);
@@ -154,9 +155,6 @@ export async function actualizarEstadoSolicitud(
 
     if (datos?.id_inspector_justificador) {
       updateData.id_inspector_justificador = datos.id_inspector_justificador;
-      updateData.hora_justificacion = new Date().toLocaleTimeString('es-ES', {
-        hour: '2-digit', minute: '2-digit', second: '2-digit',
-      });
     }
     if (datos?.motivo_codigo) updateData.motivo_codigo = datos.motivo_codigo;
     if (datos?.motivo_descripcion) updateData.motivo_descripcion = datos.motivo_descripcion;

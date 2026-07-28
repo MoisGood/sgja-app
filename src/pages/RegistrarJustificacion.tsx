@@ -4,12 +4,14 @@ import {
   obtenerEstudiantesDelEstablecimiento,
   obtenerCursosDelEstablecimiento,
   obtenerMotivosDelEstablecimiento,
+  obtenerProfesoresDelEstablecimiento,
   justificarAtraso,
   justificarInasistencia,
+  crearSolicitud,
   escucharSolicitudesInjustificadas,
 } from '../services/database';
 import type { Estudiante, Solicitud, MotivoJustificacion } from '../types';
-import { EstadoSolicitud } from '../types';
+import { EstadoSolicitud, TipoRegistro } from '../types';
 import { esAtraso } from '../utils/tipoRegistroHelper';
 
 interface Props {
@@ -17,15 +19,23 @@ interface Props {
   idUsuario?: string;
 }
 
+type EstadoLookup = 'justificado' | 'injustificado' | 'sin_registro' | null;
+
+const esJustificado = (e: EstadoSolicitud) =>
+  e === EstadoSolicitud.ATRASO_JUSTIFICADO || e === EstadoSolicitud.INASISTENCIA_JUSTIFICADA;
+
+const normalizarRut = (r: string) => (r || '').replace(/[.\-\s]/g, '').toLowerCase();
+
 export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = '' }: Props) {
+
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [cursos, setCursos] = useState<string[]>([]);
   const [motivos, setMotivos] = useState<MotivoJustificacion[]>([]);
+  const [profesoresMap, setProfesoresMap] = useState<Record<string, string>>({});
   const [filtrosCurso, setFiltrosCurso] = useState<string>('');
   const [cargando, setCargando] = useState(true);
   const [paginaActual, setPaginaActual] = useState(1);
-  const [busquedaRut, setBusquedaRut] = useState('');
   const [pestanaActiva, setPestanaActiva] = useState<'todos' | 'injustificados' | 'justificados'>('todos');
   const [filtroFecha, setFiltroFecha] = useState<string>('');
   const [itemsPorPagina, setItemsPorPagina] = useState(10);
@@ -36,6 +46,17 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Formulario superior (diseño Justificar1) ──
+  const hoy = new Date().toISOString().split('T')[0];
+  const [fechaForm, setFechaForm] = useState(hoy);
+  const [horaForm, setHoraForm] = useState(() => new Date().toTimeString().slice(0, 5));
+  const [rutLookup, setRutLookup] = useState('');
+  const [estudianteLookup, setEstudianteLookup] = useState<Estudiante | null>(null);
+  const [estadoLookup, setEstadoLookup] = useState<EstadoLookup>(null);
+  const [estadoManual, setEstadoManual] = useState('');
+  const [tipoNuevo, setTipoNuevo] = useState<TipoRegistro>(TipoRegistro.ATRASO);
+  const [modoCrear, setModoCrear] = useState(false);
+
   const selectMotivoRef = useRef<HTMLSelectElement>(null);
 
   // ── Cargar datos iniciales y escuchar cambios en tiempo real ──
@@ -45,11 +66,12 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
     const cargarDatosIniciales = async () => {
       try {
         setCargando(true);
-        
-        const [estudiantesData, cursosData, motivosData] = await Promise.all([
+
+        const [estudiantesData, cursosData, motivosData, profesoresData] = await Promise.all([
           obtenerEstudiantesDelEstablecimiento(idEstablecimiento).catch(() => []),
           obtenerCursosDelEstablecimiento(idEstablecimiento).catch(() => []),
           obtenerMotivosDelEstablecimiento(idEstablecimiento).catch(() => []),
+          obtenerProfesoresDelEstablecimiento(idEstablecimiento).catch(() => []),
         ]);
 
         setEstudiantes(estudiantesData);
@@ -57,10 +79,18 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
         const motivosUnicos = Array.from(
           new Map(motivosData.map((m: MotivoJustificacion) => [m.id_motivo, m])).values()
         );
-        const motivosOrdenados = (motivosUnicos as MotivoJustificacion[]).sort((a, b) => 
+        const motivosOrdenados = (motivosUnicos as MotivoJustificacion[]).sort((a, b) =>
           a.descripcion.localeCompare(b.descripcion, 'es', { sensitivity: 'base' })
         );
         setMotivos(motivosOrdenados);
+
+        const mapa: Record<string, string> = {};
+        (profesoresData as Array<{ uid?: string; id_usuario?: string; nombre_completo?: string; apellidos?: string }>).forEach(p => {
+          const nombreCompleto = [p.nombre_completo, p.apellidos].filter(Boolean).join(' ').trim();
+          if (p.uid) mapa[p.uid] = nombreCompleto;
+          if (p.id_usuario) mapa[p.id_usuario] = nombreCompleto;
+        });
+        setProfesoresMap(mapa);
 
         unsubscribe = escucharSolicitudesInjustificadas(
           idEstablecimiento,
@@ -85,6 +115,7 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
 
   const abrirModal = (solicitud: Solicitud) => {
     if (solicitud.estado === EstadoSolicitud.INASISTENTE) {
+      setModoCrear(false);
       setSolicitudSeleccionada(solicitud);
       setModalAbierto(true);
       setMotivoSeleccionado('');
@@ -99,11 +130,50 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
     setModalAbierto(false);
     setSolicitudSeleccionada(null);
     setMotivoSeleccionado('');
+    setModoCrear(false);
     setError(null);
   };
 
+  // ── Lookup individual por RUT ──
+  const handleBuscarRut = () => {
+    setError(null);
+    if (!normalizarRut(rutLookup)) return;
+
+    const est = estudiantes.find(e => normalizarRut(e.rut || '') === normalizarRut(rutLookup));
+    if (!est) {
+      setEstudianteLookup(null);
+      setEstadoLookup(null);
+      setError('No se encontró un estudiante con ese RUT');
+      return;
+    }
+
+    setEstudianteLookup(est);
+    const sol = solicitudes.find(s => s.id_estudiante === est.id_estudiante && s.fecha === hoy) || null;
+    if (!sol) { setEstadoLookup('sin_registro'); setEstadoManual('Justificado'); }
+    else {
+      const autoEstado = esJustificado(sol.estado) ? 'justificado' : 'injustificado';
+      setEstadoLookup(autoEstado);
+      setEstadoManual(autoEstado === 'justificado' ? 'Justificado' : 'Injustificado');
+    }
+  };
+
+  // ── Crear justificación (cuando no hay registro hoy) ──
+  const handleCrearJustificacion = () => {
+    if (!estudianteLookup) return;
+    if (!confirm(`${estudianteLookup.nombre_completo} no tiene registro hoy.\n¿Desea crear la justificación?`)) return;
+    setModoCrear(true);
+    setSolicitudSeleccionada(null);
+    setMotivoSeleccionado('');
+    setError(null);
+    setModalAbierto(true);
+    setTimeout(() => {
+      selectMotivoRef.current?.focus();
+    }, 0);
+  };
+
   const handleJustificar = async () => {
-    if (!solicitudSeleccionada) return;
+    if (!modoCrear && !solicitudSeleccionada) return;
+    if (modoCrear && !estudianteLookup) return;
     if (!motivoSeleccionado) {
       setError('Debes seleccionar un motivo');
       return;
@@ -127,29 +197,59 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
         descripcionMotivo = motivo?.descripcion || '';
       }
 
-      const esAtrasoItem = esAtraso(solicitudSeleccionada.tipo);
+      if (modoCrear && estudianteLookup) {
+        // Crear la solicitud y justificarla en el mismo paso
+        const id_solicitud = `sol_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const nueva: Solicitud = {
+          id_solicitud,
+          id_establecimiento: idEstablecimiento,
+          id_estudiante: estudianteLookup.id_estudiante,
+          id_profesor: idUsuario || '',
+          tipo: tipoNuevo,
+          fecha: fechaForm,
+          hora: horaForm,
+          estado: EstadoSolicitud.INJUSTIFICADA,
+          motivo_codigo: null,
+          motivo_descripcion: null,
+          observaciones: null,
+          respaldo_recibido: false,
+          tipo_respaldo: null,
+          id_token_qr: null,
+          curso: estudianteLookup.curso,
+        };
+        await crearSolicitud(nueva);
 
-      if (esAtrasoItem) {
-        await justificarAtraso(
-          solicitudSeleccionada.id_solicitud,
-          codigoMotivo,
-          descripcionMotivo,
-          idUsuario
-        );
-      } else {
-        await justificarInasistencia(
-          solicitudSeleccionada.id_solicitud,
-          codigoMotivo,
-          descripcionMotivo,
-          idUsuario,
-          tieneDocumento
-        );
+        if (tipoNuevo === TipoRegistro.ATRASO) {
+          await justificarAtraso(id_solicitud, codigoMotivo, descripcionMotivo, idUsuario);
+        } else {
+          await justificarInasistencia(id_solicitud, codigoMotivo, descripcionMotivo, idUsuario, tieneDocumento);
+        }
+        setEstadoLookup('justificado');
+      } else if (solicitudSeleccionada) {
+        const esAtrasoItem = esAtraso(solicitudSeleccionada.tipo);
+
+        if (esAtrasoItem) {
+          await justificarAtraso(
+            solicitudSeleccionada.id_solicitud,
+            codigoMotivo,
+            descripcionMotivo,
+            idUsuario
+          );
+        } else {
+          await justificarInasistencia(
+            solicitudSeleccionada.id_solicitud,
+            codigoMotivo,
+            descripcionMotivo,
+            idUsuario,
+            tieneDocumento
+          );
+        }
+
+        // Refrescar badge del lookup si es el mismo estudiante
+        if (estudianteLookup?.id_estudiante === solicitudSeleccionada.id_estudiante) {
+          setEstadoLookup('justificado');
+        }
       }
-
-      // Actualizar localmente: eliminar de la lista
-      setSolicitudes(prev =>
-        prev.filter(s => s.id_solicitud !== solicitudSeleccionada.id_solicitud)
-      );
 
       cerrarModal();
     } catch (err) {
@@ -173,10 +273,9 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
         solicitudes={solicitudes}
         estudiantes={estudiantes}
         cursos={cursos}
+        profesoresMap={profesoresMap}
         pestanaActiva={pestanaActiva}
         onPestanaChange={setPestanaActiva}
-        busquedaRut={busquedaRut}
-        onBusquedaChange={setBusquedaRut}
         filtrosCurso={filtrosCurso}
         onFiltroChange={setFiltrosCurso}
         filtroFecha={filtroFecha}
@@ -186,11 +285,25 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
         itemsPorPagina={itemsPorPagina}
         onItemsPorPaginaChange={setItemsPorPagina}
         onFilaClick={abrirModal}
+        fechaForm={fechaForm}
+        onFechaFormChange={setFechaForm}
+        horaForm={horaForm}
+        onHoraFormChange={setHoraForm}
+        rutLookup={rutLookup}
+        onRutLookupChange={setRutLookup}
+        onBuscarRut={handleBuscarRut}
+        estudianteLookup={estudianteLookup}
+        estadoLookup={estadoLookup}
+        estadoManual={estadoManual}
+        onEstadoManualChange={setEstadoManual}
+        onCrearJustificacion={handleCrearJustificacion}
+        tipoNuevo={tipoNuevo}
+        onTipoNuevoChange={setTipoNuevo}
       />
 
       {/* MODAL */}
-      {modalAbierto && solicitudSeleccionada && (
-        <button type="button" style={{
+      {modalAbierto && (modoCrear ? !!estudianteLookup : !!solicitudSeleccionada) && (
+        <div style={{
           position: 'fixed',
           inset: 0,
           background: 'rgba(0, 0, 0, 0.5)',
@@ -199,7 +312,6 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
           justifyContent: 'center',
           zIndex: 50,
           padding: '1rem',
-          border: 'none',
         }} onClick={cerrarModal}>
           <div style={{
             background: 'white',
@@ -210,7 +322,7 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
             boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
           }} onClick={(e) => e.stopPropagation()}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem', color: '#1f2937' }}>
-              ✍️ Justificar Registro
+              {modoCrear ? '✍️ Crear y Justificar' : '✍️ Justificar Registro'}
             </h2>
 
             {/* Estudiante info */}
@@ -220,18 +332,41 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
               borderRadius: '8px',
               marginBottom: '1.5rem',
             }}>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <span style={{ fontWeight: '600', color: '#374151' }}>Estudiante: </span>
-                {estudiantes.find(e => e.id_estudiante === solicitudSeleccionada.id_estudiante)?.nombre_completo}
-              </div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <span style={{ fontWeight: '600', color: '#374151' }}>Fecha: </span>
-                {solicitudSeleccionada.fecha} a las {solicitudSeleccionada.hora}
-              </div>
-              <div>
-                <span style={{ fontWeight: '600', color: '#374151' }}>Tipo: </span>
-                {solicitudSeleccionada.tipo}
-              </div>
+              {modoCrear && estudianteLookup ? (
+                <>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <span style={{ fontWeight: '600', color: '#374151' }}>Estudiante: </span>
+                    {estudianteLookup.nombre_completo}
+                  </div>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <span style={{ fontWeight: '600', color: '#374151' }}>Curso: </span>
+                    {estudianteLookup.curso}
+                  </div>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <span style={{ fontWeight: '600', color: '#374151' }}>Fecha: </span>
+                    {fechaForm} a las {horaForm}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: '600', color: '#374151' }}>Tipo: </span>
+                    {tipoNuevo}
+                  </div>
+                </>
+              ) : solicitudSeleccionada ? (
+                <>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <span style={{ fontWeight: '600', color: '#374151' }}>Estudiante: </span>
+                    {estudiantes.find(e => e.id_estudiante === solicitudSeleccionada.id_estudiante)?.nombre_completo}
+                  </div>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <span style={{ fontWeight: '600', color: '#374151' }}>Fecha: </span>
+                    {solicitudSeleccionada.fecha} a las {solicitudSeleccionada.hora}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: '600', color: '#374151' }}>Tipo: </span>
+                    {solicitudSeleccionada.tipo}
+                  </div>
+                </>
+              ) : null}
             </div>
 
             {/* Motivo */}
@@ -239,32 +374,45 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
               <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem', color: '#374151' }}>
                 Motivo de Justificación *
               </label>
-              <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
-                Digita el número del motivo (1-{motivos.length}) o selecciona de la lista:
-              </p>
-              <select
-                ref={selectMotivoRef}
-                value={motivoSeleccionado}
-                onChange={(e) => {
-                  setMotivoSeleccionado(e.target.value);
-                }}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  fontSize: '0.875rem',
-                  cursor: 'pointer',
-                }}
-              >
-                <option value="">-- Selecciona un motivo --</option>
-                {motivos.map((m, index) => (
-                  <option key={m.id_motivo} value={m.id_motivo}>
-                    {index + 1}. {m.descripcion}
-                  </option>
-                ))}
-              </select>
-              
+              {(() => {
+                const tipoActual = modoCrear ? tipoNuevo : solicitudSeleccionada?.tipo;
+                const motivosFiltrados = motivos.filter(m => !tipoActual || m.tipo_registro === tipoActual);
+                return motivosFiltrados.length === 0 ? (
+                  <div style={{
+                    background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '8px',
+                    padding: '1rem', fontSize: '0.875rem', color: '#92400E',
+                  }}>
+                    No hay motivos de tipo "{tipoActual}" disponibles.
+                    Ve a <strong>Mantenedores &gt; Justificaciones</strong> para agregarlos.
+                  </div>
+                ) : (
+                <>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+                  Digita el número del motivo (1-{motivosFiltrados.length}) o selecciona de la lista:
+                </p>
+                <select
+                  ref={selectMotivoRef}
+                  value={motivoSeleccionado}
+                  onChange={(e) => {
+                    setMotivoSeleccionado(e.target.value);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="">-- Selecciona un motivo --</option>
+                  {motivosFiltrados.map((m, index) => (
+                    <option key={m.id_motivo} value={m.id_motivo}>
+                      {index + 1}. {m.codigo} - {m.descripcion}
+                    </option>
+                  ))}
+                </select>
+
               <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
                 <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '0.5rem' }}>
                   <input
@@ -281,6 +429,7 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
                   </span>
                 </label>
               </div>
+              </>);})()}
             </div>
 
             {/* Error */}
@@ -300,7 +449,7 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
 
             {/* Botones */}
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button type="button" 
+              <button type="button"
                 onClick={cerrarModal}
                 disabled={guardando}
                 style={{
@@ -317,7 +466,7 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
               >
                 Cancelar
               </button>
-              <button type="button" 
+              <button type="button"
                 onClick={handleJustificar}
                 disabled={guardando || !motivoSeleccionado}
                 style={{
@@ -332,11 +481,11 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
                   opacity: guardando || !motivoSeleccionado ? 0.6 : 1,
                 }}
               >
-                {guardando ? '⏳ Guardando...' : '✅ Justificar'}
+                {guardando ? '⏳ Guardando...' : modoCrear ? '✅ Crear y Justificar' : '✅ Justificar'}
               </button>
             </div>
           </div>
-        </button>
+        </div>
       )}
     </>
   );
