@@ -180,12 +180,19 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
     const apellidos = partes.slice(-1).join(' ') || '';
 
     // Validar curso contra la colección de cursos
-    const cursoRaw = est.curso?.toString().trim().toUpperCase() || '';
-    const cursoExiste = cursos.current.some((c) => c.nombre === cursoRaw);
+    const cursoRaw = est.curso?.toString().trim() || '';
+    const nivelesTexto = ['', '1ro', '2do', '3ro', '4to'];
+    const matchCurso = cursoRaw.toUpperCase().match(/^(\d)\s*([A-D])$/);
+    const cursoNormalizado = matchCurso
+      ? `${nivelesTexto[parseInt(matchCurso[1])] || matchCurso[1]} Grado ${matchCurso[2]}`
+      : cursoRaw;
     if (!cursoRaw) {
       errores.push('Curso requerido');
-    } else if (!cursoExiste) {
-      errores.push(`Curso "${cursoRaw}" no existe en el sistema (disponibles: ${cursos.current.map(c => c.nombre).join(', ')})`);
+    } else {
+      const cursoExiste = cursos.current.some((c) => c.nombre === cursoNormalizado);
+      if (!cursoExiste) {
+        errores.push(`Curso "${cursoRaw}" no existe en el sistema (disponibles: ${cursos.current.map(c => c.nombre).join(', ')})`);
+      }
     }
 
     // Validar año de ingreso
@@ -207,7 +214,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
       nombre: nombres,
       apellidos: apellidos,
       nombre_completo: nombreCompleto,
-      curso: cursoRaw,
+      curso: cursoNormalizado,
       anno_ingreso: est.anno_ingreso?.toString() || '',
       email,
       estado: estadoLower,
