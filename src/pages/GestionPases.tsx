@@ -10,8 +10,9 @@ import {
   crearSolicitud,
   obtenerSolicitudesDelEstablecimiento,
   actualizarSolicitud,
+  obtenerBloquesHorarios,
 } from '../services/database';
-import type { Estudiante, Solicitud } from '../types';
+import type { Estudiante, Solicitud, BloqueHorario } from '../types';
 import { EstadoSolicitud, TipoRegistro } from '../types';
 import { esAtraso } from '../utils/tipoRegistroHelper';
 
@@ -43,7 +44,9 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   const [exito, setExito] = useState(false);
   const [paginaActual, setPaginaActual] = useState(1);
   const [cursoSeleccionado, setCursoSeleccionado] = useState('');
-  const [cardsEstado, setCardsEstado] = useState<Record<string, 'presente' | 'ausente'>>({});
+  const [bloques, setBloques] = useState<BloqueHorario[]>([]);
+  const [bloqueDetectado, setBloqueDetectado] = useState<string>('');
+  const [cardsEstado, setCardsEstado] = useState<Record<string, 'presente' | 'atraso' | 'inasistencia'>>({});
   const [cardsJustificado, setCardsJustificado] = useState<Record<string, boolean>>({});
   
   const [formData, setFormData] = useState<FormPase>({
@@ -64,10 +67,21 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   const cargarDatos = async () => {
     try {
       setCargando(true);
-      const [estudiantesData, solicitudesData] = await Promise.all([
+      const [estudiantesData, solicitudesData, bloquesData] = await Promise.all([
         obtenerEstudiantesDelEstablecimiento(idEstablecimiento).catch(() => []),
         obtenerSolicitudesDelEstablecimiento(idEstablecimiento).catch(() => []),
+        obtenerBloquesHorarios(idEstablecimiento).catch(() => []),
       ]);
+      setBloques(bloquesData);
+      // Detectar bloque inicial
+      const horaInicial = new Date().toTimeString().slice(0, 5);
+      for (const b of bloquesData) {
+        const [hi, mi] = b.hora_inicio.split(':').map(Number);
+        const [hf, mf] = b.hora_fin.split(':').map(Number);
+        const [h, m] = horaInicial.split(':').map(Number);
+        const mins = h * 60 + m, ini = hi * 60 + mi, fin = hf * 60 + mf;
+        if (mins >= ini && mins < fin) { setBloqueDetectado(b.id_bloque); break; }
+      }
 
       setEstudiantes(estudiantesData);
       setSolicitudes(solicitudesData);
@@ -77,6 +91,20 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     } finally {
       setCargando(false);
     }
+  };
+
+  const detectarBloque = (hora: string): string => {
+    if (!hora || bloques.length === 0) return '';
+    const [h, m] = hora.split(':').map(Number);
+    const minutos = h * 60 + m;
+    for (const b of bloques) {
+      const [hi, mi] = b.hora_inicio.split(':').map(Number);
+      const [hf, mf] = b.hora_fin.split(':').map(Number);
+      const inicio = hi * 60 + mi;
+      const fin = hf * 60 + mf;
+      if (minutos >= inicio && minutos < fin) return b.id_bloque;
+    }
+    return '';
   };
 
   const handleSelectCurso = (curso: string) => {
@@ -89,7 +117,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       curso: curso,
     });
     // Reset cards to all present when changing course
-    const nuevosEstados: Record<string, 'presente' | 'ausente'> = {};
+    const nuevosEstados: Record<string, 'presente' | 'atraso' | 'inasistencia'> = {};
     const nuevosJustif: Record<string, boolean> = {};
     estudiantes.filter(e => e.curso === curso).forEach(e => {
       if (e.id_estudiante) {
@@ -105,7 +133,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     e.preventDefault();
     setError(null);
 
-    const ausentes = Object.entries(cardsEstado).filter(([, estado]) => estado === 'ausente');
+    const ausentes = Object.entries(cardsEstado).filter(([, estado]) => estado === 'atraso' || estado === 'inasistencia');
     if (ausentes.length === 0) {
       setError('No hay estudiantes marcados como ausentes');
       return;
@@ -119,22 +147,24 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
         const est = estudiantes.find(s => s.id_estudiante === id_estudiante);
         if (!est) continue;
         const id_solicitud = `sol_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const esAtraso = cardsEstado[id_estudiante] === 'atraso';
         const solicitud: Solicitud = {
           id_solicitud,
           id_establecimiento: idEstablecimiento,
           id_estudiante,
           id_profesor: idUsuarioActual || '',
-          tipo: formData.tipo,
+          tipo: esAtraso ? TipoRegistro.ATRASO : TipoRegistro.INASISTENCIA,
           fecha: formData.fecha,
           hora: formData.hora,
           estado: cardsJustificado[id_estudiante] ? EstadoSolicitud.JUSTIFICADA : EstadoSolicitud.INJUSTIFICADA,
           motivo_codigo: null,
-          motivo_descripcion: cardsJustificado[id_estudiante] ? 'Justificado' : 'Ausente',
+          motivo_descripcion: cardsJustificado[id_estudiante] ? 'Justificado' : (esAtraso ? 'Atraso' : 'Ausente'),
           observaciones: null,
           respaldo_recibido: false,
           tipo_respaldo: null,
           id_token_qr: null,
           curso: formData.curso,
+          id_bloque: bloqueDetectado || undefined,
         };
         await crearSolicitud(solicitud);
         creados.push(est.nombre_completo);
@@ -142,7 +172,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
 
       setExito(true);
       // Reset cards
-      const nuevosEstados: Record<string, 'presente' | 'ausente'> = {};
+      const nuevosEstados: Record<string, 'presente' | 'atraso' | 'inasistencia'> = {};
       const nuevosJustif: Record<string, boolean> = {};
       estudiantes.filter(e => e.curso === cursoSeleccionado).forEach(e => {
         if (e.id_estudiante) {
@@ -161,14 +191,29 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     }
   };
 
-  const toggleCardEstado = (id: string) => {
+  const toggleCardClick = (id: string) => {
     setCardsEstado(prev => {
       const actual = prev[id];
-      const nuevo = actual === 'ausente' ? 'presente' : 'ausente';
-      if (actual === 'presente' || !actual) {
-        setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
+      if (actual === 'atraso' || actual === 'inasistencia') {
+        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
+        return { ...prev, [id]: 'presente' };
       }
-      return { ...prev, [id]: nuevo };
+      setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
+      setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
+      return { ...prev, [id]: 'atraso' };
+    });
+  };
+
+  const toggleCardDblClick = (id: string) => {
+    setCardsEstado(prev => {
+      const actual = prev[id];
+      if (actual === 'inasistencia') {
+        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
+        return { ...prev, [id]: 'presente' };
+      }
+      setFormData(f => ({ ...f, tipo: TipoRegistro.INASISTENCIA }));
+      setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
+      return { ...prev, [id]: 'inasistencia' };
     });
   };
 
@@ -283,20 +328,26 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                     const estId = est.id_estudiante || '';
                     const estado = cardsEstado[estId] || 'presente';
                     const justif = cardsJustificado[estId] || false;
-                    const esAusente = estado === 'ausente';
+                    const esAtraso = estado === 'atraso';
+                    const esInasistencia = estado === 'inasistencia';
+                    const bgColor = esInasistencia
+                      ? 'linear-gradient(135deg,#FEE2E2,#FCA5A5)'
+                      : esAtraso
+                        ? 'linear-gradient(135deg,#FEF3C7,#FCD34D)'
+                        : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)';
+                    const bdColor = esInasistencia ? '#F87171' : esAtraso ? '#F59E0B' : '#34D399';
                     return (
                       <div
                         key={estId}
-                        onClick={() => toggleCardEstado(estId)}
+                        onClick={() => toggleCardClick(estId)}
+                        onDoubleClick={() => toggleCardDblClick(estId)}
                         style={{
                           ...styles.cardItem,
-                          background: esAusente
-                            ? 'linear-gradient(135deg,#FEE2E2,#FCA5A5)'
-                            : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)',
-                          borderColor: esAusente ? '#F87171' : '#34D399',
+                          background: bgColor,
+                          borderColor: bdColor,
                         }}
                       >
-                        {esAusente && (
+                        {esInasistencia && (
                           <span
                             onClick={(e) => { e.stopPropagation(); toggleJustificado(estId); }}
                             style={{
@@ -359,6 +410,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                           if (horas >= 8 && horas <= 17) {
                             if (horas === 17 && minutos > 0) return;
                             setFormData({ ...formData, hora });
+                            const bloqueId = detectarBloque(hora);
+                            setBloqueDetectado(bloqueId);
                           }
                         }
                       }}
@@ -366,6 +419,10 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                       max="17:00"
                       style={styles.input}
                     />
+                    {bloqueDetectado && (() => {
+                      const b = bloques.find(bq => bq.id_bloque === bloqueDetectado);
+                      return b ? <div style={{fontSize:10,color:'#6B7280',marginTop:2}}>⏰ {b.nombre_bloque} ({b.hora_inicio}-{b.hora_fin})</div> : null;
+                    })()}
                   </div>
                 </div>
               </div>
