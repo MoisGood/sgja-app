@@ -56,6 +56,7 @@ export default function MantenedorCursos() {
   const cargarCursos = useCallback(async () => {
     try {
       setCargando(true);
+      if (!idEstablecimiento) { setCursos([]); setCargando(false); return; }
       const { data, error } = await supabase
         .from('cursos')
         .select('*')
