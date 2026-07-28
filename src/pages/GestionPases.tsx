@@ -335,30 +335,24 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                       : esAtraso
                         ? 'linear-gradient(135deg,#FEF3C7,#FCD34D)'
                         : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)';
-                    const bdColor = esInasistencia ? '#F87171' : esAtraso ? '#F59E0B' : '#34D399';
+                    const esMarked = esAtraso || esInasistencia;
+                    const bdColor = esMarked
+                      ? (justif ? '#3B82F6' : '#4B5563')
+                      : '#34D399';
                     return (
                       <div
                         key={estId}
-                        onClick={() => toggleCardClick(estId)}
-                        onDoubleClick={() => toggleCardDblClick(estId)}
+                        onClick={() => {
+                          if (esMarked) { toggleJustificado(estId); return; }
+                          toggleCardClick(estId);
+                        }}
+                        onDoubleClick={() => { if (!esMarked) toggleCardDblClick(estId); }}
                         style={{
                           ...styles.cardItem,
                           background: bgColor,
                           borderColor: bdColor,
                         }}
                       >
-                        {esInasistencia && (
-                          <span
-                            onClick={(e) => { e.stopPropagation(); toggleJustificado(estId); }}
-                            style={{
-                              position: 'absolute', top: 4, right: 4,
-                              width: 10, height: 10, borderRadius: '50%',
-                              background: justif ? '#3B82F6' : '#fff',
-                              border: `1px solid ${justif ? '#2563EB' : '#D1D5DB'}`,
-                              cursor: 'pointer', zIndex: 5,
-                            }}
-                          />
-                        )}
                         <div style={{ fontSize: 16, fontWeight: 700, color: '#1F2937' }}>
                           {est.numero ?? idx + 1}
                         </div>
