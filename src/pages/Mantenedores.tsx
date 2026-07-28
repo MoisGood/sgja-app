@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Clock, ClipboardList, Users, UserCheck, Building2, LifeBuoy } from 'lucide-react';
+import { Clock, ClipboardList, Users, UserCheck, Building2, LifeBuoy, BookOpen } from 'lucide-react';
 import BloqueHorario from './BloqueHorario';
 import MantenedorMotivos from './MantenedorMotivos';
 import MantenedorEstudiantes from './MantenedorEstudiantes';
+import MantenedorCursos from './MantenedorCursos';
 import MantenedorRolesPage from './MantenedorRolesPage';
 import MantenedorEstablecimiento from './MantenedorEstablecimiento';
 import AdminAyudaMantenedor from '../components/AdminAyudaMantenedor';
@@ -14,6 +15,7 @@ interface TabDef { key: string; icono: React.ReactNode; tooltip: string; lazy: b
 const TABS: TabDef[] = [
   { key: 'horarios',    icono: <Clock size={20} />,         tooltip: 'Mantenedor de Horarios',        lazy: true },
   { key: 'justifs',     icono: <ClipboardList size={20} />, tooltip: 'Mantenedor de Justificaciones',  lazy: true },
+  { key: 'cursos',      icono: <BookOpen size={20} />,      tooltip: 'Mantenedor de Cursos',          lazy: true },
   { key: 'estudiantes', icono: <Users size={20} />,         tooltip: 'Mantenedor de Estudiantes',      lazy: true },
   { key: 'roles',       icono: <UserCheck size={20} />,     tooltip: 'Mantenedor de Roles',           lazy: false },
   { key: 'establec',    icono: <Building2 size={20} />,     tooltip: 'Mantenedor Establecimiento',     lazy: false },
@@ -64,6 +66,9 @@ export default function Mantenedores({ idEstablecimiento }: Props) {
       )}
       {tab === 'justifs' && (
         <LazyTable label="Justificaciones"><MantenedorMotivos idEstablecimiento={idEstablecimiento} /></LazyTable>
+      )}
+      {tab === 'cursos' && (
+        <LazyTable label="Cursos"><MantenedorCursos /></LazyTable>
       )}
       {tab === 'estudiantes' && (
         <LazyTable label="Estudiantes"><MantenedorEstudiantes idEstablecimiento={idEstablecimiento} /></LazyTable>
