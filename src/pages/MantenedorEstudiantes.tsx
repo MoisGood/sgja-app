@@ -427,6 +427,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
         curso: est.curso,
         anno_ingreso: parseInt(est.anno_ingreso),
         email: est.email || null,
+        numero: est.numero ? parseInt(est.numero) : null,
         activo: true,
       }));
 
@@ -466,12 +467,22 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
         return;
       }
 
+      // Validar numero único
+      if (formData.numero) {
+        const numExistente = estudiantes.find(e => e.numero === parseInt(formData.numero));
+        if (numExistente) {
+          setError(`El N° ${formData.numero} ya está asignado a ${numExistente.nombre_completo}`);
+          return;
+        }
+      }
+
       await crearEstudianteDB({
         id_establecimiento: idEstablecimiento,
         rut: formData.rut,
         nombre_completo: `${normalizarTexto(formData.nombre)} ${normalizarTexto(formData.apellidos)}`,
         curso: formData.curso,
         anno_ingreso: parseInt(formData.anno_ingreso),
+        numero: formData.numero ? parseInt(formData.numero) : null,
         id_apoderado: formData.id_apoderado || null,
         activo: true,
       });
@@ -501,7 +512,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
     
     setEstudianteEditando(estudiante);
     setFormData({
-      numero: '',
+      numero: estudiante.numero?.toString() || '',
       rut: estudiante.rut || '',
       nombre: nombre || '',
       apellidos: apellidos || '',
@@ -539,11 +550,23 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
         return;
       }
 
+      // Validar numero único (excepto el actual)
+      if (formData.numero) {
+        const numExistente = estudiantes.find(e =>
+          e.numero === parseInt(formData.numero) && e.id !== estudianteEditando.id
+        );
+        if (numExistente) {
+          setError(`El N° ${formData.numero} ya está asignado a ${numExistente.nombre_completo}`);
+          return;
+        }
+      }
+
       await actualizarEstudianteDB(estudianteEditando.id, {
         rut: formData.rut,
         nombre_completo: `${normalizarTexto(formData.nombre)} ${normalizarTexto(formData.apellidos)}`,
         curso: formData.curso,
         anno_ingreso: parseInt(formData.anno_ingreso),
+        numero: formData.numero ? parseInt(formData.numero) : null,
         id_apoderado: formData.id_apoderado || null,
         activo: formData.activo,
       });
@@ -746,7 +769,7 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
 
                 return estudiantesPaginados.map((est, idx) => (
                   <tr key={est.id} style={styles.fila}>
-                    <td style={styles.td}>{((paginaActual - 1) * estudiantesPorPagina) + idx + 1}</td>
+                    <td style={styles.td}>{est.numero ?? ((paginaActual - 1) * estudiantesPorPagina) + idx + 1}</td>
                     <td style={styles.td}>{est.rut || 'N/A'}</td>
                     <td style={styles.td}>{est.nombre_completo}</td>
                     <td style={styles.td}>{est.curso}</td>
@@ -905,6 +928,17 @@ export default function MantenedorEstudiantes({ idEstablecimiento }: Props) {
               <div style={styles.formulario}>
                 <div>
                   <label style={styles.label}>RUT *</label>
+                <div>
+                  <label style={styles.label}>N° (orden)</label>
+                  <input
+                    type="number"
+                    value={formData.numero}
+                    onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
+                    placeholder="1"
+                    style={styles.input}
+                  />
+                </div>
+                <div>
                   <input
                     type="text"
                     value={formData.rut}

@@ -103,6 +103,7 @@ export async function crearEstudiante(datos: {
   nombre_completo: string;
   curso: string;
   anno_ingreso: number;
+  numero?: number | null;
   id_apoderado?: string | null;
   activo?: boolean;
 }): Promise<void> {
@@ -115,6 +116,7 @@ export async function crearEstudiante(datos: {
       nombre_completo: datos.nombre_completo,
       curso: datos.curso,
       anno_ingreso: datos.anno_ingreso,
+      numero: datos.numero ?? null,
       id_apoderado: datos.id_apoderado ?? null,
       activo: datos.activo ?? true,
       creado_en: new Date().toISOString(),
@@ -132,6 +134,7 @@ export async function actualizarEstudiante(id: string, datos: {
   nombre_completo?: string;
   curso?: string;
   anno_ingreso?: number;
+  numero?: number | null;
   id_apoderado?: string | null;
   activo?: boolean;
 }): Promise<void> {
@@ -214,6 +217,7 @@ export async function crearEstudiantesBatch(
     curso: string;
     anno_ingreso: number;
     email?: string | null;
+    numero?: number | null;
     id_apoderado?: string | null;
     activo: boolean;
   }>
@@ -228,6 +232,7 @@ export async function crearEstudiantesBatch(
       curso: e.curso,
       anno_ingreso: e.anno_ingreso,
       email: e.email ?? null,
+      numero: e.numero ?? null,
       id_apoderado: e.id_apoderado ?? null,
       activo: e.activo,
       creado_en: ahora,

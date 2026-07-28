@@ -82,6 +82,7 @@ export interface Estudiante {
   rut:                 string | null;
   curso:               string;
   anno_ingreso:        number;
+  numero:              number | null;
   id_apoderado:        string | null;
   activo:              boolean;
 }
