@@ -171,17 +171,6 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       }
 
       setExito(true);
-      // Reset cards
-      const nuevosEstados: Record<string, 'presente' | 'atraso' | 'inasistencia'> = {};
-      const nuevosJustif: Record<string, boolean> = {};
-      estudiantes.filter(e => e.curso === cursoSeleccionado).forEach(e => {
-        if (e.id_estudiante) {
-          nuevosEstados[e.id_estudiante] = 'presente';
-          nuevosJustif[e.id_estudiante] = false;
-        }
-      });
-      setCardsEstado(nuevosEstados);
-      setCardsJustificado(nuevosJustif);
       await cargarDatos();
       setTimeout(() => setExito(false), 3000);
     } catch (err) {
