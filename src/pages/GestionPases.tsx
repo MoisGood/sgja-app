@@ -385,7 +385,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                     const esLocked = cardsLockedRef.current.has(estId);
                     const esMarked = esAtraso || esInasistencia;
                     const bordeCard = esMarked
-                      ? (justif ? '3px solid #3B82F6' : '2px solid #4B5563')
+                      ? (justif ? '3px solid rgb(15 85 183)' : '3px solid rgb(0 0 0)')
                       : '2px solid #34D399';
                     return (
                       <div
@@ -424,11 +424,11 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                 </div>
                 <div style={{display:'flex',gap:16,marginTop:8,fontSize:11,color:'#6B7280',justifyContent:'center'}}>
                   <span style={{display:'inline-flex',alignItems:'center',gap:4}}>
-                    <span style={{width:14,height:14,border:'2px solid #4B5563',borderRadius:3,display:'inline-block'}}></span>
-                    Borde gris oscuro = estudiante injustificado
+                    <span style={{width:14,height:14,border:'3px solid rgb(0 0 0)',borderRadius:3,display:'inline-block'}}></span>
+                    Borde negro = estudiante injustificado
                   </span>
                   <span style={{display:'inline-flex',alignItems:'center',gap:4}}>
-                    <span style={{width:14,height:14,border:'3px solid #3B82F6',borderRadius:3,display:'inline-block'}}></span>
+                    <span style={{width:14,height:14,border:'3px solid rgb(15 85 183)',borderRadius:3,display:'inline-block'}}></span>
                     Borde azul = estudiante justificado
                   </span>
                 </div>
