@@ -194,7 +194,11 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   const toggleCardClick = (id: string) => {
     setCardsEstado(prev => {
       const actual = prev[id];
-      if (actual === 'atraso' || actual === 'inasistencia') {
+      if (actual === 'atraso') {
+        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
+        return { ...prev, [id]: 'presente' };
+      }
+      if (actual === 'inasistencia') {
         setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
         return { ...prev, [id]: 'presente' };
       }
@@ -208,6 +212,10 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     setCardsEstado(prev => {
       const actual = prev[id];
       if (actual === 'inasistencia') {
+        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
+        return { ...prev, [id]: 'presente' };
+      }
+      if (actual === 'atraso') {
         setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
         return { ...prev, [id]: 'presente' };
       }
@@ -342,17 +350,28 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                     return (
                       <div
                         key={estId}
-                        onClick={() => {
-                          if (esMarked) { toggleJustificado(estId); return; }
-                          toggleCardClick(estId);
-                        }}
-                        onDoubleClick={() => { if (!esMarked) toggleCardDblClick(estId); }}
+                        onClick={() => toggleCardClick(estId)}
+                        onDoubleClick={() => toggleCardDblClick(estId)}
                         style={{
                           ...styles.cardItem,
                           background: bgColor,
                           borderColor: bdColor,
                         }}
                       >
+                        {esMarked && (
+                          <span
+                            onClick={(e) => { e.stopPropagation(); toggleJustificado(estId); }}
+                            style={{
+                              position: 'absolute', top: 3, right: 3,
+                              fontSize: 11, lineHeight: '14px',
+                              color: justif ? '#3B82F6' : '#9CA3AF',
+                              cursor: 'pointer', zIndex: 5,
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            {justif ? '✓' : '○'}
+                          </span>
+                        )}
                         <div style={{ fontSize: 16, fontWeight: 700, color: '#1F2937' }}>
                           {est.numero ?? idx + 1}
                         </div>
