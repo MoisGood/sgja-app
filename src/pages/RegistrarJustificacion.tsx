@@ -152,8 +152,13 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
     if (!sol) { setEstadoLookup('sin_registro'); setEstadoManual('Justificado'); }
     else {
       const autoEstado = esJustificado(sol.estado) ? 'justificado' : 'injustificado';
-      setEstadoLookup(autoEstado);
-      setEstadoManual(autoEstado === 'justificado' ? 'Justificado' : 'Injustificado');
+      if (sol.estado === EstadoSolicitud.NO_PRESENTADA) {
+        setEstadoLookup('sin_registro');
+        setEstadoManual('Justificado');
+      } else {
+        setEstadoLookup(autoEstado);
+        setEstadoManual(autoEstado === 'justificado' ? 'Justificado' : 'Injustificado');
+      }
     }
   };
 

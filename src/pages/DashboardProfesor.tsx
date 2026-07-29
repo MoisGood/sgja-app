@@ -375,9 +375,9 @@ export default function DashboardProfesor({ idEstablecimiento, idProfesor }: Pro
   const getEstadoLabel = (idEstudiante: string) => {
     const registro = registros[idEstudiante];
     if (!registro) return '—';
-    return registro.estado === EstadoSolicitud.JUSTIFICADA
-      ? '✅ Justificado'
-      : '⏳ Injustificado';
+    if (registro.estado === EstadoSolicitud.JUSTIFICADA) return '✅ Justificado';
+    if (registro.estado === EstadoSolicitud.NO_PRESENTADA) return '✕ Anulado';
+    return '⏳ Injustificado';
   };
 
   // ── Obtener bloques consecutivos del profesor ──
@@ -870,7 +870,7 @@ export default function DashboardProfesor({ idEstablecimiento, idProfesor }: Pro
                         {getEmojiTipo(s.tipo)} {getLabelSimple(s.tipo)}
                       </p>
                       <p style={{...styles.estadoMobil, fontWeight: 700}}>
-                        {s.estado === EstadoSolicitud.JUSTIFICADA ? '✅' : s.estado === EstadoSolicitud.INJUSTIFICADA ? '⏳' : '❌'} {s.estado}
+                        {s.estado === EstadoSolicitud.JUSTIFICADA ? '✅ Justificado' : s.estado === EstadoSolicitud.INJUSTIFICADA ? '⏳ Injustificado' : s.estado === EstadoSolicitud.NO_PRESENTADA ? '✕ Anulado' : s.estado}
                       </p>
                     </div>
                   </div>
@@ -902,7 +902,9 @@ export default function DashboardProfesor({ idEstablecimiento, idProfesor }: Pro
                                 ? s.tipo === TipoRegistro.ATRASO
                                   ? '#FED7AA'
                                   : '#FECACA'
-                                : '#F3F4F6',
+                                : s.estado === EstadoSolicitud.NO_PRESENTADA
+                                  ? '#F3F4F6'
+                                  : '#F3F4F6',
                         }}
                       >
                         <td style={styles.celda}>{s.id_estudiante}</td>
@@ -916,7 +918,9 @@ export default function DashboardProfesor({ idEstablecimiento, idProfesor }: Pro
                             ? '✅ Justificado'
                             : s.estado === EstadoSolicitud.INJUSTIFICADA
                               ? '⏳ Injustificado'
-                              : s.estado}
+                              : s.estado === EstadoSolicitud.NO_PRESENTADA
+                                ? '✕ Anulado'
+                                : s.estado}
                         </td>
                       </tr>
                     ))}

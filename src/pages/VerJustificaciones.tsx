@@ -290,6 +290,10 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
       backgroundColor: '#fef3c7',
       color: '#92400e',
     },
+    badgeAnulado: {
+      backgroundColor: '#f3f4f6',
+      color: '#374151',
+    },
     emptyState: {
       textAlign: 'center' as const,
       padding: '2rem',
@@ -497,7 +501,10 @@ export default function VerJustificaciones({ idEstablecimiento }: Props) {
                   let estadoBadge = styles.badgeInjustificado;
                   let etiquetaEstado: string = solicitud.estado;
 
-                  if (estadosJustificados.includes(solicitud.estado)) {
+                  if (solicitud.estado === EstadoSolicitud.NO_PRESENTADA) {
+                    estadoBadge = styles.badgeAnulado;
+                    etiquetaEstado = 'Anulado';
+                  } else if (estadosJustificados.includes(solicitud.estado)) {
                     estadoBadge = styles.badgeJustificado;
                     etiquetaEstado = 'Justificado';
                   } else if (estadosPendientes.includes(solicitud.estado)) {

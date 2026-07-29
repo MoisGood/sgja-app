@@ -64,11 +64,12 @@ function Divider() {
   );
 }
 
-function Badge({ variante }: { variante: 'justificado' | 'injustificado' | 'sin_registro' }) {
+function Badge({ variante }: { variante: 'justificado' | 'injustificado' | 'sin_registro' | 'anulado' }) {
   const conf = {
     justificado:   { bg: '#D1FAE5', color: '#065F46', border: '#6EE7B7', text: 'Justificado' },
     injustificado: { bg: '#FEE2E2', color: '#991B1B', border: '#FCA5A5', text: 'Injustificado' },
     sin_registro:  { bg: '#F3F4F6', color: '#6B7280', border: '#D1D5DB', text: 'Sin registro hoy' },
+    anulado:       { bg: '#E5E7EB', color: '#374151', border: '#9CA3AF', text: 'Anulado' },
   }[variante];
   return (
     <span style={{
@@ -522,7 +523,7 @@ export function RegistrarJustificacionUI({
                     <div style={{ color: '#6b7280', fontSize: '0.8rem' }}>{profesoresMap[sol.id_profesor] || '—'}</div>
                     <div style={{ textAlign: 'center', color: '#6b7280' }}>{sol.tipo}</div>
                     <div style={{ textAlign: 'center' }}>
-                      <Badge variante={esJustificado(sol.estado) ? 'justificado' : 'injustificado'} />
+                      <Badge variante={sol.estado === EstadoSolicitud.NO_PRESENTADA ? 'anulado' : esJustificado(sol.estado) ? 'justificado' : 'injustificado'} />
                     </div>
                   </button>
                 );
