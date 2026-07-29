@@ -74,6 +74,13 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.fecha]);
 
+  useEffect(() => {
+    if (tab === 'ver') {
+      cargarDatos();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
   const cargarDatos = async () => {
     try {
       setCargando(true);
