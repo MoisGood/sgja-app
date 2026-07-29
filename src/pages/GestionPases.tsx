@@ -184,7 +184,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     const yaRegistrados = new Set<string>();
     if (idEstablecimiento) {
       const existentes = await obtenerSolicitudesPorCursoYFecha(idEstablecimiento, formData.curso, formData.fecha, bloqueDetectado || undefined);
-      existentes.forEach(s => { if (s.id_estudiante) yaRegistrados.add(s.id_estudiante); });
+      existentes.forEach(s => { if (s.id_estudiante && s.estado !== EstadoSolicitud.NO_PRESENTADA) yaRegistrados.add(s.id_estudiante); });
     }
     ausentes = ausentes.filter(([id]) => !yaRegistrados.has(id) && !cardsLockedRef.current.has(id));
     if (ausentes.length === 0) {
