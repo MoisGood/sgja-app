@@ -134,6 +134,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
         if (sol) {
           nuevosEstados[e.id_estudiante] = sol.tipo === 'INASISTENCIA' ? 'inasistencia' : 'atraso';
           nuevosJustif[e.id_estudiante] = sol.estado === EstadoSolicitud.JUSTIFICADA;
+          cardsLockedRef.current.add(e.id_estudiante);
         } else {
           nuevosEstados[e.id_estudiante] = 'presente';
           nuevosJustif[e.id_estudiante] = false;
@@ -161,11 +162,26 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     e.preventDefault();
     setError(null);
 
-    const ausentes = Object.entries(cardsEstado).filter(([, estado]) => estado === 'atraso' || estado === 'inasistencia');
+    let ausentes = Object.entries(cardsEstado).filter(([, estado]) => estado === 'atraso' || estado === 'inasistencia');
     if (ausentes.length === 0) {
       setError('No hay estudiantes marcados como ausentes');
       return;
     }
+
+    // Excluir estudiantes ya registrados en este bloque
+    const yaRegistrados = new Set<string>();
+    if (idEstablecimiento) {
+      const existentes = await obtenerSolicitudesPorCursoYFecha(idEstablecimiento, formData.curso, formData.fecha, bloqueDetectado || undefined);
+      existentes.forEach(s => { if (s.id_estudiante) yaRegistrados.add(s.id_estudiante); });
+    }
+    ausentes = ausentes.filter(([id]) => !yaRegistrados.has(id) && !cardsLockedRef.current.has(id));
+    if (ausentes.length === 0) {
+      setError('Todos los estudiantes seleccionados ya están registrados en este bloque');
+      return;
+    }
+
+    // Bloquear también los que ya estaban en DB
+    yaRegistrados.forEach(id => cardsLockedRef.current.add(id));
 
     try {
       setGuardando(true);
@@ -248,6 +264,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   };
 
   const toggleJustificado = (id: string) => {
+    if (cardsLockedRef.current.has(id)) return;
     setCardsJustificado(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
