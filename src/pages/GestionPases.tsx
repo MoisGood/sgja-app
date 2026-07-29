@@ -116,22 +116,14 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     return '';
   };
 
-  const handleSelectCurso = async (curso: string) => {
+  const reloadCards = async (curso: string, bloque?: string) => {
     const reqId = ++cardRequestRef.current;
-    setCursoSeleccionado(curso);
-    setFormData({
-      ...formData,
-      id_estudiante: '',
-      rut: '',
-      nombre_estudiante: '',
-      curso: curso,
-    });
     const fecha = formData.fecha || new Date().toISOString().split('T')[0];
     let existentes: Solicitud[] = [];
     if (idEstablecimiento) {
-      existentes = await obtenerSolicitudesPorCursoYFecha(idEstablecimiento, curso, fecha);
+      existentes = await obtenerSolicitudesPorCursoYFecha(idEstablecimiento, curso, fecha, bloque);
     }
-    if (reqId !== cardRequestRef.current) return; // stale request
+    if (reqId !== cardRequestRef.current) return;
     const nuevosEstados: Record<string, 'presente' | 'atraso' | 'inasistencia'> = {};
     const nuevosJustif: Record<string, boolean> = {};
     estudiantes.filter(e => e.curso === curso).forEach(e => {
@@ -146,9 +138,21 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
         }
       }
     });
-    if (reqId !== cardRequestRef.current) return; // stale request (double check)
+    if (reqId !== cardRequestRef.current) return;
     setCardsEstado(nuevosEstados);
     setCardsJustificado(nuevosJustif);
+  };
+
+  const handleSelectCurso = async (curso: string) => {
+    setCursoSeleccionado(curso);
+    setFormData({
+      ...formData,
+      id_estudiante: '',
+      rut: '',
+      nombre_estudiante: '',
+      curso: curso,
+    });
+    await reloadCards(curso, bloqueDetectado || undefined);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -436,6 +440,9 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                             setFormData({ ...formData, hora });
                             const bloqueId = detectarBloque(hora);
                             setBloqueDetectado(bloqueId);
+                            if (cursoSeleccionado) {
+                              reloadCards(cursoSeleccionado, bloqueId || undefined);
+                            }
                           }
                         }
                       }}

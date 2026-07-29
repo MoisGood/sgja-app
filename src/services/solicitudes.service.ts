@@ -105,16 +105,21 @@ export async function obtenerSolicitudesDelEstablecimiento(
 export async function obtenerSolicitudesPorCursoYFecha(
   idEstablecimiento: string,
   curso: string,
-  fecha: string
+  fecha: string,
+  idBloque?: string
 ): Promise<Solicitud[]> {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('solicitudes')
       .select('*')
       .eq('id_establecimiento', idEstablecimiento)
       .eq('curso', curso)
       .eq('fecha', fecha)
       .eq('activo', true);
+    if (idBloque) {
+      query = query.eq('id_bloque', idBloque);
+    }
+    const { data, error } = await query;
     if (error) throw error;
     return (data || []).map(prepareSolicitud);
   } catch (error) {
