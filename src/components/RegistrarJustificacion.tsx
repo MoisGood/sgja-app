@@ -13,8 +13,8 @@ interface Props {
   estudiantes: Estudiante[];
   cursos: string[];
   profesoresMap: Record<string, string>;
-  pestanaActiva: 'todos' | 'injustificados' | 'justificados';
-  onPestanaChange: (tab: 'todos' | 'injustificados' | 'justificados') => void;
+  pestanaActiva: 'todos' | 'injustificados' | 'justificados' | 'anulados';
+  onPestanaChange: (tab: 'todos' | 'injustificados' | 'justificados' | 'anulados') => void;
   filtrosCurso: string;
   onFiltroChange: (curso: string) => void;
   filtroFecha: string;
@@ -151,10 +151,12 @@ export function RegistrarJustificacionUI({
         ? true
         : pestanaActiva === 'injustificados'
           ? sol.estado === EstadoSolicitud.INASISTENTE
-          : [
-              EstadoSolicitud.ATRASO_JUSTIFICADO,
-              EstadoSolicitud.INASISTENCIA_JUSTIFICADA,
-            ].includes(sol.estado);
+          : pestanaActiva === 'anulados'
+            ? sol.estado === EstadoSolicitud.NO_PRESENTADA
+            : [
+                EstadoSolicitud.ATRASO_JUSTIFICADO,
+                EstadoSolicitud.INASISTENCIA_JUSTIFICADA,
+              ].includes(sol.estado);
 
     // Filtro por Curso
     const cumpleCurso = !filtrosCurso || est?.curso === filtrosCurso;
@@ -352,7 +354,7 @@ export function RegistrarJustificacionUI({
               <select
                 value={pestanaActiva}
                 onChange={(e) => {
-                  onPestanaChange(e.target.value as 'todos' | 'injustificados' | 'justificados');
+                  onPestanaChange(e.target.value as 'todos' | 'injustificados' | 'justificados' | 'anulados');
                   onPaginaChange(1);
                 }}
                 style={{
@@ -367,6 +369,7 @@ export function RegistrarJustificacionUI({
                 <option value="todos">📋 Todos</option>
                 <option value="injustificados">🕐 Injustificados</option>
                 <option value="justificados">✅ Justificados</option>
+                <option value="anulados">✕ Anulados</option>
               </select>
             </div>
 
