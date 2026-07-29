@@ -139,9 +139,14 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       if (e.id_estudiante) {
         const sol = existentes.find(s => s.id_estudiante === e.id_estudiante);
         if (sol) {
-          nuevosEstados[e.id_estudiante] = sol.tipo === 'INASISTENCIA' ? 'inasistencia' : 'atraso';
-          nuevosJustif[e.id_estudiante] = sol.estado === 'INASISTENCIA_JUSTIFICADA' || sol.estado === 'JUSTIFICADA' || sol.estado === 'ATRASO_JUSTIFICADO';
-          cardsLockedRef.current.add(e.id_estudiante);
+          if (sol.estado === EstadoSolicitud.NO_PRESENTADA) {
+            nuevosEstados[e.id_estudiante] = 'presente';
+            nuevosJustif[e.id_estudiante] = false;
+          } else {
+            nuevosEstados[e.id_estudiante] = sol.tipo === 'INASISTENCIA' ? 'inasistencia' : 'atraso';
+            nuevosJustif[e.id_estudiante] = sol.estado === 'INASISTENCIA_JUSTIFICADA' || sol.estado === 'JUSTIFICADA' || sol.estado === 'ATRASO_JUSTIFICADO';
+            cardsLockedRef.current.add(e.id_estudiante);
+          }
         } else {
           nuevosEstados[e.id_estudiante] = 'presente';
           nuevosJustif[e.id_estudiante] = false;
@@ -275,8 +280,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     setCardsJustificado(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleAnularPase = async (id_solicitud: string, id_profesor: string) => {
-    // Solo el profesor que lo creó o ADMIN pueden anularlo
+  const handleAnularPase = async (id_solicitud: string, id_profesor: string, id_estudiante?: string) => {
     if (rol !== 'ADMIN' && idUsuarioActual !== id_profesor) {
       setError('Solo puedes anular tus propios pases');
       return;
@@ -286,6 +290,11 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
 
     try {
       await actualizarSolicitud(id_solicitud, { estado: EstadoSolicitud.NO_PRESENTADA });
+      if (id_estudiante) {
+        setCardsEstado(prev => ({ ...prev, [id_estudiante]: 'presente' }));
+        setCardsJustificado(prev => ({ ...prev, [id_estudiante]: false }));
+        cardsLockedRef.current.delete(id_estudiante);
+      }
       setExito(true);
       await cargarDatos();
       setTimeout(() => setExito(false), 3000);
@@ -598,7 +607,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                           <span style={{fontSize:12,color:'#6B7280',fontWeight:600}}>✕ Anulado</span>
                         ) : puedeanular && sol.estado !== 'ATRASO_JUSTIFICADO' && sol.estado !== 'INASISTENCIA_JUSTIFICADA' ? (
                           <button type="button" 
-                            onClick={() => handleAnularPase(sol.id_solicitud, sol.id_profesor)}
+                            onClick={() => handleAnularPase(sol.id_solicitud, sol.id_profesor, sol.id_estudiante)}
                             style={styles.botonAnular}
                           >
                             ✕ Anular
