@@ -133,7 +133,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
         const sol = existentes.find(s => s.id_estudiante === e.id_estudiante);
         if (sol) {
           nuevosEstados[e.id_estudiante] = sol.tipo === 'INASISTENCIA' ? 'inasistencia' : 'atraso';
-          nuevosJustif[e.id_estudiante] = sol.estado === 'INASISTENCIA_JUSTIFICADA' || sol.estado === 'JUSTIFICADA';
+          nuevosJustif[e.id_estudiante] = sol.estado === 'INASISTENCIA_JUSTIFICADA' || sol.estado === 'JUSTIFICADA' || sol.estado === 'ATRASO_JUSTIFICADO';
           cardsLockedRef.current.add(e.id_estudiante);
         } else {
           nuevosEstados[e.id_estudiante] = 'presente';
