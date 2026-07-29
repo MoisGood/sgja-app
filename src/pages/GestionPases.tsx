@@ -590,18 +590,20 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                           ...styles.badge,
                           ...(sol.estado === EstadoSolicitud.NO_PRESENTADA ? { backgroundColor: '#F3F4F6', color: '#6B7280' } : { backgroundColor: '#DBEAFE', color: '#1E40AF' })
                         }}>
-                          {sol.estado}
+                          {sol.estado === EstadoSolicitud.NO_PRESENTADA ? 'Anulado' : sol.estado === 'ATRASO_JUSTIFICADO' ? 'Justificado' : sol.estado === 'INASISTENCIA_JUSTIFICADA' ? 'Justificado' : sol.estado === 'ATRASO_INJUSTIFICADO' ? 'Injustificado' : sol.estado === 'INASISTENCIA_NO_JUSTIFICADA' ? 'Rechazado' : sol.estado}
                         </span>
                       </div>
                       <div style={styles.acciones}>
-                        {puedeanular && sol.estado !== EstadoSolicitud.NO_PRESENTADA && sol.estado !== 'ATRASO_JUSTIFICADO' && sol.estado !== 'INASISTENCIA_JUSTIFICADA' && (
+                        {sol.estado === EstadoSolicitud.NO_PRESENTADA ? (
+                          <span style={{fontSize:12,color:'#6B7280',fontWeight:600}}>✕ Anulado</span>
+                        ) : puedeanular && sol.estado !== 'ATRASO_JUSTIFICADO' && sol.estado !== 'INASISTENCIA_JUSTIFICADA' ? (
                           <button type="button" 
                             onClick={() => handleAnularPase(sol.id_solicitud, sol.id_profesor)}
                             style={styles.botonAnular}
                           >
                             ✕ Anular
                           </button>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   );
