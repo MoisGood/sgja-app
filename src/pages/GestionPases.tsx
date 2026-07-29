@@ -50,6 +50,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   const [cardsEstado, setCardsEstado] = useState<Record<string, 'presente' | 'atraso' | 'inasistencia'>>({});
   const [cardsJustificado, setCardsJustificado] = useState<Record<string, boolean>>({});
   const cardRequestRef = useRef(0);
+  const cardsLockedRef = useRef<Set<string>>(new Set());
 
   const [formData, setFormData] = useState<FormPase>({
     id_estudiante: '',
@@ -118,6 +119,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
 
   const reloadCards = async (curso: string, bloque?: string) => {
     const reqId = ++cardRequestRef.current;
+    cardsLockedRef.current = new Set();
     const fecha = formData.fecha || new Date().toISOString().split('T')[0];
     let existentes: Solicitud[] = [];
     if (idEstablecimiento) {
@@ -196,6 +198,9 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
         creados.push(est.nombre_completo);
       }
 
+      for (const [id_estudiante] of ausentes) {
+        cardsLockedRef.current.add(id_estudiante);
+      }
       setExito(true);
       await cargarDatos();
       setTimeout(() => setExito(false), 3000);
@@ -207,6 +212,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   };
 
   const toggleCardClick = (id: string) => {
+    if (cardsLockedRef.current.has(id)) return;
     setCardsEstado(prev => {
       const actual = prev[id];
       if (actual === 'atraso') {
@@ -224,6 +230,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   };
 
   const toggleCardDblClick = (id: string) => {
+    if (cardsLockedRef.current.has(id)) return;
     setCardsEstado(prev => {
       const actual = prev[id];
       if (actual === 'inasistencia') {
@@ -358,6 +365,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                       : esAtraso
                         ? 'linear-gradient(135deg,#FEF3C7,#FCD34D)'
                         : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)';
+                    const esLocked = cardsLockedRef.current.has(estId);
                     const esMarked = esAtraso || esInasistencia;
                     const bdColor = esMarked
                       ? (justif ? '#3B82F6' : '#4B5563')
@@ -373,7 +381,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                           borderColor: bdColor,
                         }}
                       >
-                        {esMarked && (
+                        {esLocked && <span style={{position:'absolute',top:3,right:3,fontSize:10,color:'#6B7280',zIndex:5}}>🔒</span>}
+                        {esMarked && !esLocked && (
                           <span
                             onClick={(e) => { e.stopPropagation(); toggleJustificado(estId); }}
                             style={{
