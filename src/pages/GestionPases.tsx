@@ -44,6 +44,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   const [error, setError] = useState<string | null>(null);
   const [exito, setExito] = useState(false);
   const [paginaActual, setPaginaActual] = useState(1);
+  const [filtros, setFiltros] = useState<Record<string, string>>({ curso: '', tipo: '', fecha: '', estado: '' });
+  const [filtroAbierto, setFiltroAbierto] = useState<string | null>(null);
   const [cursoSeleccionado, setCursoSeleccionado] = useState('');
   const [bloques, setBloques] = useState<BloqueHorario[]>([]);
   const [bloqueDetectado, setBloqueDetectado] = useState<string>('');
@@ -80,6 +82,16 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  useEffect(() => {
+    if (!filtroAbierto) return;
+    const cerrar = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-filter]')) setFiltroAbierto(null);
+    };
+    document.addEventListener('mousedown', cerrar);
+    return () => document.removeEventListener('mousedown', cerrar);
+  }, [filtroAbierto]);
 
   const cargarDatos = async () => {
     try {
@@ -303,6 +315,25 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     }
   };
 
+  // Obtener opciones únicas para filtros de cabecera
+  const obtenerOpciones = (columna: string): string[] => {
+    const valores = solicitudes.map(s => {
+      const est = estudiantes.find(e => e.id_estudiante === s.id_estudiante);
+      if (columna === 'curso') return est?.curso || '—';
+      if (columna === 'tipo') return s.tipo;
+      if (columna === 'fecha') return s.fecha;
+      if (columna === 'estado') {
+        if (s.estado === EstadoSolicitud.NO_PRESENTADA) return 'Anulado';
+        if (s.estado === 'ATRASO_JUSTIFICADO' || s.estado === 'INASISTENCIA_JUSTIFICADA') return 'Justificado';
+        if (s.estado === 'ATRASO_INJUSTIFICADO') return 'Injustificado';
+        if (s.estado === 'INASISTENCIA_NO_JUSTIFICADA') return 'Rechazado';
+        return s.estado;
+      }
+      return '';
+    });
+    return [...new Set(valores)].filter(Boolean).sort();
+  };
+
   // Cursos únicos ordenados
   const cursosUnicos = [...new Set(estudiantes.map(e => e.curso))].sort();
 
@@ -315,8 +346,22 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   const solicitudesFiltradas = solicitudes
     .filter(s => {
       // Si es profesor, solo ve sus pases; si es admin, ve todos
-      if (rol === 'ADMIN') return true;
-      return s.id_profesor === idUsuarioActual;
+      if (rol !== 'ADMIN' && s.id_profesor !== idUsuarioActual) return false;
+
+      // Filtros de cabecera
+      const est = estudiantes.find(e => e.id_estudiante === s.id_estudiante);
+      if (filtros.curso && est?.curso !== filtros.curso) return false;
+      if (filtros.tipo && s.tipo !== filtros.tipo) return false;
+      if (filtros.fecha && s.fecha !== filtros.fecha) return false;
+      if (filtros.estado) {
+        const label = s.estado === EstadoSolicitud.NO_PRESENTADA ? 'Anulado'
+          : s.estado === 'ATRASO_JUSTIFICADO' || s.estado === 'INASISTENCIA_JUSTIFICADA' ? 'Justificado'
+          : s.estado === 'ATRASO_INJUSTIFICADO' ? 'Injustificado'
+          : s.estado === 'INASISTENCIA_NO_JUSTIFICADA' ? 'Rechazado'
+          : s.estado;
+        if (label !== filtros.estado) return false;
+      }
+      return true;
     })
     .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
 
@@ -561,12 +606,40 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
             <>
               <div style={styles.tabla}>
                 <div style={styles.filaEncabezado}>
-                  <div style={styles.celdaEncabezado}>Estudiante</div>
-                  <div style={styles.celdaEncabezado}>Curso</div>
-                  <div style={styles.celdaEncabezado}>Tipo</div>
-                  <div style={styles.celdaEncabezado}>Fecha/Hora</div>
-                  <div style={styles.celdaEncabezado}>Estado</div>
-                  <div style={styles.celdaEncabezado}>Acciones</div>
+                  {([['', 'Estudiante'], ['curso', 'Curso'], ['tipo', 'Tipo'], ['fecha', 'Fecha'], ['estado', 'Estado'], ['', 'Acciones']] as const).map(([colKey, label]) => (
+                    <div key={colKey || label} style={{ ...styles.celdaEncabezado, position: colKey ? 'relative' as const : undefined }}>
+                      {colKey ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}
+                          onClick={() => setFiltroAbierto(filtroAbierto === colKey ? null : colKey)}
+                        >
+                          <span>{label}</span>
+                          <span style={{ fontSize: 9, opacity: filtros[colKey] ? 1 : 0.6 }}>
+                            {filtros[colKey] ? '●' : '▼'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span>{label}</span>
+                      )}
+                      {colKey && filtroAbierto === colKey && (
+                        <div data-filter="true" style={{
+                          position: 'absolute', top: '100%', left: 0, zIndex: 50,
+                          background: '#1e293b', borderRadius: 6, padding: 4, minWidth: 140,
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        }}>
+                          <div onClick={() => { setFiltros(f => ({ ...f, [colKey]: '' })); setFiltroAbierto(null); setPaginaActual(1); }}
+                            style={{ padding: '6px 10px', fontSize: 12, color: '#94a3b8', cursor: 'pointer', borderRadius: 4 }}>
+                            {colKey === 'fecha' ? 'Todas las fechas' : 'Todos'}
+                          </div>
+                          {obtenerOpciones(colKey).map(op => (
+                            <div key={op} onClick={() => { setFiltros(f => ({ ...f, [colKey]: op })); setFiltroAbierto(null); setPaginaActual(1); }}
+                              style={{ padding: '6px 10px', fontSize: 12, color: '#f1f5f9', cursor: 'pointer', borderRadius: 4 }}>
+                              {op}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 {solicitudosPaginadas.map((sol) => {
