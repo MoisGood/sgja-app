@@ -466,15 +466,36 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                   </div>
                   <div style={styles.grupo}>
                     <label style={styles.label}>Hora *</label>
-                    <input
-                      type="time"
-                      value={formData.hora}
-                      onChange={(e) => {
-                        const hora = e.target.value;
-                        if (hora) {
+                    <div style={{display:'flex',gap:4,alignItems:'center'}}>
+                      <input
+                        type="time"
+                        value={formData.hora}
+                        onChange={(e) => {
+                          const hora = e.target.value;
+                          if (hora) {
+                            const [horas, minutos] = hora.split(':').map(Number);
+                            if (horas >= 8 && horas <= 17) {
+                              if (horas === 17 && minutos > 0) return;
+                              setFormData({ ...formData, hora });
+                              const bloqueId = detectarBloque(hora);
+                              setBloqueDetectado(bloqueId);
+                              if (cursoSeleccionado) {
+                                reloadCards(cursoSeleccionado, bloqueId || undefined);
+                              }
+                            }
+                          }
+                        }}
+                        min="08:00"
+                        max="17:00"
+                        style={{...styles.input,flex:1}}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const ahora = new Date();
+                          const hora = ahora.toTimeString().slice(0, 5);
                           const [horas, minutos] = hora.split(':').map(Number);
-                          if (horas >= 8 && horas <= 17) {
-                            if (horas === 17 && minutos > 0) return;
+                          if (horas >= 8 && horas <= 17 && !(horas === 17 && minutos > 0)) {
                             setFormData({ ...formData, hora });
                             const bloqueId = detectarBloque(hora);
                             setBloqueDetectado(bloqueId);
@@ -482,12 +503,11 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                               reloadCards(cursoSeleccionado, bloqueId || undefined);
                             }
                           }
-                        }
-                      }}
-                      min="08:00"
-                      max="17:00"
-                      style={styles.input}
-                    />
+                        }}
+                        title="Sincronizar hora actual"
+                        style={{padding:'6px 8px',background:'none',border:'1px solid #D1D5DB',borderRadius:4,cursor:'pointer',fontSize:16,lineHeight:1}}
+                      >🔄</button>
+                    </div>
                     {bloqueDetectado && (() => {
                       const b = bloques.find(bq => bq.id_bloque === bloqueDetectado);
                       return b ? <div style={{fontSize:10,color:'#6B7280',marginTop:2}}>⏰ {b.nombre_bloque} ({b.hora_inicio}-{b.hora_fin})</div> : null;
