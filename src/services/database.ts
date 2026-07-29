@@ -36,6 +36,7 @@ export {
   obtenerSolicitud,
   obtenerSolicitudesPorEstudiante,
   obtenerSolicitudesDelEstablecimiento,
+  obtenerSolicitudesPorCursoYFecha,
   crearSolicitud,
   actualizarEstadoSolicitud,
   actualizarSolicitud,

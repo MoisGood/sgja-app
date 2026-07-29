@@ -102,6 +102,27 @@ export async function obtenerSolicitudesDelEstablecimiento(
   }
 }
 
+export async function obtenerSolicitudesPorCursoYFecha(
+  idEstablecimiento: string,
+  curso: string,
+  fecha: string
+): Promise<Solicitud[]> {
+  try {
+    const { data, error } = await supabase
+      .from('solicitudes')
+      .select('*')
+      .eq('id_establecimiento', idEstablecimiento)
+      .eq('curso', curso)
+      .eq('fecha', fecha)
+      .eq('activo', true);
+    if (error) throw error;
+    return (data || []).map(prepareSolicitud);
+  } catch (error) {
+    console.error('Error al obtener solicitudes por curso y fecha:', error);
+    return [];
+  }
+}
+
 export async function crearSolicitud(solicitud: Solicitud): Promise<void> {
   try {
     const record = {

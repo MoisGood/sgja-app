@@ -9,6 +9,7 @@ import {
   obtenerEstudiantesDelEstablecimiento,
   crearSolicitud,
   obtenerSolicitudesDelEstablecimiento,
+  obtenerSolicitudesPorCursoYFecha,
   actualizarSolicitud,
   obtenerBloquesHorarios,
 } from '../services/database';
@@ -64,6 +65,13 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idEstablecimiento]);
 
+  useEffect(() => {
+    if (cursoSeleccionado && idEstablecimiento) {
+      handleSelectCurso(cursoSeleccionado);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.fecha]);
+
   const cargarDatos = async () => {
     try {
       setCargando(true);
@@ -107,7 +115,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
     return '';
   };
 
-  const handleSelectCurso = (curso: string) => {
+  const handleSelectCurso = async (curso: string) => {
     setCursoSeleccionado(curso);
     setFormData({
       ...formData,
@@ -116,13 +124,24 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       nombre_estudiante: '',
       curso: curso,
     });
-    // Reset cards to all present when changing course
+    // Cargar estado desde DB
+    const fecha = formData.fecha || new Date().toISOString().split('T')[0];
+    let existentes: Solicitud[] = [];
+    if (idEstablecimiento) {
+      existentes = await obtenerSolicitudesPorCursoYFecha(idEstablecimiento, curso, fecha);
+    }
     const nuevosEstados: Record<string, 'presente' | 'atraso' | 'inasistencia'> = {};
     const nuevosJustif: Record<string, boolean> = {};
     estudiantes.filter(e => e.curso === curso).forEach(e => {
       if (e.id_estudiante) {
-        nuevosEstados[e.id_estudiante] = 'presente';
-        nuevosJustif[e.id_estudiante] = false;
+        const sol = existentes.find(s => s.id_estudiante === e.id_estudiante);
+        if (sol) {
+          nuevosEstados[e.id_estudiante] = sol.tipo === 'INASISTENCIA' ? 'inasistencia' : 'atraso';
+          nuevosJustif[e.id_estudiante] = sol.estado === EstadoSolicitud.JUSTIFICADA;
+        } else {
+          nuevosEstados[e.id_estudiante] = 'presente';
+          nuevosJustif[e.id_estudiante] = false;
+        }
       }
     });
     setCardsEstado(nuevosEstados);
