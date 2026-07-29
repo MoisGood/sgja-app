@@ -544,6 +544,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       {/* TAB: VER PASES */}
       {tab === 'ver' && (
         <Card titulo="Pases Registrados" descripcion={`Todos los pases (${rol === 'ADMIN' ? 'Admin ve todos' : 'Solo tus pases'})`}>
+          {error && <div style={styles.error}>{error}</div>}
+          {exito && <div style={styles.exito}>✅ Pase anulado correctamente</div>}
           {solicitudosPaginadas.length === 0 ? (
             <p style={styles.sinDatos}>No hay pases registrados</p>
           ) : (
