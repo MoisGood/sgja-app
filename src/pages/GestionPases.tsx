@@ -156,7 +156,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
             nuevosJustif[e.id_estudiante] = false;
           } else {
             nuevosEstados[e.id_estudiante] = sol.tipo === 'INASISTENCIA' ? 'inasistencia' : 'atraso';
-            nuevosJustif[e.id_estudiante] = sol.estado === 'INASISTENCIA_JUSTIFICADA' || sol.estado === 'JUSTIFICADA' || sol.estado === 'ATRASO_JUSTIFICADO';
+            const est = sol.estado as string;
+            nuevosJustif[e.id_estudiante] = est === 'INASISTENCIA_JUSTIFICADA' || est === 'JUSTIFICADA' || est === 'ATRASO_JUSTIFICADO';
             cardsLockedRef.current.add(e.id_estudiante);
           }
         } else {
@@ -224,7 +225,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
           tipo: esAtraso ? TipoRegistro.ATRASO : TipoRegistro.INASISTENCIA,
           fecha: formData.fecha,
           hora: formData.hora,
-          estado: cardsJustificado[id_estudiante] ? 'INASISTENCIA_JUSTIFICADA' : 'INASISTENTE',
+          estado: cardsJustificado[id_estudiante] ? EstadoSolicitud.INASISTENCIA_JUSTIFICADA : EstadoSolicitud.INASISTENTE,
           motivo_codigo: null,
           motivo_descripcion: cardsJustificado[id_estudiante] ? 'Justificado' : (esAtraso ? 'Atraso' : 'Ausente'),
           observaciones: null,
