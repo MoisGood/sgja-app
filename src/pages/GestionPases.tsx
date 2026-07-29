@@ -3,7 +3,7 @@
 // src/pages/GestionPases.tsx
 // ============================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '../components/Common';
 import {
   obtenerEstudiantesDelEstablecimiento,
@@ -49,7 +49,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   const [bloqueDetectado, setBloqueDetectado] = useState<string>('');
   const [cardsEstado, setCardsEstado] = useState<Record<string, 'presente' | 'atraso' | 'inasistencia'>>({});
   const [cardsJustificado, setCardsJustificado] = useState<Record<string, boolean>>({});
-  
+  const cardRequestRef = useRef(0);
+
   const [formData, setFormData] = useState<FormPase>({
     id_estudiante: '',
     rut: '',
@@ -116,6 +117,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   };
 
   const handleSelectCurso = async (curso: string) => {
+    const reqId = ++cardRequestRef.current;
     setCursoSeleccionado(curso);
     setFormData({
       ...formData,
@@ -124,12 +126,12 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       nombre_estudiante: '',
       curso: curso,
     });
-    // Cargar estado desde DB
     const fecha = formData.fecha || new Date().toISOString().split('T')[0];
     let existentes: Solicitud[] = [];
     if (idEstablecimiento) {
       existentes = await obtenerSolicitudesPorCursoYFecha(idEstablecimiento, curso, fecha);
     }
+    if (reqId !== cardRequestRef.current) return; // stale request
     const nuevosEstados: Record<string, 'presente' | 'atraso' | 'inasistencia'> = {};
     const nuevosJustif: Record<string, boolean> = {};
     estudiantes.filter(e => e.curso === curso).forEach(e => {
@@ -144,6 +146,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
         }
       }
     });
+    if (reqId !== cardRequestRef.current) return; // stale request (double check)
     setCardsEstado(nuevosEstados);
     setCardsJustificado(nuevosJustif);
   };
