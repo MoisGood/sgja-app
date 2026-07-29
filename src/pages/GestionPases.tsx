@@ -367,6 +367,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                         : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)';
                     const esLocked = cardsLockedRef.current.has(estId);
                     const esMarked = esAtraso || esInasistencia;
+                    const anchoBorde = esMarked ? (justif ? 3 : 2) : 2;
                     const bdColor = esMarked
                       ? (justif ? '#3B82F6' : '#4B5563')
                       : '#34D399';
@@ -379,6 +380,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                           ...styles.cardItem,
                           background: bgColor,
                           borderColor: bdColor,
+                          borderWidth: anchoBorde,
                         }}
                       >
                         {esLocked && <span style={{position:'absolute',top:3,right:3,fontSize:10,color:'#6B7280',zIndex:5}}>🔒</span>}
