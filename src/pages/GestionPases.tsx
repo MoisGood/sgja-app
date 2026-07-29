@@ -290,13 +290,13 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
 
     try {
       await actualizarSolicitud(id_solicitud, { estado: EstadoSolicitud.NO_PRESENTADA });
+      setSolicitudes(prev => prev.map(s => s.id_solicitud === id_solicitud ? { ...s, estado: EstadoSolicitud.NO_PRESENTADA } : s));
       if (id_estudiante) {
         setCardsEstado(prev => ({ ...prev, [id_estudiante]: 'presente' }));
         setCardsJustificado(prev => ({ ...prev, [id_estudiante]: false }));
         cardsLockedRef.current.delete(id_estudiante);
       }
       setExito(true);
-      await cargarDatos();
       setTimeout(() => setExito(false), 3000);
     } catch (err) {
       setError(`Error al anular pase: ${err instanceof Error ? err.message : 'Error desconocido'}`);
