@@ -136,7 +136,7 @@ export async function crearSolicitud(solicitud: Solicitud): Promise<void> {
       id_estudiante: solicitud.id_estudiante,
       id_profesor: solicitud.id_profesor || null,
       tipo: solicitud.tipo,
-      estado: EstadoSolicitud.INASISTENTE,
+      estado: solicitud.estado || EstadoSolicitud.INASISTENTE,
       fecha: solicitud.fecha,
       hora: solicitud.hora || null,
       id_bloque: solicitud.id_bloque || null,
