@@ -592,7 +592,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                         </span>
                       </div>
                       <div style={styles.acciones}>
-                        {puedeanular && sol.estado !== EstadoSolicitud.NO_PRESENTADA && (
+                        {puedeanular && sol.estado !== EstadoSolicitud.NO_PRESENTADA && sol.estado !== 'ATRASO_JUSTIFICADO' && sol.estado !== 'INASISTENCIA_JUSTIFICADA' && (
                           <button type="button" 
                             onClick={() => handleAnularPase(sol.id_solicitud, sol.id_profesor)}
                             style={styles.botonAnular}
