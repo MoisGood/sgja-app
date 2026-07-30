@@ -59,6 +59,8 @@ import HistorialMovil from './pages/HistorialMovil';
 import MobileTickets from './pages/MobileTickets';
 import MobileInventario from './pages/MobileInventario';
 import MobileQrScanner from './pages/MobileQrScanner';
+import InspectoriaMobileInicio from './pages/InspectoriaMobileInicio';
+import InspectoriaMobilePerfil from './pages/InspectoriaMobilePerfil';
 import { SkinProvider } from './contexts/SkinContext';
 import QrRedirect from './pages/QrRedirect';
 import Configurar2FA from './pages/Configurar2FA';
@@ -571,6 +573,11 @@ export default function AppContent() {
           <Route path="/inspectoria/justificaciones" element={<Navigate to="/inspectoria/gestion-pases" replace />} />
           <Route path="/inspectoria/crear-pase" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
           <Route path="/inspectoria/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PARADOCENTE') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
+          <Route path="/inspectoria/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
+          <Route path="/inspectoria/m/crear-pase" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
+          <Route path="/inspectoria/m/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PARADOCENTE') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
+          <Route path="/inspectoria/m/ver-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR' || rol === 'PARADOCENTE') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
+          <Route path="/inspectoria/m/perfil" element={<InspectoriaMobilePerfil nombre={nombre || 'Usuario'} email={email || ''} rol={rol as any} />} />
           <Route path="/parametros" element={puedeVer('/parametros', 'ADMIN') ? <Parametros idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/en-linea" element={puedeVer('/en-linea', 'ADMIN') ? <EnLinea /> : null} />
           <Route path="/seguridad" element={puedeVer('/seguridad', 'ADMIN') ? <Seguridad /> : null} />

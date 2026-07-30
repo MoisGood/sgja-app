@@ -12,6 +12,7 @@ import { obtenerConfiguracionInactividad } from '../services/online';
 import { obtenerEstablecimiento } from '../services/database';
 import { Rol } from '../types';
 import { MobileLayout } from './MobileLayout';
+import InspectoriaMobileLayout from './InspectoriaMobileLayout';
 import { useTheme } from '../hooks/useTheme';
 import DatosPersonalesModal from './DatosPersonalesModal';
 import Sidebar from './Sidebar';
@@ -256,19 +257,27 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
     }
   };
 
-  // Mobile: Usar MobileLayout
+  // Mobile: Usar layout según ruta
   if (isMobile) {
+    const path = location.pathname;
+    if (path.startsWith('/tecnico/m/') || path === '/ticket' || path.startsWith('/tecnico/')) {
+      return (
+        <MobileLayout
+          rol={rol}
+          nombre={nombre}
+          email={email}
+          usuarioId={usuarioId}
+          idEstablecimiento={idEstablecimiento}
+          permisos={permisos}
+        >
+          {children}
+        </MobileLayout>
+      );
+    }
     return (
-      <MobileLayout
-        rol={rol}
-        nombre={nombre}
-        email={email}
-        usuarioId={usuarioId}
-        idEstablecimiento={idEstablecimiento}
-        permisos={permisos}
-      >
+      <InspectoriaMobileLayout rol={rol} nombre={nombre} email={email}>
         {children}
-      </MobileLayout>
+      </InspectoriaMobileLayout>
     );
   }
 
