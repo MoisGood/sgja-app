@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 
 const NAV_ITEMS = [
-  { label: 'Inicio', icono: 'home', ruta: '/tecnico/m/inicio', roles: ['ADMIN', 'INSPECTOR', 'PROFESOR', 'ESTUDIANTE', 'APODERADO', 'TECNICO'] },
+  { label: 'Inicio', icono: 'home', ruta: '/tecnico/m/inicio', roles: ['ADMIN', 'TECNICO'] },
   { label: 'Historial', icono: 'history', ruta: '/tecnico/m/tickets', roles: ['TECNICO'] },
   { label: 'QR', icono: 'qr_code_scanner', ruta: '/tecnico/m/qr', roles: ['TECNICO'], isQr: true },
   { label: 'Inventario', icono: 'inventory_2', ruta: '/tecnico/m/inventario', roles: ['TECNICO'] },
