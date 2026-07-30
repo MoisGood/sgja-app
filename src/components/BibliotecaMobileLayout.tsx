@@ -1,6 +1,6 @@
 import { Rol } from '../types';
 import SharedMobileLayout from './SharedMobileLayout';
-import InspectoriaMobileBottomNav from './InspectoriaMobileBottomNav';
+import BibliotecaMobileBottomNav from './BibliotecaMobileBottomNav';
 
 interface Props {
   children: React.ReactNode;
@@ -9,14 +9,14 @@ interface Props {
   email: string;
 }
 
-export default function InspectoriaMobileLayout({ children, rol, nombre, email }: Props) {
+export default function BibliotecaMobileLayout({ children, rol, nombre, email }: Props) {
   return (
     <SharedMobileLayout
       rol={rol}
       nombre={nombre}
       email={email}
-      areaPrefix="/inspectoria/m/"
-      bottomNav={<InspectoriaMobileBottomNav rol={rol} />}
+      areaPrefix="/biblioteca/m/"
+      bottomNav={<BibliotecaMobileBottomNav rol={rol} />}
     >
       {children}
     </SharedMobileLayout>

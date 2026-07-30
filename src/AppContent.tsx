@@ -578,6 +578,16 @@ export default function AppContent() {
           <Route path="/inspectoria/m/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PARADOCENTE') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
           <Route path="/inspectoria/m/ver-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR' || rol === 'PARADOCENTE') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
           <Route path="/inspectoria/m/perfil" element={<InspectoriaMobilePerfil nombre={nombre || 'Usuario'} email={email || ''} rol={rol as any} />} />
+          {/* Secretaría mobile */}
+          <Route path="/secretaria/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
+          <Route path="/secretaria/m/ausentes" element={puedeVer('/secretaria', 'ADMIN') ? <SecretariaAusentes /> : null} />
+          <Route path="/secretaria/m/enviar-correo" element={puedeVer('/secretaria', 'ADMIN') ? <EnviarCorreo idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/secretaria/m/perfil" element={<InspectoriaMobilePerfil nombre={nombre || 'Usuario'} email={email || ''} rol={rol as any} />} />
+          {/* Biblioteca mobile */}
+          <Route path="/biblioteca/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
+          <Route path="/biblioteca/m/catalogo" element={puedeVer('/biblioteca', 'ADMIN') || rol === 'ESTUDIANTE' ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/biblioteca/m/config" element={puedeVer('/biblioteca', 'ADMIN') ? <ConfigBiblioteca idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/biblioteca/m/perfil" element={<InspectoriaMobilePerfil nombre={nombre || 'Usuario'} email={email || ''} rol={rol as any} />} />
           <Route path="/parametros" element={puedeVer('/parametros', 'ADMIN') ? <Parametros idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/en-linea" element={puedeVer('/en-linea', 'ADMIN') ? <EnLinea /> : null} />
           <Route path="/seguridad" element={puedeVer('/seguridad', 'ADMIN') ? <Seguridad /> : null} />

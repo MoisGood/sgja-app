@@ -13,6 +13,8 @@ import { obtenerEstablecimiento } from '../services/database';
 import { Rol } from '../types';
 import { MobileLayout } from './MobileLayout';
 import InspectoriaMobileLayout from './InspectoriaMobileLayout';
+import SecretariaMobileLayout from './SecretariaMobileLayout';
+import BibliotecaMobileLayout from './BibliotecaMobileLayout';
 import { useTheme } from '../hooks/useTheme';
 import DatosPersonalesModal from './DatosPersonalesModal';
 import Sidebar from './Sidebar';
@@ -272,6 +274,20 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
         >
           {children}
         </MobileLayout>
+      );
+    }
+    if (path.startsWith('/secretaria/m/')) {
+      return (
+        <SecretariaMobileLayout rol={rol} nombre={nombre} email={email}>
+          {children}
+        </SecretariaMobileLayout>
+      );
+    }
+    if (path.startsWith('/biblioteca/m/')) {
+      return (
+        <BibliotecaMobileLayout rol={rol} nombre={nombre} email={email}>
+          {children}
+        </BibliotecaMobileLayout>
       );
     }
     return (
