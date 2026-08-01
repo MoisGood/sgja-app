@@ -131,7 +131,12 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       const bloquesClase = bloquesData.filter(b => !b.nombre_bloque.toLowerCase().includes('recre'));
       if (bloquesClase.length > 0) {
         const detectado = detectarBloqueActual(bloquesData);
-        setBloqueSeleccionado(detectado || bloquesClase[0].id_bloque);
+        const idBloqueInicial = detectado || bloquesClase[0].id_bloque;
+        setBloqueSeleccionado(idBloqueInicial);
+        const bloqueInicial = bloquesData.find(b => b.id_bloque === idBloqueInicial);
+        if (bloqueInicial) {
+          setFormData(prev => ({ ...prev, hora: bloqueInicial.hora_inicio }));
+        }
       }
       setEstudiantes(estudiantesData);
       setSolicitudes(solicitudesData);
