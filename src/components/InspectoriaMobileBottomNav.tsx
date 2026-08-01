@@ -13,7 +13,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Inicio', icono: 'home', ruta: '/inspectoria/m/inicio', roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE, Rol.PROFESOR, Rol.ESTUDIANTE, Rol.APODERADO] },
   { label: 'Crear Pase', icono: 'add_circle', ruta: '/inspectoria/m/crear-pase', roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
   { label: 'Gestión', icono: 'assignment', ruta: '/inspectoria/m/gestion-pases', roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE] },
-  { label: 'Ver Pases', icono: 'list_alt', ruta: '/inspectoria/m/ver-pases', roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE] },
   { label: 'Historial', icono: 'history', ruta: '/inspectoria/m/historial-pases', roles: [Rol.ESTUDIANTE, Rol.APODERADO] },
   { label: 'Biblioteca', icono: 'book', ruta: '/inspectoria/m/biblioteca', roles: [Rol.ESTUDIANTE] },
   { label: 'Perfil', icono: 'person', ruta: '/inspectoria/m/perfil', roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE, Rol.PROFESOR, Rol.ESTUDIANTE, Rol.APODERADO] },

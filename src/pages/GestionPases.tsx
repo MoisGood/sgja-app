@@ -38,6 +38,7 @@ const ITEMS_POR_PAGINA = 10;
 
 export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }: Props) {
   const [tab, setTab] = useState<'crear' | 'ver'>('crear');
+  const [esMobil, setEsMobil] = useState(window.innerWidth < 768);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -70,6 +71,12 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   useEffect(() => {
     cargarDatos();
   }, [idEstablecimiento]);
+
+  useEffect(() => {
+    const handleResize = () => setEsMobil(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (cursoSeleccionado && idEstablecimiento) {
@@ -436,30 +443,32 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
   }
 
   return (
-    <div style={styles.contenedor}>
-      <div style={styles.tabs}>
-        <button type="button"
-          onClick={() => setTab('crear')}
-          style={{ ...styles.tabBtn, ...(tab === 'crear' ? styles.tabBtnActivo : {}) }}
-        >
-          ➕ Crear Pase
-        </button>
-        <button type="button"
-          onClick={() => setTab('ver')}
-          style={{ ...styles.tabBtn, ...(tab === 'ver' ? styles.tabBtnActivo : {}) }}
-        >
-          📋 Ver Pases
-        </button>
-      </div>
+    <div style={esMobil ? styles.contenedorMobil : styles.contenedor}>
+      {!esMobil && (
+        <div style={styles.tabs}>
+          <button type="button"
+            onClick={() => setTab('crear')}
+            style={{ ...styles.tabBtn, ...(tab === 'crear' ? styles.tabBtnActivo : {}) }}
+          >
+            ➕ Crear Pase
+          </button>
+          <button type="button"
+            onClick={() => setTab('ver')}
+            style={{ ...styles.tabBtn, ...(tab === 'ver' ? styles.tabBtnActivo : {}) }}
+          >
+            📋 Ver Pases
+          </button>
+        </div>
+      )}
 
       {/* TAB: CREAR PASE */}
-      {tab === 'crear' && (
+      {(esMobil || tab === 'crear') && (
         <Card titulo="Crear Pase" descripcion="Registrar atrasos e inasistencias por bloque">
           <form onSubmit={handleSubmit} style={styles.form}>
             {/* Curso + Bloque selectors */}
             <div style={styles.paso}>
               <h4 style={styles.numeroPaso}>📚 Paso 1: Curso y Bloque</h4>
-              <div style={styles.fila2}>
+              <div style={esMobil ? styles.filaMobil : styles.fila2}>
                 <div style={styles.grupo}>
                   <label style={styles.label}>Curso</label>
                   <select
@@ -503,7 +512,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
                 <p style={{ fontSize: 11, color: '#6B7280', margin: '0 0 8px' }}>
                   Click = Atraso · Doble click = Inasistencia · Click en ○/✓ = justificado
                 </p>
-                <div style={styles.cardGrid}>
+                <div style={esMobil ? styles.cardGridMobil : styles.cardGrid}>
                   {estudiantesCurso.map((est, idx) => {
                     const estId = est.id_estudiante || '';
                     const estado = cardsEstado[estId] || 'presente';
@@ -582,7 +591,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
             {cursoSeleccionado && (
               <div style={styles.paso}>
                 <h4 style={styles.numeroPaso}>📝 Detalles del Pase</h4>
-                <div style={styles.fila3}>
+                <div style={esMobil ? styles.filaMobil : styles.fila3}>
                   <div style={styles.grupo}>
                     <label style={styles.label}>Tipo</label>
                     <select
@@ -678,7 +687,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       {/* Multi-block modal */}
       {multiBloque && (
         <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
+          <div style={esMobil ? styles.modalContentMobil : styles.modalContent}>
             <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700 }}>Bloques Afectados</h3>
             <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 12px' }}>
               {estudiantes.find(e => e.id_estudiante === multiBloque.estudianteId)?.nombre_completo}
@@ -712,7 +721,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       )}
 
       {/* TAB: VER PASES */}
-      {tab === 'ver' && (
+      {!esMobil && tab === 'ver' && (
         <Card titulo="Pases Registrados" descripcion={`${rol === 'ADMIN' ? 'Admin ve todos los pases' : 'Solo tus pases'}`}>
           {error && <div style={styles.error}>{error}</div>}
           {exito && <div style={styles.exito}>✅ Pase anulado correctamente</div>}
@@ -817,6 +826,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
 
 const styles: Record<string, React.CSSProperties> = {
   contenedor: { padding: '24px', backgroundColor: '#F9FAFB', minHeight: '100vh' },
+  contenedorMobil: { padding: '12px', backgroundColor: '#F9FAFB', minHeight: '100vh' },
   spinner: { textAlign: 'center', fontSize: '16px', color: '#6B7280', padding: '40px' },
   tabs: { display: 'flex', gap: '8px', marginBottom: '20px' },
   tabBtn: { padding: '10px 16px', backgroundColor: '#E5E7EB', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', color: '#374151', transition: 'all 0.2s' },
@@ -826,6 +836,7 @@ const styles: Record<string, React.CSSProperties> = {
   numeroPaso: { fontSize: '14px', fontWeight: '700', color: '#1F2937', margin: '0 0 12px 0' },
   fila2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   fila3: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' },
+  filaMobil: { display: 'flex', flexDirection: 'column', gap: '12px' },
   grupo: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: '600', color: '#374151' },
   input: { padding: '10px 12px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Arial, sans-serif', color: '#374151', backgroundColor: '#FFFFFF' },
@@ -845,8 +856,10 @@ const styles: Record<string, React.CSSProperties> = {
   botonPaginador: { padding: '8px 12px', backgroundColor: '#E5E7EB', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' },
   paginaInfo: { fontSize: '14px', fontWeight: '600', color: '#374151' },
   cardGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' },
+  cardGridMobil: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '6px' },
   cardItem: { position: 'relative' as const, padding: '10px 6px', borderRadius: '8px', textAlign: 'center' as const, cursor: 'pointer', transition: 'all 0.2s', minHeight: '60px', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', gap: '2px', overflow: 'hidden' },
   badge: { display: 'inline-block', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' },
-  modalOverlay: { position: 'fixed' as const, inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  modalContent: { background: '#FFF', borderRadius: 12, padding: 24, minWidth: 320, maxWidth: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.15)' },
+  modalOverlay: { position: 'fixed' as const, inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
+  modalContent: { background: '#FFF', borderRadius: 12, padding: 24, minWidth: 320, maxWidth: 400, width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' },
+  modalContentMobil: { background: '#FFF', borderRadius: 12, padding: 20, width: '100%', maxWidth: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' },
 };
