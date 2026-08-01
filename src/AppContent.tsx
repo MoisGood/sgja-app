@@ -578,6 +578,7 @@ export default function AppContent() {
           <Route path="/inspectoria/m/crear-pase" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
           <Route path="/inspectoria/m/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PARADOCENTE') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
           <Route path="/inspectoria/m/ver-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR' || rol === 'PARADOCENTE') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
+          <Route path="/inspectoria/m/historial-pases" element={(rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} tabExterno="ver" /> : null} />
           <Route path="/inspectoria/m/perfil" element={<InspectoriaMobilePerfil nombre={nombre || 'Usuario'} email={email || ''} rol={rol as any} />} />
           {/* Secretaría mobile */}
           <Route path="/secretaria/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />

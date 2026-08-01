@@ -17,6 +17,7 @@ interface Props {
   idEstablecimiento: string;
   rol: string;
   idUsuarioActual?: string;
+  tabExterno?: 'crear' | 'ver';
 }
 
 interface FormPase {
@@ -36,8 +37,9 @@ interface MultiBloqueInfo {
 
 const ITEMS_POR_PAGINA = 10;
 
-export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }: Props) {
+export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, tabExterno }: Props) {
   const [tab, setTab] = useState<'crear' | 'ver'>('crear');
+  const tabEfectivo = tabExterno || tab;
   const [esMobil, setEsMobil] = useState(window.innerWidth < 768);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
@@ -444,17 +446,17 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
 
   return (
     <div style={esMobil ? styles.contenedorMobil : styles.contenedor}>
-      {!esMobil && (
+      {!esMobil && !tabExterno && (
         <div style={styles.tabs}>
           <button type="button"
             onClick={() => setTab('crear')}
-            style={{ ...styles.tabBtn, ...(tab === 'crear' ? styles.tabBtnActivo : {}) }}
+            style={{ ...styles.tabBtn, ...(tabEfectivo === 'crear' ? styles.tabBtnActivo : {}) }}
           >
             ➕ Crear Pase
           </button>
           <button type="button"
             onClick={() => setTab('ver')}
-            style={{ ...styles.tabBtn, ...(tab === 'ver' ? styles.tabBtnActivo : {}) }}
+            style={{ ...styles.tabBtn, ...(tabEfectivo === 'ver' ? styles.tabBtnActivo : {}) }}
           >
             📋 Ver Pases
           </button>
@@ -462,7 +464,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       )}
 
       {/* TAB: CREAR PASE */}
-      {(esMobil || tab === 'crear') && (
+      {(tabEfectivo === 'crear' || (esMobil && !tabExterno)) && (
         <Card titulo="Crear Pase" descripcion="Registrar atrasos e inasistencias por bloque">
           <form onSubmit={handleSubmit} style={styles.form}>
             {/* Curso + Bloque selectors */}
@@ -721,7 +723,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
       )}
 
       {/* TAB: VER PASES */}
-      {!esMobil && tab === 'ver' && (
+      {tabEfectivo === 'ver' && (!esMobil || tabExterno === 'ver') && (
         <Card titulo="Pases Registrados" descripcion={`${rol === 'ADMIN' ? 'Admin ve todos los pases' : 'Solo tus pases'}`}>
           {error && <div style={styles.error}>{error}</div>}
           {exito && <div style={styles.exito}>✅ Pase anulado correctamente</div>}
@@ -729,7 +731,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }
             <p style={styles.sinDatos}>No hay pases registrados</p>
           ) : (
             <>
-              <div style={styles.tabla}>
+              <div style={esMobil ? styles.tablaMobil : styles.tabla}>
                 <div style={styles.filaEncabezado}>
                   {([['', 'Estudiante'], ['curso', 'Curso'], ['tipo', 'Tipo'], ['fecha', 'Fecha'], ['estado', 'Estado'], ['', 'Acciones']] as const).map(([colKey, label]) => (
                     <div key={colKey || label} style={{ ...styles.celdaEncabezado, position: colKey ? ('relative' as const) : undefined }}>
@@ -846,6 +848,7 @@ const styles: Record<string, React.CSSProperties> = {
   botonPrimario: { padding: '10px 20px', backgroundColor: '#1A3C6B', color: '#FFFFFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
   sinDatos: { textAlign: 'center', color: '#6B7280', padding: '40px 20px' },
   tabla: { display: 'flex', flexDirection: 'column', gap: '0', marginBottom: '16px', border: '1px solid #E5E7EB', borderRadius: '6px', overflow: 'hidden' },
+  tablaMobil: { display: 'flex', flexDirection: 'column', gap: '0', marginBottom: '16px', border: '1px solid #E5E7EB', borderRadius: '6px', overflowX: 'auto' },
   filaEncabezado: { display: 'grid', gridTemplateColumns: '180px 100px 100px 120px 100px 100px', gap: '12px', padding: '12px', backgroundColor: '#F3F4F6', fontWeight: '600', fontSize: '13px', color: '#1F2937', borderBottom: '2px solid #E5E7EB' },
   celdaEncabezado: { fontSize: '13px', fontWeight: '700' },
   filaTabla: { display: 'grid', gridTemplateColumns: '180px 100px 100px 120px 100px 100px', gap: '12px', padding: '12px', borderBottom: '1px solid #E5E7EB', backgroundColor: '#FFFFFF', alignItems: 'center' },
