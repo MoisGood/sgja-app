@@ -167,19 +167,24 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
     }).sort((a, b) => a.orden - b.orden);
   };
 
-  const handleSeleccionarBloque = async (idBloque: string) => {
+  const handleSeleccionarBloque = async (idBloque: string, sincronizarHora = true) => {
     setBloqueSeleccionado(idBloque);
     const bloque = bloques.find(b => b.id_bloque === idBloque);
-    if (bloque && idUsuarioActual && cursoSeleccionado) {
-      try {
-        await guardarRegistroBloqueProfesor(
-          idUsuarioActual, idEstablecimiento, idBloque,
-          bloque.numero_bloque, bloque.nombre_bloque,
-          bloque.hora_inicio, bloque.hora_inicio, bloque.hora_fin,
-          cursoSeleccionado
-        );
-      } catch (err) {
-        console.error('Error al registrar bloque:', err);
+    if (bloque) {
+      if (sincronizarHora) {
+        setFormData(prev => ({ ...prev, hora: bloque.hora_inicio }));
+      }
+      if (idUsuarioActual && cursoSeleccionado) {
+        try {
+          await guardarRegistroBloqueProfesor(
+            idUsuarioActual, idEstablecimiento, idBloque,
+            bloque.numero_bloque, bloque.nombre_bloque,
+            bloque.hora_inicio, bloque.hora_inicio, bloque.hora_fin,
+            cursoSeleccionado
+          );
+        } catch (err) {
+          console.error('Error al registrar bloque:', err);
+        }
       }
     }
   };
@@ -630,7 +635,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                               if (horas === 17 && minutos > 0) return;
                               setFormData({ ...formData, hora });
                               const bloqueId = detectarBloque(hora);
-                              if (bloqueId) handleSeleccionarBloque(bloqueId);
+                              if (bloqueId) handleSeleccionarBloque(bloqueId, false);
                               if (cursoSeleccionado) {
                                 reloadCards(cursoSeleccionado, bloqueId || undefined);
                               }
@@ -650,7 +655,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                           if (horas >= 8 && horas <= 17 && !(horas === 17 && minutos > 0)) {
                             setFormData({ ...formData, hora });
                             const bloqueId = detectarBloque(hora);
-                            if (bloqueId) handleSeleccionarBloque(bloqueId);
+                            if (bloqueId) handleSeleccionarBloque(bloqueId, false);
                             if (cursoSeleccionado) {
                               reloadCards(cursoSeleccionado, bloqueId || undefined);
                             }
