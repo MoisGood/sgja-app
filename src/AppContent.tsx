@@ -20,7 +20,6 @@ import DashboardApoderado from './pages/DashboardApoderado';
 import GestionUsuariosPage from './pages/GestionUsuariosPage';
 import Mantenedores from './pages/Mantenedores';
 import GestionPases from './pages/GestionPases';
-import InspectoriaPases from './pages/InspectoriaPases';
 import RegistrarJustificacion from './pages/RegistrarJustificacion';
 import Parametros from './pages/Parametros';
 import EnLinea from './pages/EnLinea';
@@ -572,8 +571,8 @@ export default function AppContent() {
           <Route path="/mantenedores" element={puedeVer('/mantenedores', 'ADMIN') ? <Mantenedores idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/inspectoria" element={<Navigate to="/inspectoria/gestion-pases" replace />} />
           <Route path="/inspectoria/justificaciones" element={<Navigate to="/inspectoria/gestion-pases" replace />} />
-          <Route path="/inspectoria/crear-pase" element={<Navigate to="/inspectoria/gestion-pases" replace />} />
-          <Route path="/inspectoria/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR' || rol === 'PARADOCENTE') ? <InspectoriaPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
+          <Route path="/inspectoria/crear-pase" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
+          <Route path="/inspectoria/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PARADOCENTE') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
           <Route path="/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
           <Route path="/inspectoria/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
           <Route path="/inspectoria/m/crear-pase" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />

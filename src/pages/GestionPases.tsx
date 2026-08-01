@@ -17,7 +17,6 @@ interface Props {
   idEstablecimiento: string;
   rol: string;
   idUsuarioActual?: string;
-  tabExterno?: 'crear' | 'ver';
 }
 
 interface FormPase {
@@ -37,9 +36,8 @@ interface MultiBloqueInfo {
 
 const ITEMS_POR_PAGINA = 10;
 
-export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, tabExterno }: Props) {
+export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual }: Props) {
   const [tab, setTab] = useState<'crear' | 'ver'>('crear');
-  const tabEfectivo = tabExterno || tab;
   const [esMobil, setEsMobil] = useState(window.innerWidth < 768);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
@@ -87,10 +85,10 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
   }, [formData.fecha, bloqueSeleccionado]);
 
   useEffect(() => {
-    if (tabEfectivo === 'ver') {
+    if (tab === 'ver') {
       cargarDatos();
     }
-  }, [tabEfectivo]);
+  }, [tab]);
 
   useEffect(() => {
     if (!filtroAbierto) return;
@@ -446,17 +444,17 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
 
   return (
     <div style={esMobil ? styles.contenedorMobil : styles.contenedor}>
-      {!esMobil && !tabExterno && (
+      {!esMobil && (
         <div style={styles.tabs}>
           <button type="button"
             onClick={() => setTab('crear')}
-            style={{ ...styles.tabBtn, ...(tabEfectivo === 'crear' ? styles.tabBtnActivo : {}) }}
+            style={{ ...styles.tabBtn, ...(tab === 'crear' ? styles.tabBtnActivo : {}) }}
           >
             ➕ Crear Pase
           </button>
           <button type="button"
             onClick={() => setTab('ver')}
-            style={{ ...styles.tabBtn, ...(tabEfectivo === 'ver' ? styles.tabBtnActivo : {}) }}
+            style={{ ...styles.tabBtn, ...(tab === 'ver' ? styles.tabBtnActivo : {}) }}
           >
             📋 Ver Pases
           </button>
@@ -464,7 +462,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       )}
 
       {/* TAB: CREAR PASE */}
-      {(esMobil || tabEfectivo === 'crear') && (
+      {(esMobil || tab === 'crear') && (
         <Card titulo="Crear Pase" descripcion="Registrar atrasos e inasistencias por bloque">
           <form onSubmit={handleSubmit} style={styles.form}>
             {/* Curso + Bloque selectors */}
@@ -723,7 +721,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       )}
 
       {/* TAB: VER PASES */}
-      {!esMobil && tabEfectivo === 'ver' && (
+      {!esMobil && tab === 'ver' && (
         <Card titulo="Pases Registrados" descripcion={`${rol === 'ADMIN' ? 'Admin ve todos los pases' : 'Solo tus pases'}`}>
           {error && <div style={styles.error}>{error}</div>}
           {exito && <div style={styles.exito}>✅ Pase anulado correctamente</div>}
