@@ -77,21 +77,16 @@ export default function SharedMobileLayout({ children, email, areaPrefix, bottom
   };
 
   const perfilBtnStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: 4,
-    background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-    color: temaOscuro ? '#f3f4f6' : '#191c1e',
+    fontSize: 14, fontWeight: 600,
+    color: temaOscuro ? '#9ca3af' : '#554245',
     whiteSpace: 'nowrap',
   };
 
-  const perfilLabelStyle: React.CSSProperties = {
-    fontSize: 13, fontWeight: 600,
-  };
-
   const estabStyle: React.CSSProperties = {
-    fontSize: 11,
-    fontWeight: 500,
+    fontSize: 16,
+    fontWeight: 700,
     lineHeight: 1.3,
-    color: temaOscuro ? '#9ca3af' : '#554245',
+    color: temaOscuro ? '#f3f4f6' : '#191c1e',
     minWidth: 0,
   };
 
@@ -120,14 +115,7 @@ export default function SharedMobileLayout({ children, email, areaPrefix, bottom
               <span style={estabStyle}>{establecimientoNombre}</span>
             )}
           </div>
-          <button
-            onClick={() => navigate(navLink('perfil'))}
-            style={perfilBtnStyle}
-            title="Perfil"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>person</span>
-            <span style={perfilLabelStyle}>Perfil</span>
-          </button>
+          <span style={perfilBtnStyle}>Perfil</span>
         </div>
       </header>
 
