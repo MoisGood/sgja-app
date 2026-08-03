@@ -18,6 +18,19 @@ async function obtenerConCache<T>(
   return data;
 }
 
+async function invalidarCacheBloques(): Promise<void> {
+  try {
+    const claves = await cacheService.getAllKeys();
+    await Promise.all(
+      claves
+        .filter(c => c.startsWith('bloques_'))
+        .map(c => cacheService.invalidate(c))
+    );
+  } catch (error) {
+    console.error('Error al invalidar cache de bloques:', error);
+  }
+}
+
 export async function obtenerBloquesHorarios(idEstablecimiento: string): Promise<BloqueHorario[]> {
   return obtenerConCache(
     `bloques_${idEstablecimiento}`,
@@ -67,6 +80,7 @@ export async function crearBloqueHorario(
       .select();
 
     if (error) throw error;
+    await invalidarCacheBloques();
     return data?.[0]?.id_bloque || idBloque;
   } catch (error) {
     console.error('Error al crear bloque horario:', error);
@@ -91,6 +105,7 @@ export async function actualizarBloqueHorario(
       .eq('id_bloque', idBloque);
 
     if (error) throw error;
+    await invalidarCacheBloques();
   } catch (error) {
     console.error('Error al actualizar bloque horario:', error);
     throw error;
@@ -107,6 +122,7 @@ export async function eliminarBloqueHorario(idBloque: string): Promise<void> {
       .eq('id_bloque', idBloque);
 
     if (error) throw error;
+    await invalidarCacheBloques();
   } catch (error) {
     console.error('Error al eliminar bloque horario:', error);
     throw error;
