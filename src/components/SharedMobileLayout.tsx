@@ -17,7 +17,25 @@ interface Props {
   establecimientoNombre?: string;
 }
 
-export default function SharedMobileLayout({ children, nombre, email, areaPrefix, bottomNav, establecimientoNombre }: Props) {
+const LABEL_ROL: Record<Rol, string> = {
+  [Rol.ADMIN]: 'Administrador',
+  [Rol.INSPECTOR]: 'Inspector',
+  [Rol.PARADOCENTE]: 'Paradocente',
+  [Rol.PROFESOR]: 'Profesor',
+  [Rol.ESTUDIANTE]: 'Estudiante',
+  [Rol.APODERADO]: 'Apoderado',
+};
+
+const titularEstablecimiento = (nombre?: string): string => {
+  if (!nombre) return '';
+  const partes = nombre.trim().split(/\s+/);
+  if (partes.length >= 4 && partes[partes.length - 2].toLowerCase() === 'de') {
+    return partes.slice(0, partes.length - 2).join(' ');
+  }
+  return nombre;
+};
+
+export default function SharedMobileLayout({ children, rol, email, areaPrefix, bottomNav, establecimientoNombre }: Props) {
   const { temaOscuro, setTemaOscuro } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,6 +99,9 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
     maxWidth: 140,
   };
 
+  const rolLabel = LABEL_ROL[rol] || rol;
+  const titular = titularEstablecimiento(establecimientoNombre);
+
   const estabStyle: React.CSSProperties = {
     fontSize: 16,
     fontWeight: 700,
@@ -109,11 +130,11 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
             >
               <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
             </button>
-            {establecimientoNombre && (
-              <span style={estabStyle}>{establecimientoNombre}</span>
+            {titular && (
+              <span style={estabStyle}>{titular}</span>
             )}
           </div>
-          <span style={nombreStyle}>{nombre}</span>
+          <span style={nombreStyle}>{rolLabel}</span>
         </div>
       </header>
 
