@@ -251,36 +251,26 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
     if (cardsLockedRef.current.has(id)) return;
     setCardsEstado(prev => {
       const actual = prev[id];
+      if (actual === 'presente') {
+        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
+        setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
+        return { ...prev, [id]: 'atraso' };
+      }
       if (actual === 'atraso') {
-        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
-        return { ...prev, [id]: 'presente' };
+        setFormData(f => ({ ...f, tipo: TipoRegistro.INASISTENCIA }));
+        setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
+        return { ...prev, [id]: 'inasistencia' };
       }
-      if (actual === 'inasistencia') {
-        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
-        return { ...prev, [id]: 'presente' };
-      }
-      setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
-      setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
-      return { ...prev, [id]: 'atraso' };
+      return { ...prev, [id]: 'presente' };
     });
   };
 
   const toggleCardDblClick = (id: string) => {
     if (cardsLockedRef.current.has(id)) return;
-    setCardsEstado(prev => {
-      const actual = prev[id];
-      if (actual === 'inasistencia') {
-        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
-        return { ...prev, [id]: 'presente' };
-      }
-      if (actual === 'atraso') {
-        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
-        return { ...prev, [id]: 'presente' };
-      }
-      setFormData(f => ({ ...f, tipo: TipoRegistro.INASISTENCIA }));
-      setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
-      return { ...prev, [id]: 'inasistencia' };
-    });
+    setCardsEstado(prev => ({ ...prev, [id]: 'inasistencia' }));
+    setFormData(f => ({ ...f, tipo: TipoRegistro.INASISTENCIA }));
+    setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
+    abrirMultiBloque(id);
   };
 
   const toggleJustificado = (id: string) => {
@@ -522,7 +512,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
               <div style={styles.paso}>
                 <h4 style={styles.numeroPaso}>👤 Paso 2: Marca los ausentes</h4>
                 <p style={{ fontSize: 11, color: '#6B7280', margin: '0 0 8px' }}>
-                  Click = Atraso · Doble click = Inasistencia · Click en ○/✓ = justificado
+                  Click = cambia estado (🟢→🟡→🔴) · Doble click = registrar en más bloques
                 </p>
                 <div style={esMobil ? styles.cardGridMobil : styles.cardGrid}>
                   {estudiantesCurso.map((est, idx) => {
@@ -575,14 +565,9 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                         </div>
                         <div style={{ fontSize: 9, color: '#6B7280' }}>{est.rut}</div>
                         <div style={{ fontSize: 8, color: '#9CA3AF' }}>{est.nombre_completo?.split(' ')[0]}</div>
-                        {esInasistencia && !esLocked && (
-                          <div
-                            onClick={(e) => { e.stopPropagation(); abrirMultiBloque(estId); }}
-                            style={{ fontSize: 9, color: '#3B82F6', cursor: 'pointer', marginTop: 2, textDecoration: 'underline' }}
-                          >
-                            {multiBloque?.estudianteId === estId && bloquesMultiSeleccionados.size > 1
-                              ? `${bloquesMultiSeleccionados.size} bloques`
-                              : '➕ bloques'}
+                        {esInasistencia && !esLocked && multiBloque?.estudianteId === estId && bloquesMultiSeleccionados.size > 1 && (
+                          <div style={{ fontSize: 9, color: '#3B82F6', marginTop: 2 }}>
+                            📅 {bloquesMultiSeleccionados.size} bloques
                           </div>
                         )}
                       </div>

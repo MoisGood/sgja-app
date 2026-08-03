@@ -46,36 +46,28 @@ export async function crearBloqueHorario(
   nombreBloque: string,
   horaInicio: string,
   horaFin: string,
-  tipo: 'clase' | 'recreo' | 'almuerzo' | 'otro',
+  _tipo: 'clase' | 'recreo' | 'almuerzo' | 'otro',
   orden: number
 ): Promise<string> {
   try {
-    const [horaI, minI] = horaInicio.split(':').map(Number);
-    const [horaF, minF] = horaFin.split(':').map(Number);
-    const duracionMinutos = (horaF * 60 + minF) - (horaI * 60 + minI);
-
-    const bloque: BloqueHorario = {
-      id_bloque: '',
-      id_establecimiento: idEstablecimiento,
-      numero_bloque: 0,
-      nombre_bloque: nombreBloque,
-      hora_inicio: horaInicio,
-      hora_fin: horaFin,
-      duracion_minutos: duracionMinutos,
-      tipo,
-      orden,
-      activo: true,
-      creado_en: new Date(),
-      actualizado_en: new Date(),
-    };
+    const idBloque = `BLOQUE_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
 
     const { data, error } = await supabase
       .from('bloques_horarios')
-      .insert([bloque])
+      .insert([{
+        id_bloque: idBloque,
+        id_establecimiento: idEstablecimiento,
+        nombre_bloque: nombreBloque,
+        hora_inicio: horaInicio,
+        hora_fin: horaFin,
+        orden,
+        activo: true,
+        creado_en: new Date(),
+      }])
       .select();
 
     if (error) throw error;
-    return data?.[0]?.id_bloque || '';
+    return data?.[0]?.id_bloque || idBloque;
   } catch (error) {
     console.error('Error al crear bloque horario:', error);
     throw error;
@@ -90,10 +82,13 @@ export async function actualizarBloqueHorario(
     const { error } = await supabase
       .from('bloques_horarios')
       .update({
-        ...updates,
-        actualizado_en: new Date(),
+        nombre_bloque: updates.nombre_bloque,
+        hora_inicio: updates.hora_inicio,
+        hora_fin: updates.hora_fin,
+        orden: updates.orden,
+        activo: updates.activo,
       })
-      .eq('id', idBloque);
+      .eq('id_bloque', idBloque);
 
     if (error) throw error;
   } catch (error) {
@@ -108,9 +103,8 @@ export async function eliminarBloqueHorario(idBloque: string): Promise<void> {
       .from('bloques_horarios')
       .update({
         activo: false,
-        actualizado_en: new Date(),
       })
-      .eq('id', idBloque);
+      .eq('id_bloque', idBloque);
 
     if (error) throw error;
   } catch (error) {
