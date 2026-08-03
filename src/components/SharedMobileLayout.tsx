@@ -36,6 +36,21 @@ const titularEstablecimiento = (nombre?: string): string => {
   return nombre;
 };
 
+const nombreConSalto = (nombre?: string): React.ReactNode => {
+  if (!nombre) return '';
+  const idx = nombre.lastIndexOf(' de ');
+  if (idx > 0) {
+    return (
+      <>
+        {nombre.slice(0, idx)}
+        <br />
+        {nombre.slice(idx + 1)}
+      </>
+    );
+  }
+  return nombre;
+};
+
 export default function SharedMobileLayout({ children, rol, email, areaPrefix, bottomNav, establecimientoNombre, establecimientoLogo }: Props) {
   const { temaOscuro, setTemaOscuro } = useTheme();
   const navigate = useNavigate();
@@ -131,9 +146,7 @@ export default function SharedMobileLayout({ children, rol, email, areaPrefix, b
             >
               <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
             </button>
-            {titular && (
-              <span style={estabStyle}>{titular}</span>
-            )}
+            <span style={estabStyle}>{titular ? `Intranet ${titular}` : 'Intranet'}</span>
           </div>
           <span style={nombreStyle}>{rolLabel}</span>
         </div>
@@ -202,8 +215,8 @@ export default function SharedMobileLayout({ children, rol, email, areaPrefix, b
                     }}
                   />
                 )}
-                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: temaOscuro ? '#f3f4f6' : '#191c1e' }}>
-                  {establecimientoNombre}
+                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, lineHeight: 1.4, color: temaOscuro ? '#f3f4f6' : '#191c1e' }}>
+                  {nombreConSalto(establecimientoNombre)}
                 </h2>
               </div>
 
