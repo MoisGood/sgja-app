@@ -17,15 +17,11 @@ interface Props {
   establecimientoNombre?: string;
 }
 
-export default function SharedMobileLayout({ children, nombre, email, areaPrefix, bottomNav, establecimientoNombre }: Props) {
+export default function SharedMobileLayout({ children, email, areaPrefix, bottomNav, establecimientoNombre }: Props) {
   const { temaOscuro, setTemaOscuro } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuAbierto, setMenuAbierto] = useState(false);
-
-  const iniciales = nombre
-    ? nombre.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2)
-    : '??';
 
   const handleLogout = async () => {
     setMenuAbierto(false);
@@ -59,6 +55,15 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
+  };
+
+  const grupoIzqStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '4px 10px',
+    minWidth: 0,
   };
 
   const menuBtnStyle: React.CSSProperties = {
@@ -68,13 +73,14 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
   };
 
   const intranetStyle: React.CSSProperties = {
-    fontSize: 16, fontWeight: 700,
+    fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap',
   };
 
   const perfilBtnStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: 6,
+    display: 'flex', alignItems: 'center', gap: 4,
     background: 'none', border: 'none', cursor: 'pointer', padding: 4,
     color: temaOscuro ? '#f3f4f6' : '#191c1e',
+    whiteSpace: 'nowrap',
   };
 
   const perfilLabelStyle: React.CSSProperties = {
@@ -82,26 +88,11 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
   };
 
   const estabStyle: React.CSSProperties = {
-    textAlign: 'center',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 500,
+    lineHeight: 1.3,
     color: temaOscuro ? '#9ca3af' : '#554245',
-    marginTop: 4,
-  };
-
-  const avatarStyle: React.CSSProperties = {
-    width: 36,
-    height: 36,
-    borderRadius: '50%',
-    backgroundColor: '#7a1f3d',
-    color: '#ffffff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 14,
-    fontWeight: 700,
-    cursor: 'pointer',
-    border: 'none',
+    minWidth: 0,
   };
 
   const mainStyle: React.CSSProperties = {
@@ -116,26 +107,28 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
     <div style={containerStyle}>
       <header style={headerStyle}>
         <div style={filaSuperiorStyle}>
-          <button
-            onClick={() => setMenuAbierto(true)}
-            style={menuBtnStyle}
-            title="Menú"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
-            <span style={intranetStyle}>Intranet</span>
-          </button>
+          <div style={grupoIzqStyle}>
+            <button
+              onClick={() => setMenuAbierto(true)}
+              style={menuBtnStyle}
+              title="Menú"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
+              <span style={intranetStyle}>Intranet</span>
+            </button>
+            {establecimientoNombre && (
+              <span style={estabStyle}>{establecimientoNombre}</span>
+            )}
+          </div>
           <button
             onClick={() => navigate(navLink('perfil'))}
             style={perfilBtnStyle}
             title="Perfil"
           >
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>person</span>
             <span style={perfilLabelStyle}>Perfil</span>
-            <span style={avatarStyle}>{iniciales}</span>
           </button>
         </div>
-        {establecimientoNombre && (
-          <div style={estabStyle}>{establecimientoNombre}</div>
-        )}
       </header>
 
       <main style={mainStyle}>
@@ -159,14 +152,14 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
             />
             <motion.aside
               style={{
-                position: 'fixed', top: 0, right: 0, bottom: 0, width: 280,
+                position: 'fixed', top: 0, left: 0, bottom: 0, width: 280,
                 backgroundColor: temaOscuro ? '#1f2937' : '#ffffff',
                 zIndex: 999, display: 'flex', flexDirection: 'column',
-                boxShadow: '-4px 0 24px rgba(0,0,0,0.15)',
+                boxShadow: '4px 0 24px rgba(0,0,0,0.15)',
               }}
-              initial={{ x: '100%' }}
+              initial={{ x: '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             >
               <div style={{
