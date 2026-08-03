@@ -136,6 +136,7 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   const [modalDatosAbierto, setModalDatosAbierto] = useState(false);
   const [establecimientoNombre, setEstablecimientoNombre] = useState('');
+  const [establecimientoLogo, setEstablecimientoLogo] = useState('');
   const [sistemaNombre, setSistemaNombre] = useState('AGIL');
   const [sistemaSubtitulo, setSistemaSubtitulo] = useState('');
   const [sistemaLogoUrl, setSistemaLogoUrl] = useState('');
@@ -143,7 +144,12 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
   useEffect(() => {
     if (idEstablecimiento) {
       obtenerEstablecimiento(idEstablecimiento)
-        .then(e => { if (e) setEstablecimientoNombre(e.nombre || ''); })
+        .then(e => {
+          if (e) {
+            setEstablecimientoNombre(e.nombre || '');
+            setEstablecimientoLogo(e.logo_url || '');
+          }
+        })
         .catch(e => handleError(e, 'Error al cargar establecimiento'));
     }
     (async () => {
@@ -278,20 +284,20 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
     }
     if (path.startsWith('/secretaria/m/')) {
       return (
-        <SecretariaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre}>
+        <SecretariaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre} establecimientoLogo={establecimientoLogo}>
           {children}
         </SecretariaMobileLayout>
       );
     }
     if (path.startsWith('/biblioteca/m/')) {
       return (
-        <BibliotecaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre}>
+        <BibliotecaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre} establecimientoLogo={establecimientoLogo}>
           {children}
         </BibliotecaMobileLayout>
       );
     }
     return (
-      <InspectoriaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre}>
+      <InspectoriaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre} establecimientoLogo={establecimientoLogo}>
         {children}
       </InspectoriaMobileLayout>
     );

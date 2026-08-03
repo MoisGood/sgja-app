@@ -15,6 +15,7 @@ interface Props {
   areaPrefix: string;
   bottomNav: React.ReactNode;
   establecimientoNombre?: string;
+  establecimientoLogo?: string;
 }
 
 const LABEL_ROL: Record<Rol, string> = {
@@ -35,7 +36,7 @@ const titularEstablecimiento = (nombre?: string): string => {
   return nombre;
 };
 
-export default function SharedMobileLayout({ children, rol, email, areaPrefix, bottomNav, establecimientoNombre }: Props) {
+export default function SharedMobileLayout({ children, rol, email, areaPrefix, bottomNav, establecimientoNombre, establecimientoLogo }: Props) {
   const { temaOscuro, setTemaOscuro } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -170,18 +171,40 @@ export default function SharedMobileLayout({ children, rol, email, areaPrefix, b
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             >
               <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '16px', borderBottom: temaOscuro ? '1px solid #374151' : '1px solid #e2e8f0',
+                position: 'relative',
+                padding: '20px 16px 16px',
+                borderBottom: temaOscuro ? '1px solid #374151' : '1px solid #e2e8f0',
+                textAlign: 'center',
               }}>
-                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: temaOscuro ? '#f3f4f6' : '#191c1e' }}>
-                  Menú
-                </h2>
                 <button
                   onClick={() => setMenuAbierto(false)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: temaOscuro ? '#9ca3af' : '#554245', padding: 4 }}
+                  style={{
+                    position: 'absolute', top: 12, right: 12,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: temaOscuro ? '#9ca3af' : '#554245', padding: 4,
+                  }}
+                  title="Cerrar"
                 >
                   <X size={20} />
                 </button>
+                {establecimientoLogo && (
+                  <img
+                    src={establecimientoLogo}
+                    alt="Logo del establecimiento"
+                    style={{
+                      display: 'block',
+                      margin: '0 auto 10px',
+                      maxWidth: 110,
+                      maxHeight: 110,
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                    }}
+                  />
+                )}
+                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: temaOscuro ? '#f3f4f6' : '#191c1e' }}>
+                  {establecimientoNombre}
+                </h2>
               </div>
 
               <div style={{ flex: 1, padding: '8px', display: 'flex', flexDirection: 'column', gap: 4 }}>

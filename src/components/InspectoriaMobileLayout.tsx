@@ -8,9 +8,10 @@ interface Props {
   nombre: string;
   email: string;
   establecimientoNombre?: string;
+  establecimientoLogo?: string;
 }
 
-export default function InspectoriaMobileLayout({ children, rol, nombre, email, establecimientoNombre }: Props) {
+export default function InspectoriaMobileLayout({ children, rol, nombre, email, establecimientoNombre, establecimientoLogo }: Props) {
   return (
     <SharedMobileLayout
       rol={rol}
@@ -19,6 +20,7 @@ export default function InspectoriaMobileLayout({ children, rol, nombre, email, 
       areaPrefix="/inspectoria/m/"
       bottomNav={<InspectoriaMobileBottomNav rol={rol} />}
       establecimientoNombre={establecimientoNombre}
+      establecimientoLogo={establecimientoLogo}
     >
       {children}
     </SharedMobileLayout>
