@@ -17,7 +17,7 @@ interface Props {
   establecimientoNombre?: string;
 }
 
-export default function SharedMobileLayout({ children, email, areaPrefix, bottomNav, establecimientoNombre }: Props) {
+export default function SharedMobileLayout({ children, nombre, email, areaPrefix, bottomNav, establecimientoNombre }: Props) {
   const { temaOscuro, setTemaOscuro } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -72,14 +72,13 @@ export default function SharedMobileLayout({ children, email, areaPrefix, bottom
     color: temaOscuro ? '#f3f4f6' : '#191c1e', padding: 4,
   };
 
-  const intranetStyle: React.CSSProperties = {
-    fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap',
-  };
-
-  const perfilBtnStyle: React.CSSProperties = {
-    fontSize: 14, fontWeight: 600,
+  const nombreStyle: React.CSSProperties = {
+    fontSize: 13, fontWeight: 600,
     color: temaOscuro ? '#9ca3af' : '#554245',
     whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: 140,
   };
 
   const estabStyle: React.CSSProperties = {
@@ -109,13 +108,12 @@ export default function SharedMobileLayout({ children, email, areaPrefix, bottom
               title="Menú"
             >
               <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
-              <span style={intranetStyle}>Intranet</span>
             </button>
             {establecimientoNombre && (
               <span style={estabStyle}>{establecimientoNombre}</span>
             )}
           </div>
-          <span style={perfilBtnStyle}>Perfil</span>
+          <span style={nombreStyle}>{nombre}</span>
         </div>
       </header>
 
