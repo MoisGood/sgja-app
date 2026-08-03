@@ -14,9 +14,10 @@ interface Props {
   email: string;
   areaPrefix: string;
   bottomNav: React.ReactNode;
+  establecimientoNombre?: string;
 }
 
-export default function SharedMobileLayout({ children, nombre, email, areaPrefix, bottomNav }: Props) {
+export default function SharedMobileLayout({ children, nombre, email, areaPrefix, bottomNav, establecimientoNombre }: Props) {
   const { temaOscuro, setTemaOscuro } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,14 +46,47 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '12px 16px',
+    flexDirection: 'column',
+    padding: '8px 16px',
     backgroundColor: temaOscuro ? '#1f2937' : '#ffffff',
     borderBottom: temaOscuro ? '1px solid #374151' : '1px solid #e2e8f0',
     position: 'sticky',
     top: 0,
     zIndex: 100,
+  };
+
+  const filaSuperiorStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  };
+
+  const menuBtnStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 6,
+    background: 'none', border: 'none', cursor: 'pointer',
+    color: temaOscuro ? '#f3f4f6' : '#191c1e', padding: 4,
+  };
+
+  const intranetStyle: React.CSSProperties = {
+    fontSize: 16, fontWeight: 700,
+  };
+
+  const perfilBtnStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 6,
+    background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+    color: temaOscuro ? '#f3f4f6' : '#191c1e',
+  };
+
+  const perfilLabelStyle: React.CSSProperties = {
+    fontSize: 13, fontWeight: 600,
+  };
+
+  const estabStyle: React.CSSProperties = {
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: 500,
+    color: temaOscuro ? '#9ca3af' : '#554245',
+    marginTop: 4,
   };
 
   const avatarStyle: React.CSSProperties = {
@@ -81,24 +115,27 @@ export default function SharedMobileLayout({ children, nombre, email, areaPrefix
   return (
     <div style={containerStyle}>
       <header style={headerStyle}>
-        <button
-          style={avatarStyle}
-          onClick={() => navigate(navLink('perfil'))}
-          title="Perfil"
-        >
-          {iniciales}
-        </button>
-        <button
-          onClick={() => setMenuAbierto(true)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: temaOscuro ? '#f3f4f6' : '#191c1e', padding: 4,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-          title="Menú"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
-        </button>
+        <div style={filaSuperiorStyle}>
+          <button
+            onClick={() => setMenuAbierto(true)}
+            style={menuBtnStyle}
+            title="Menú"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
+            <span style={intranetStyle}>Intranet</span>
+          </button>
+          <button
+            onClick={() => navigate(navLink('perfil'))}
+            style={perfilBtnStyle}
+            title="Perfil"
+          >
+            <span style={perfilLabelStyle}>Perfil</span>
+            <span style={avatarStyle}>{iniciales}</span>
+          </button>
+        </div>
+        {establecimientoNombre && (
+          <div style={estabStyle}>{establecimientoNombre}</div>
+        )}
       </header>
 
       <main style={mainStyle}>

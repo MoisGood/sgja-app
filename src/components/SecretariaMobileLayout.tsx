@@ -7,9 +7,10 @@ interface Props {
   rol: Rol;
   nombre: string;
   email: string;
+  establecimientoNombre?: string;
 }
 
-export default function SecretariaMobileLayout({ children, rol, nombre, email }: Props) {
+export default function SecretariaMobileLayout({ children, rol, nombre, email, establecimientoNombre }: Props) {
   return (
     <SharedMobileLayout
       rol={rol}
@@ -17,6 +18,7 @@ export default function SecretariaMobileLayout({ children, rol, nombre, email }:
       email={email}
       areaPrefix="/secretaria/m/"
       bottomNav={<SecretariaMobileBottomNav rol={rol} />}
+      establecimientoNombre={establecimientoNombre}
     >
       {children}
     </SharedMobileLayout>

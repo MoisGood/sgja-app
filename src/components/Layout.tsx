@@ -278,20 +278,20 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
     }
     if (path.startsWith('/secretaria/m/')) {
       return (
-        <SecretariaMobileLayout rol={rol} nombre={nombre} email={email}>
+        <SecretariaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre}>
           {children}
         </SecretariaMobileLayout>
       );
     }
     if (path.startsWith('/biblioteca/m/')) {
       return (
-        <BibliotecaMobileLayout rol={rol} nombre={nombre} email={email}>
+        <BibliotecaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre}>
           {children}
         </BibliotecaMobileLayout>
       );
     }
     return (
-      <InspectoriaMobileLayout rol={rol} nombre={nombre} email={email}>
+      <InspectoriaMobileLayout rol={rol} nombre={nombre} email={email} establecimientoNombre={establecimientoNombre}>
         {children}
       </InspectoriaMobileLayout>
     );
