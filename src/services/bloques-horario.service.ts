@@ -59,7 +59,7 @@ export async function crearBloqueHorario(
   nombreBloque: string,
   horaInicio: string,
   horaFin: string,
-  _tipo: 'clase' | 'recreo' | 'almuerzo' | 'otro',
+  tipo: 'clase' | 'recreo' | 'almuerzo' | 'otro',
   orden: number
 ): Promise<string> {
   try {
@@ -73,6 +73,7 @@ export async function crearBloqueHorario(
         nombre_bloque: nombreBloque,
         hora_inicio: horaInicio,
         hora_fin: horaFin,
+        tipo,
         orden,
         activo: true,
         creado_en: new Date(),
@@ -99,6 +100,7 @@ export async function actualizarBloqueHorario(
         nombre_bloque: updates.nombre_bloque,
         hora_inicio: updates.hora_inicio,
         hora_fin: updates.hora_fin,
+        tipo: updates.tipo,
         orden: updates.orden,
         activo: updates.activo,
       })

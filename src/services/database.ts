@@ -130,11 +130,6 @@ export {
 } from './realtime.service';
 
 export {
-  guardarRegistroBloqueProfesor,
-  obtenerRegistrosBloqueProfesor,
-} from './registros-bloque.service';
-
-export {
   obtenerJustificaciones,
   crearJustificacion,
   actualizarJustificacion,

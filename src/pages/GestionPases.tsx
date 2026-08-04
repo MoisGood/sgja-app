@@ -7,7 +7,6 @@ import {
   obtenerSolicitudesPorCursoYFecha,
   actualizarSolicitud,
   obtenerBloquesHorarios,
-  guardarRegistroBloqueProfesor,
 } from '../services/database';
 import type { Estudiante, Solicitud, BloqueHorario } from '../types';
 import { EstadoSolicitud, TipoRegistro } from '../types';
@@ -54,11 +53,19 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
   const [bloques, setBloques] = useState<BloqueHorario[]>([]);
   const [bloqueSeleccionado, setBloqueSeleccionado] = useState<string>('');
   const [cardsEstado, setCardsEstado] = useState<Record<string, 'presente' | 'atraso' | 'inasistencia'>>({});
-  const [cardsJustificado, setCardsJustificado] = useState<Record<string, boolean>>({});
+  const [cardsMultiVisible, setCardsMultiVisible] = useState<Set<string>>(new Set());
   const [multiBloque, setMultiBloque] = useState<MultiBloqueInfo | null>(null);
   const [bloquesMultiSeleccionados, setBloquesMultiSeleccionados] = useState<Set<string>>(new Set());
+  const [multiBloqueTodos, setMultiBloqueTodos] = useState(false);
+  const [multiBloquePersistido, setMultiBloquePersistido] = useState<Record<string, { bloques: string[]; todos: boolean }>>({});
   const cardRequestRef = useRef(0);
   const cardsLockedRef = useRef<Set<string>>(new Set());
+  const longPressRef = useRef<{ id: string; fired: boolean } | null>(null);
+  const longPressTimerRef = useRef<number | null>(null);
+  const [paso1Abierto, setPaso1Abierto] = useState(false);
+  const paso2Ref = useRef<HTMLDivElement>(null);
+  const [detallesAbierto, setDetallesAbierto] = useState(false);
+  const [marcarTipo, setMarcarTipo] = useState<'atraso' | 'inasistencia'>('atraso');
 
   const [formData, setFormData] = useState<FormPase>({
     id_estudiante: '',
@@ -172,31 +179,19 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
     }).sort((a, b) => a.orden - b.orden);
   };
 
-  const handleSeleccionarBloque = async (idBloque: string, sincronizarHora = true) => {
+  const handleSeleccionarBloque = (idBloque: string, sincronizarHora = true) => {
     setBloqueSeleccionado(idBloque);
     const bloque = bloques.find(b => b.id_bloque === idBloque);
-    if (bloque) {
-      if (sincronizarHora) {
-        setFormData(prev => ({ ...prev, hora: bloque.hora_inicio }));
-      }
-      if (idUsuarioActual && cursoSeleccionado) {
-        try {
-          await guardarRegistroBloqueProfesor(
-            idUsuarioActual, idEstablecimiento, idBloque,
-            bloque.numero_bloque, bloque.nombre_bloque,
-            bloque.hora_inicio, bloque.hora_inicio, bloque.hora_fin,
-            cursoSeleccionado
-          );
-        } catch (err) {
-          console.error('Error al registrar bloque:', err);
-        }
-      }
+    if (bloque && sincronizarHora) {
+      setFormData(prev => ({ ...prev, hora: bloque.hora_inicio }));
     }
   };
 
   const reloadCards = async (curso: string, bloque?: string) => {
     const reqId = ++cardRequestRef.current;
     cardsLockedRef.current = new Set();
+    setCardsMultiVisible(new Set());
+    setMultiBloquePersistido({});
     const fecha = formData.fecha || new Date().toISOString().split('T')[0];
     let existentes: Solicitud[] = [];
     if (idEstablecimiento) {
@@ -204,29 +199,23 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
     }
     if (reqId !== cardRequestRef.current) return;
     const nuevosEstados: Record<string, 'presente' | 'atraso' | 'inasistencia'> = {};
-    const nuevosJustif: Record<string, boolean> = {};
     estudiantes.filter(e => e.curso === curso).forEach(e => {
       if (e.id_estudiante) {
         const sol = existentes.find(s => s.id_estudiante === e.id_estudiante);
         if (sol) {
           if (sol.estado === EstadoSolicitud.NO_PRESENTADA) {
             nuevosEstados[e.id_estudiante] = 'presente';
-            nuevosJustif[e.id_estudiante] = false;
           } else {
             nuevosEstados[e.id_estudiante] = sol.tipo === 'INASISTENCIA' ? 'inasistencia' : 'atraso';
-            const est = sol.estado as string;
-            nuevosJustif[e.id_estudiante] = est === 'INASISTENCIA_JUSTIFICADA' || est === 'JUSTIFICADA' || est === 'ATRASO_JUSTIFICADO';
             cardsLockedRef.current.add(e.id_estudiante);
           }
         } else {
           nuevosEstados[e.id_estudiante] = 'presente';
-          nuevosJustif[e.id_estudiante] = false;
         }
       }
     });
     if (reqId !== cardRequestRef.current) return;
     setCardsEstado(nuevosEstados);
-    setCardsJustificado(nuevosJustif);
   };
 
   const handleSelectCurso = async (curso: string) => {
@@ -239,26 +228,39 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       curso: curso,
     });
     await reloadCards(curso, bloqueSeleccionado || undefined);
+    if (curso) {
+      setPaso1Abierto(false);
+      setTimeout(() => {
+        paso2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
+    }
   };
 
   const abrirMultiBloque = (idEstudiante: string) => {
     const consecutivos = obtenerBloquesConsecutivos();
+    const prev = multiBloquePersistido[idEstudiante];
     setMultiBloque({ estudianteId: idEstudiante, bloques: consecutivos.map(b => b.id_bloque) });
-    setBloquesMultiSeleccionados(new Set([bloqueSeleccionado]));
+    setBloquesMultiSeleccionados(prev && !prev.todos
+      ? new Set(prev.bloques.filter(b => consecutivos.some(c => c.id_bloque === b)))
+      : new Set([bloqueSeleccionado]));
+    setMultiBloqueTodos(prev ? prev.todos : false);
   };
 
   const toggleCardClick = (id: string) => {
     if (cardsLockedRef.current.has(id)) return;
+    if (longPressRef.current?.id === id && longPressRef.current.fired) {
+      longPressRef.current = null;
+      return;
+    }
     setCardsEstado(prev => {
       const actual = prev[id];
       if (actual === 'presente') {
-        setFormData(f => ({ ...f, tipo: TipoRegistro.ATRASO }));
-        setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
-        return { ...prev, [id]: 'atraso' };
+        const primerClic = esMobil ? marcarTipo : 'atraso';
+        setFormData(f => ({ ...f, tipo: primerClic === 'inasistencia' ? TipoRegistro.INASISTENCIA : TipoRegistro.ATRASO }));
+        return { ...prev, [id]: primerClic };
       }
       if (actual === 'atraso') {
         setFormData(f => ({ ...f, tipo: TipoRegistro.INASISTENCIA }));
-        setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
         return { ...prev, [id]: 'inasistencia' };
       }
       return { ...prev, [id]: 'presente' };
@@ -267,62 +269,96 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
 
   const toggleCardDblClick = (id: string) => {
     if (cardsLockedRef.current.has(id)) return;
-    setCardsEstado(prev => ({ ...prev, [id]: 'inasistencia' }));
-    setFormData(f => ({ ...f, tipo: TipoRegistro.INASISTENCIA }));
-    setCardsJustificado(jprev => ({ ...jprev, [id]: false }));
-    abrirMultiBloque(id);
+    setCardsMultiVisible(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
 
-  const toggleJustificado = (id: string) => {
+  const iniciarLongPress = (id: string) => {
     if (cardsLockedRef.current.has(id)) return;
-    setCardsJustificado(prev => ({ ...prev, [id]: !prev[id] }));
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = window.setTimeout(() => {
+      longPressRef.current = { id, fired: true };
+      setCardsEstado(prev => {
+        if ((prev[id] || 'presente') !== 'presente') return prev;
+        const primerClic = esMobil ? marcarTipo : 'atraso';
+        setFormData(f => ({ ...f, tipo: primerClic === 'inasistencia' ? TipoRegistro.INASISTENCIA : TipoRegistro.ATRASO }));
+        return { ...prev, [id]: primerClic };
+      });
+      toggleCardDblClick(id);
+    }, 450);
+  };
+
+  const cancelarLongPress = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
   };
 
   const getBloquesACrear = (idEstudiante: string): string[] => {
     const estado = cardsEstado[idEstudiante];
-    if (estado === 'atraso') return [bloqueSeleccionado];
-    if (estado === 'inasistencia') {
-      if (multiBloque && multiBloque.estudianteId === idEstudiante && bloquesMultiSeleccionados.size > 0) {
-        return Array.from(bloquesMultiSeleccionados);
-      }
-      return [bloqueSeleccionado];
+    if (estado !== 'atraso' && estado !== 'inasistencia') return [];
+    const persistido = multiBloquePersistido[idEstudiante];
+    if (persistido) {
+      return persistido.todos ? bloquesClase.map(b => b.id_bloque) : persistido.bloques;
     }
-    return [];
+    return bloqueSeleccionado ? [bloqueSeleccionado] : [];
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    let ausentes = Object.entries(cardsEstado).filter(([, estado]) => estado === 'atraso' || estado === 'inasistencia');
+    if (rol !== 'ADMIN' && rol !== 'PROFESOR') {
+      setError('No tienes permisos para crear pases');
+      return;
+    }
+
+    const ausentes = Object.entries(cardsEstado).filter(([, estado]) => estado === 'atraso' || estado === 'inasistencia');
     if (ausentes.length === 0) {
       setError('No hay estudiantes marcados como ausentes');
       return;
     }
 
-    const yaRegistrados = new Set<string>();
+    const yaRegistradosPorBloque = new Map<string, Set<string>>();
     if (idEstablecimiento) {
-      const existentes = await obtenerSolicitudesPorCursoYFecha(idEstablecimiento, formData.curso, formData.fecha, bloqueSeleccionado || undefined);
-      existentes.forEach(s => { if (s.id_estudiante && s.estado !== EstadoSolicitud.NO_PRESENTADA) yaRegistrados.add(s.id_estudiante); });
+      const existentes = await obtenerSolicitudesPorCursoYFecha(idEstablecimiento, formData.curso, formData.fecha);
+      existentes.forEach(s => {
+        if (s.id_estudiante && s.id_bloque && s.estado !== EstadoSolicitud.NO_PRESENTADA) {
+          if (!yaRegistradosPorBloque.has(s.id_estudiante)) yaRegistradosPorBloque.set(s.id_estudiante, new Set());
+          yaRegistradosPorBloque.get(s.id_estudiante)!.add(s.id_bloque);
+        }
+      });
     }
-    ausentes = ausentes.filter(([id]) => !yaRegistrados.has(id) && !cardsLockedRef.current.has(id));
-    if (ausentes.length === 0) {
-      setError('Todos los estudiantes seleccionados ya están registrados en este bloque');
+
+    const porCrear: { id: string; bloques: string[] }[] = [];
+    for (const [id_estudiante] of ausentes) {
+      if (cardsLockedRef.current.has(id_estudiante)) continue;
+      const bloquesYa = yaRegistradosPorBloque.get(id_estudiante);
+      if (bloquesYa?.has(bloqueSeleccionado)) continue;
+      let bloquesDestino = getBloquesACrear(id_estudiante);
+      if (bloquesYa) {
+        bloquesDestino = bloquesDestino.filter(idBloque => !bloquesYa.has(idBloque));
+      }
+      if (bloquesDestino.length === 0) continue;
+      porCrear.push({ id: id_estudiante, bloques: bloquesDestino });
+    }
+    if (porCrear.length === 0) {
+      setError('Todos los estudiantes seleccionados ya están registrados en estos bloques');
       return;
     }
 
-    yaRegistrados.forEach(id => cardsLockedRef.current.add(id));
-
+    const creados: string[] = [];
     try {
       setGuardando(true);
-      const creados: string[] = [];
 
-      for (const [id_estudiante] of ausentes) {
+      for (const { id: id_estudiante, bloques: bloquesDestino } of porCrear) {
         const est = estudiantes.find(s => s.id_estudiante === id_estudiante);
         if (!est) continue;
         const esAtraso = cardsEstado[id_estudiante] === 'atraso';
-        const bloquesDestino = getBloquesACrear(id_estudiante);
-
         for (const idBloque of bloquesDestino) {
           const bloque = bloques.find(b => b.id_bloque === idBloque);
           const ts = Date.now();
@@ -335,9 +371,9 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
             tipo: esAtraso ? TipoRegistro.ATRASO : TipoRegistro.INASISTENCIA,
             fecha: formData.fecha,
             hora: bloque ? bloque.hora_inicio : formData.hora,
-            estado: cardsJustificado[id_estudiante] ? EstadoSolicitud.INASISTENCIA_JUSTIFICADA : EstadoSolicitud.INASISTENTE,
+            estado: EstadoSolicitud.INASISTENTE,
             motivo_codigo: null,
-            motivo_descripcion: cardsJustificado[id_estudiante] ? 'Justificado' : (esAtraso ? 'Atraso' : 'Ausente'),
+            motivo_descripcion: esAtraso ? 'Atraso' : 'Ausente',
             observaciones: null,
             respaldo_recibido: false,
             tipo_respaldo: null,
@@ -348,17 +384,18 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
           };
           await crearSolicitud(solicitud);
         }
-        creados.push(est.nombre_completo);
+        creados.push(id_estudiante);
       }
 
-      for (const [id_estudiante] of ausentes) {
-        cardsLockedRef.current.add(id_estudiante);
-      }
+      creados.forEach(id => cardsLockedRef.current.add(id));
       setExito(true);
       await cargarDatos();
       setTimeout(() => setExito(false), 3000);
     } catch (err) {
-      setError(`Error al crear pase: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+      // Falla parcial: los creados quedan grabados; bloquearlos para evitar duplicados al reintentar.
+      await reloadCards(formData.curso, bloqueSeleccionado || undefined).catch(() => {});
+      creados.forEach(id => cardsLockedRef.current.add(id));
+      setError(`Error al crear pase (se guardaron ${creados.length} de ${porCrear.length}): ${err instanceof Error ? err.message : 'Error desconocido'}`);
     } finally {
       setGuardando(false);
     }
@@ -375,7 +412,6 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       setSolicitudes(prev => prev.map(s => s.id_solicitud === id_solicitud ? { ...s, estado: EstadoSolicitud.NO_PRESENTADA } : s));
       if (id_estudiante) {
         setCardsEstado(prev => ({ ...prev, [id_estudiante]: 'presente' }));
-        setCardsJustificado(prev => ({ ...prev, [id_estudiante]: false }));
         cardsLockedRef.current.delete(id_estudiante);
       }
       setExito(true);
@@ -393,6 +429,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       if (columna === 'fecha') return s.fecha;
       if (columna === 'estado') {
         if (s.estado === EstadoSolicitud.NO_PRESENTADA) return 'Anulado';
+        if (s.estado === EstadoSolicitud.INASISTENTE) return 'Sin procesar';
         if (s.estado === 'ATRASO_JUSTIFICADO' || s.estado === 'INASISTENCIA_JUSTIFICADA') return 'Justificado';
         if (s.estado === 'ATRASO_INJUSTIFICADO') return 'Injustificado';
         if (s.estado === 'INASISTENCIA_NO_JUSTIFICADA') return 'Rechazado';
@@ -403,11 +440,28 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
     return [...new Set(valores)].filter(Boolean).sort();
   };
 
+  const etiquetaEstado = (sol: { estado: string }) =>
+    sol.estado === EstadoSolicitud.NO_PRESENTADA ? 'Anulado'
+      : sol.estado === EstadoSolicitud.INASISTENTE ? 'Sin procesar'
+      : sol.estado === 'ATRASO_JUSTIFICADO' || sol.estado === 'INASISTENCIA_JUSTIFICADA' ? 'Justificado'
+      : sol.estado === 'ATRASO_INJUSTIFICADO' ? 'Injustificado'
+      : sol.estado === 'INASISTENCIA_NO_JUSTIFICADA' ? 'Rechazado'
+      : sol.estado;
+
+  const colorEstado = (estado: string) =>
+    estado === EstadoSolicitud.NO_PRESENTADA ? { backgroundColor: '#F3F4F6', color: '#6B7280' }
+      : estado === EstadoSolicitud.INASISTENTE ? { backgroundColor: '#FEF3C7', color: '#92400E' }
+      : estado === 'ATRASO_JUSTIFICADO' || estado === 'INASISTENCIA_JUSTIFICADA' ? { backgroundColor: '#DCFCE7', color: '#166534' }
+      : estado === 'ATRASO_INJUSTIFICADO' ? { backgroundColor: '#FEF3C7', color: '#92400E' }
+      : estado === 'INASISTENCIA_NO_JUSTIFICADA' ? { backgroundColor: '#FEE2E2', color: '#991B1B' }
+      : { backgroundColor: '#DBEAFE', color: '#1E40AF' };
+
   const cursosUnicos = [...new Set(estudiantes.map(e => e.curso))].sort();
   const estudiantesCurso = cursoSeleccionado
     ? estudiantes.filter(e => e.curso === cursoSeleccionado)
     : [];
   const bloquesClase = bloques.filter(b => !b.nombre_bloque.toLowerCase().includes('recre'));
+  const puedeCrear = rol === 'ADMIN' || rol === 'PROFESOR';
 
   const solicitudesFiltradas = solicitudes
     .filter(s => {
@@ -417,12 +471,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       if (filtros.tipo && s.tipo !== filtros.tipo) return false;
       if (filtros.fecha && s.fecha !== filtros.fecha) return false;
       if (filtros.estado) {
-        const label = s.estado === EstadoSolicitud.NO_PRESENTADA ? 'Anulado'
-          : s.estado === 'ATRASO_JUSTIFICADO' || s.estado === 'INASISTENCIA_JUSTIFICADA' ? 'Justificado'
-          : s.estado === 'ATRASO_INJUSTIFICADO' ? 'Injustificado'
-          : s.estado === 'INASISTENCIA_NO_JUSTIFICADA' ? 'Rechazado'
-          : s.estado;
-        if (label !== filtros.estado) return false;
+        if (etiquetaEstado(s) !== filtros.estado) return false;
       }
       return true;
     })
@@ -469,56 +518,93 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
           <form onSubmit={handleSubmit} style={styles.form}>
             {/* Curso + Bloque selectors */}
             <div style={styles.paso}>
-              <h4 style={styles.numeroPaso}>📚 Paso 1: Curso y Bloque</h4>
-              <div style={esMobil ? styles.filaMobil : styles.fila2}>
-                <div style={styles.grupo}>
-                  <label style={styles.label}>Curso</label>
-                  <select
-                    value={cursoSeleccionado}
-                    onChange={(e) => handleSelectCurso(e.target.value)}
-                    style={styles.select}
-                  >
-                    <option value="">-- Selecciona --</option>
-                    {cursosUnicos.map((curso) => (
-                      <option key={curso} value={curso}>{curso}</option>
-                    ))}
-                  </select>
-                </div>
-                <div style={styles.grupo}>
-                  <label style={styles.label}>Bloque</label>
-                  <select
-                    value={bloqueSeleccionado}
-                    onChange={(e) => handleSeleccionarBloque(e.target.value)}
-                    style={styles.select}
-                  >
-                    {bloquesClase.map((b) => (
-                      <option key={b.id_bloque} value={b.id_bloque}>
-                        {b.orden}. {b.nombre_bloque} ({b.hora_inicio}-{b.hora_fin})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              {bloqueActual && (
-                <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6 }}>
-                  ⏰ Bloque detectado: {bloqueActual.nombre_bloque} ({bloqueActual.hora_inicio}-{bloqueActual.hora_fin})
-                  {idUsuarioActual && cursoSeleccionado && ' — Registrando tu presencia'}
-                </div>
+              {esMobil ? (
+                <button
+                  type="button"
+                  onClick={() => setPaso1Abierto(p => !p)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
+                >
+                  <h4 style={styles.numeroPaso}>
+                    📚 Paso 1: {cursoSeleccionado || 'Selecciona curso'}{bloqueActual ? ` · ${bloqueActual.nombre_bloque} (${bloqueActual.hora_inicio})` : ''}
+                  </h4>
+                  <span style={{ fontSize: 14, color: '#6B7280' }}>{paso1Abierto ? '▾' : '▸'}</span>
+                </button>
+              ) : (
+                <h4 style={styles.numeroPaso}>📚 Paso 1: Curso y Bloque</h4>
+              )}
+              {(!esMobil || paso1Abierto) && (
+                <>
+                  <div style={esMobil ? styles.filaMobil : styles.fila2}>
+                    <div style={styles.grupo}>
+                      <label style={styles.label}>Curso</label>
+                      <select
+                        value={cursoSeleccionado}
+                        onChange={(e) => handleSelectCurso(e.target.value)}
+                        style={styles.select}
+                      >
+                        <option value="">-- Selecciona --</option>
+                        {cursosUnicos.map((curso) => (
+                          <option key={curso} value={curso}>{curso}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div style={styles.grupo}>
+                      <label style={styles.label}>Bloque</label>
+                      <select
+                        value={bloqueSeleccionado}
+                        onChange={(e) => handleSeleccionarBloque(e.target.value)}
+                        style={styles.select}
+                      >
+                      {bloquesClase.map((b) => (
+                        <option key={b.id_bloque} value={b.id_bloque}>
+                          {b.nombre_bloque} ({b.hora_inicio}-{b.hora_fin})
+                        </option>
+                      ))}
+                      </select>
+                    </div>
+                  </div>
+                  {bloqueActual && (
+                    <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6 }}>
+                      ⏰ Bloque detectado: {bloqueActual.nombre_bloque} ({bloqueActual.hora_inicio}-{bloqueActual.hora_fin})
+                      {idUsuarioActual && cursoSeleccionado && ' — Registrando tu presencia'}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
             {/* Student cards */}
             {cursoSeleccionado && (
-              <div style={styles.paso}>
+              <div style={styles.paso} ref={paso2Ref}>
                 <h4 style={styles.numeroPaso}>👤 Paso 2: Marca los ausentes</h4>
+                {esMobil && puedeCrear && (
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 10, alignItems: 'stretch' }}>
+                    <button
+                      type="button"
+                      onClick={() => setMarcarTipo(t => t === 'atraso' ? 'inasistencia' : 'atraso')}
+                      title="Estado que se aplicará al hacer clic en un card"
+                      style={{ width: 138, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 0', border: 'none', borderRadius: 6, fontSize: 14, lineHeight: 1, fontWeight: 600, cursor: 'pointer', backgroundColor: marcarTipo === 'atraso' ? '#FCD34D' : '#FCA5A5', color: marcarTipo === 'atraso' ? '#92400E' : '#991B1B', whiteSpace: 'nowrap' }}
+                    >
+                      {marcarTipo === 'atraso' ? '🕐 Atraso' : '❌ Inasistencia'}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={guardando}
+                      style={{ ...styles.botonPrimario, flex: 1, opacity: guardando ? 0.6 : 1 }}
+                    >
+                      {guardando ? '⏳ Guardando...' : '✓ Registrar ausentes'}
+                    </button>
+                  </div>
+                )}
                 <p style={{ fontSize: 11, color: '#6B7280', margin: '0 0 8px' }}>
-                  Click = cambia estado (🟢→🟡→🔴) · Doble click = registrar en más bloques
+                  {esMobil
+                    ? 'Click = cambia estado (🟢→🟡→🔴) · Mantén presionado = marcar y + Bloques'
+                    : 'Click = cambia estado (🟢→🟡→🔴) · Doble click = opción agregar más bloques'}
                 </p>
                 <div style={esMobil ? styles.cardGridMobil : styles.cardGrid}>
                   {estudiantesCurso.map((est, idx) => {
                     const estId = est.id_estudiante || '';
                     const estado = cardsEstado[estId] || 'presente';
-                    const justif = cardsJustificado[estId] || false;
                     const esAtraso = estado === 'atraso';
                     const esInasistencia = estado === 'inasistencia';
                     const esLocked = cardsLockedRef.current.has(estId);
@@ -526,7 +612,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
 
                     const bgColor = esLocked
                       ? (() => {
-                          const sol = solicitudes.find(s => s.id_estudiante === estId && s.fecha === formData.fecha);
+                          const sol = solicitudes.find(s => s.id_estudiante === estId && s.fecha === formData.fecha && s.id_bloque === bloqueSeleccionado);
                           if (!sol) return '#F3F4F6';
                           if (sol.estado === EstadoSolicitud.INASISTENCIA_JUSTIFICADA || sol.estado === EstadoSolicitud.ATRASO_JUSTIFICADO) return '#DCFCE7';
                           if (sol.tipo === 'ATRASO') return '#FEF3C7';
@@ -541,33 +627,43 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                     const bordeCard = esLocked
                       ? '2px solid #D1D5DB'
                       : esMarked
-                        ? (justif ? '3px solid rgb(15 85 183)' : '3px solid rgb(0 0 0)')
+                        ? '3px solid rgb(0 0 0)'
                         : '2px solid #34D399';
 
                     return (
                       <div
                         key={estId}
                         onClick={() => toggleCardClick(estId)}
-                        onDoubleClick={() => toggleCardDblClick(estId)}
-                        style={{ ...styles.cardItem, background: bgColor, border: bordeCard, cursor: esLocked ? 'default' : 'pointer', opacity: esLocked ? 0.75 : 1 }}
+                        onDoubleClick={!esMobil ? () => toggleCardDblClick(estId) : undefined}
+                        onTouchStart={() => iniciarLongPress(estId)}
+                        onTouchEnd={cancelarLongPress}
+                        onTouchMove={cancelarLongPress}
+                        onContextMenu={(e) => e.preventDefault()}
+                        style={{ ...styles.cardItem, background: bgColor, border: bordeCard, cursor: esLocked ? 'default' : 'pointer', opacity: esLocked ? 0.75 : 1, ...(esMobil ? { WebkitUserSelect: 'none' as const, userSelect: 'none' as const, touchAction: 'manipulation' as const } : {}) }}
                       >
                         {esLocked && <span style={{ position: 'absolute', top: 3, right: 3, fontSize: 10, color: '#6B7280', zIndex: 5 }}>🔒</span>}
-                        {esMarked && !esLocked && (
-                          <span
-                            onClick={(e) => { e.stopPropagation(); toggleJustificado(estId); }}
-                            style={{ position: 'absolute', top: 3, right: 3, fontSize: 11, lineHeight: '14px', color: justif ? '#3B82F6' : '#9CA3AF', cursor: 'pointer', zIndex: 5, fontWeight: 'bold' }}
-                          >
-                            {justif ? '✓' : '○'}
-                          </span>
+                        {esMarked && (
+                          <div style={{ fontSize: 8, color: '#1F2937', fontWeight: 700, textTransform: 'uppercase', lineHeight: '9px', letterSpacing: '0.2px' }}>
+                            {esInasistencia ? 'inasistencia' : 'atraso'}
+                          </div>
                         )}
                         <div style={{ fontSize: 16, fontWeight: 700, color: '#1F2937' }}>
                           {est.numero ?? idx + 1}
                         </div>
                         <div style={{ fontSize: 9, color: '#6B7280' }}>{est.rut}</div>
                         <div style={{ fontSize: 8, color: '#9CA3AF' }}>{est.nombre_completo?.split(' ')[0]}</div>
-                        {esInasistencia && !esLocked && multiBloque?.estudianteId === estId && bloquesMultiSeleccionados.size > 1 && (
-                          <div style={{ fontSize: 9, color: '#3B82F6', marginTop: 2 }}>
-                            📅 {bloquesMultiSeleccionados.size} bloques
+                        {cardsMultiVisible.has(estId) && esMarked && !esLocked && (
+                          <div
+                            onClick={(e) => { e.stopPropagation(); abrirMultiBloque(estId); }}
+                            style={{ fontSize: 9, color: '#3B82F6', cursor: 'pointer', marginTop: 2, textDecoration: 'underline' }}
+                          >
+                            {(() => {
+                              const sel = multiBloquePersistido[estId];
+                              if (sel && (sel.todos || sel.bloques.length > 1)) {
+                                return `📅 ${sel.todos ? 'todos' : `${sel.bloques.length} bloques`}`;
+                              }
+                              return '+ Bloques';
+                            })()}
                           </div>
                         )}
                       </div>
@@ -579,7 +675,6 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                   <span>🟡 Atraso</span>
                   <span>🔴 Inasistencia</span>
                   <span>🔒 Ya registrado</span>
-                  <span>◉ Justificado</span>
                 </div>
               </div>
             )}
@@ -587,8 +682,20 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
             {/* Details */}
             {cursoSeleccionado && (
               <div style={styles.paso}>
-                <h4 style={styles.numeroPaso}>📝 Detalles del Pase</h4>
-                <div style={esMobil ? styles.filaMobil : styles.fila3}>
+                {esMobil ? (
+                  <button
+                    type="button"
+                    onClick={() => setDetallesAbierto(d => !d)}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
+                  >
+                    <h4 style={styles.numeroPaso}>📝 Detalles del Pase</h4>
+                    <span style={{ fontSize: 14, color: '#6B7280' }}>{detallesAbierto ? '▾' : '▸'}</span>
+                  </button>
+                ) : (
+                  <h4 style={styles.numeroPaso}>📝 Detalles del Pase</h4>
+                )}
+                {(!esMobil || detallesAbierto) && (
+                  <div style={esMobil ? styles.filaMobil : styles.fila3}>
                   <div style={styles.grupo}>
                     <label style={styles.label}>Tipo</label>
                     <select
@@ -662,13 +769,14 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                     )}
                   </div>
                 </div>
+                )}
               </div>
             )}
 
             {error && <div style={styles.error}>{error}</div>}
             {exito && <div style={styles.exito}>✅ Pases creados exitosamente</div>}
 
-            {cursoSeleccionado && (
+            {cursoSeleccionado && !esMobil && puedeCrear && (
               <button
                 type="submit"
                 disabled={guardando}
@@ -682,40 +790,72 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       )}
 
       {/* Multi-block modal */}
-      {multiBloque && (
-        <div style={styles.modalOverlay}>
-          <div style={esMobil ? styles.modalContentMobil : styles.modalContent}>
-            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700 }}>Bloques Afectados</h3>
-            <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 12px' }}>
-              {estudiantes.find(e => e.id_estudiante === multiBloque.estudianteId)?.nombre_completo}
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {obtenerBloquesConsecutivos().map(b => (
-                <label key={b.id_bloque} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+      {multiBloque && (() => {
+        const consecutivos = obtenerBloquesConsecutivos();
+        const registrados = new Set<string>();
+        solicitudes.forEach(s => {
+          if (s.id_estudiante === multiBloque.estudianteId && s.id_bloque && s.fecha === formData.fecha && s.estado !== EstadoSolicitud.NO_PRESENTADA) {
+            registrados.add(s.id_bloque);
+          }
+        });
+        return (
+          <div style={styles.modalOverlay}>
+            <div style={esMobil ? styles.modalContentMobil : styles.modalContent}>
+              <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700 }}>Bloques Afectados</h3>
+              <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 12px' }}>
+                {estudiantes.find(e => e.id_estudiante === multiBloque.estudianteId)?.nombre_completo}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {consecutivos.slice(0, 2).map((b) => {
+                  const yaReg = registrados.has(b.id_bloque);
+                  const esActual = b.id_bloque === bloqueSeleccionado;
+                  const esSel = bloquesMultiSeleccionados.has(b.id_bloque) || yaReg || multiBloqueTodos || esActual;
+                  const deshabilitado = yaReg || multiBloqueTodos || esActual;
+                  return (
+                    <label key={b.id_bloque} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: deshabilitado ? 'default' : 'pointer', opacity: yaReg ? 0.75 : 1 }}>
+                      <input
+                        type="checkbox"
+                        disabled={deshabilitado}
+                        checked={esSel}
+                        onChange={() => {
+                          const next = new Set(bloquesMultiSeleccionados);
+                          if (next.has(b.id_bloque)) next.delete(b.id_bloque); else next.add(b.id_bloque);
+                          setBloquesMultiSeleccionados(next);
+                        }}
+                      />
+                      <span>{b.nombre_bloque} ({b.hora_inicio}-{b.hora_fin})</span>
+                    </label>
+                  );
+                })}
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', borderTop: '1px solid #E5E7EB', paddingTop: 8 }}>
                   <input
                     type="checkbox"
-                    checked={bloquesMultiSeleccionados.has(b.id_bloque)}
-                    onChange={() => {
-                      const next = new Set(bloquesMultiSeleccionados);
-                      if (next.has(b.id_bloque)) next.delete(b.id_bloque); else next.add(b.id_bloque);
-                      setBloquesMultiSeleccionados(next);
-                    }}
+                    checked={multiBloqueTodos}
+                    onChange={() => setMultiBloqueTodos(t => !t)}
                   />
-                  {b.orden}. {b.nombre_bloque} ({b.hora_inicio}-{b.hora_fin})
+                  <strong>Todos</strong>
+                  <span style={{ fontSize: 11, color: '#6B7280' }}>— faltó a toda la jornada (no asistió al establecimiento)</span>
                 </label>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
-              <button type="button" onClick={() => setMultiBloque(null)} style={{ padding: '8px 16px', border: '1px solid #D1D5DB', borderRadius: 6, cursor: 'pointer', background: '#FFF', fontSize: 13 }}>
-                Cerrar
-              </button>
-              <button type="button" onClick={() => setMultiBloque(null)} style={{ padding: '8px 16px', border: 'none', borderRadius: 6, cursor: 'pointer', background: '#1A3C6B', color: '#FFF', fontSize: 13 }}>
-                ✅ Listo ({bloquesMultiSeleccionados.size} bloque{bloquesMultiSeleccionados.size !== 1 ? 's' : ''})
-              </button>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setMultiBloque(null)} style={{ padding: '8px 16px', border: '1px solid #D1D5DB', borderRadius: 6, cursor: 'pointer', background: '#FFF', fontSize: 13 }}>
+                  Cerrar
+                </button>
+                <button type="button" onClick={() => {
+                  if (multiBloque) {
+                    const todos = multiBloqueTodos;
+                    const bloques = todos ? bloquesClase.map(b => b.id_bloque) : Array.from(bloquesMultiSeleccionados);
+                    setMultiBloquePersistido(prev => ({ ...prev, [multiBloque.estudianteId]: { bloques, todos } }));
+                  }
+                  setMultiBloque(null);
+                }} style={{ padding: '8px 16px', border: 'none', borderRadius: 6, cursor: 'pointer', background: '#1A3C6B', color: '#FFF', fontSize: 13 }}>
+                  ✅ Listo {multiBloqueTodos ? '(todos)' : `(${bloquesMultiSeleccionados.size} bloque${bloquesMultiSeleccionados.size !== 1 ? 's' : ''})`}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* TAB: VER PASES */}
       {tabEfectivo === 'ver' && (!esMobil || tabExterno === 'ver') && (
@@ -726,7 +866,60 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
             <p style={styles.sinDatos}>No hay pases registrados</p>
           ) : (
             <>
-              <div style={esMobil ? styles.tablaMobil : styles.tabla}>
+              {esMobil ? (
+                <>
+                  <div style={styles.mobilFilterBar}>
+                    {(['curso', 'tipo', 'fecha', 'estado'] as const).map(key => (
+                      <select
+                        key={key}
+                        value={filtros[key]}
+                        onChange={(e) => { setFiltros(f => ({ ...f, [key]: e.target.value })); setPaginaActual(1); }}
+                        style={styles.mobilFilterSelect}
+                      >
+                        <option value="">{key === 'fecha' ? '📅 Fecha' : key === 'tipo' ? 'Tipo' : key === 'curso' ? 'Curso' : 'Estado'}</option>
+                        {obtenerOpciones(key).map(op => (
+                          <option key={op} value={op}>{op}</option>
+                        ))}
+                      </select>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {solicitudosPaginadas.map((sol) => {
+                      const est = estudiantes.find(e => e.id_estudiante === sol.id_estudiante);
+                      const puedeanular = rol === 'ADMIN' || sol.id_profesor === idUsuarioActual;
+                      return (
+                        <div key={sol.id_solicitud} style={styles.mobilCard}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px 12px', alignItems: 'center' }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: '#1F2937' }}>
+                              {est?.nombre_completo} - {est?.curso}
+                            </div>
+                            <div style={{ justifySelf: 'end' }}>
+                              <span style={{ ...styles.badge, ...colorEstado(sol.estado), flexShrink: 0 }}>{etiquetaEstado(sol)}</span>
+                            </div>
+                            <div style={{ fontSize: 12, color: '#6B7280' }}>RUT: {est?.rut}</div>
+                            <div style={{ justifySelf: 'end' }}>
+                              <span style={{ ...styles.badge, ...(esAtraso(sol.tipo) ? { backgroundColor: '#FEF3C7', color: '#92400E' } : { backgroundColor: '#FEE2E2', color: '#991B1B' }) }}>
+                                {sol.tipo}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 12, color: '#374151' }}>📅 {sol.fecha} · 🕐 {sol.hora}</div>
+                            <div style={{ justifySelf: 'end' }}>
+                              {sol.estado === EstadoSolicitud.NO_PRESENTADA ? (
+                                <span style={{ fontSize: 12, color: '#6B7280', fontWeight: 600 }}>✕ Anulado</span>
+                              ) : puedeanular && sol.estado !== 'ATRASO_JUSTIFICADO' && sol.estado !== 'INASISTENCIA_JUSTIFICADA' ? (
+                                <button type="button" onClick={() => handleAnularPase(sol.id_solicitud, sol.id_profesor, sol.id_estudiante)} style={styles.botonAnular}>
+                                  ✕ Anular
+                                </button>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+              <div style={styles.tabla}>
                 <div style={styles.filaEncabezado}>
                   {([['', 'Estudiante'], ['curso', 'Curso'], ['tipo', 'Tipo'], ['fecha', 'Fecha'], ['estado', 'Estado'], ['', 'Acciones']] as const).map(([colKey, label]) => (
                     <div key={colKey || label} style={{ ...styles.celdaEncabezado, position: colKey ? ('relative' as const) : undefined }}>
@@ -784,8 +977,8 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                         <br /><small>{sol.hora}</small>
                       </div>
                       <div style={styles.celda}>
-                        <span style={{ ...styles.badge, ...(sol.estado === EstadoSolicitud.NO_PRESENTADA ? { backgroundColor: '#F3F4F6', color: '#6B7280' } : { backgroundColor: '#DBEAFE', color: '#1E40AF' }) }}>
-                          {sol.estado === EstadoSolicitud.NO_PRESENTADA ? 'Anulado' : sol.estado === 'ATRASO_JUSTIFICADO' || sol.estado === 'INASISTENCIA_JUSTIFICADA' ? 'Justificado' : sol.estado === 'ATRASO_INJUSTIFICADO' ? 'Injustificado' : sol.estado === 'INASISTENCIA_NO_JUSTIFICADA' ? 'Rechazado' : sol.estado}
+                        <span style={{ ...styles.badge, ...colorEstado(sol.estado) }}>
+                          {etiquetaEstado(sol)}
                         </span>
                       </div>
                       <div style={styles.acciones}>
@@ -801,6 +994,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                   );
                 })}
               </div>
+              )}
 
               {totalPaginas > 1 && (
                 <div style={styles.paginador}>
@@ -844,6 +1038,9 @@ const styles: Record<string, React.CSSProperties> = {
   sinDatos: { textAlign: 'center', color: '#6B7280', padding: '40px 20px' },
   tabla: { display: 'flex', flexDirection: 'column', gap: '0', marginBottom: '16px', border: '1px solid #E5E7EB', borderRadius: '6px', overflow: 'hidden' },
   tablaMobil: { display: 'flex', flexDirection: 'column', gap: '0', marginBottom: '16px', border: '1px solid #E5E7EB', borderRadius: '6px', overflowX: 'auto' },
+  mobilFilterBar: { display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' },
+  mobilFilterSelect: { flex: '1 1 45%', padding: '8px 10px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', backgroundColor: '#FFFFFF', color: '#374151', fontFamily: 'Arial, sans-serif' },
+  mobilCard: { border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px', backgroundColor: '#FFFFFF' },
   filaEncabezado: { display: 'grid', gridTemplateColumns: '180px 100px 100px 120px 100px 100px', gap: '12px', padding: '12px', backgroundColor: '#F3F4F6', fontWeight: '600', fontSize: '13px', color: '#1F2937', borderBottom: '2px solid #E5E7EB' },
   celdaEncabezado: { fontSize: '13px', fontWeight: '700' },
   filaTabla: { display: 'grid', gridTemplateColumns: '180px 100px 100px 120px 100px 100px', gap: '12px', padding: '12px', borderBottom: '1px solid #E5E7EB', backgroundColor: '#FFFFFF', alignItems: 'center' },
