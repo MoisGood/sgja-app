@@ -8,3 +8,5 @@ export { default as Card } from './Card';
 export { default as Input } from './Input';
 export { default as Modal } from './Modal';
 export { default as EstadoBadge } from './EstadoBadge';
+export { default as Spinner } from './Spinner';
+export { default as SpinnerSelector } from './SpinnerSelector';

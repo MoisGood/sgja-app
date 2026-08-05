@@ -22,6 +22,7 @@ import Header from './Header';
 import { handleError } from '../utils/errorHandler';
 import { Wrench, UserX, Map, Monitor, Building2, ExternalLink, FolderOpen, LayoutDashboard, ClipboardList, Users, BookOpen, Settings, Shield, Mail, HelpCircle, FileText } from 'lucide-react';
 import FlotanteAyuda from './Ayuda/FlotanteAyuda';
+import Spinner from './Common/Spinner';
 
 interface Props {
   children:             React.ReactNode;
@@ -63,7 +64,7 @@ const MENU_ITEMS: MenuItem[] = [
     submenu: [
       { icono: <BookOpen size={20}/>, etiqueta: 'Crear Pase',           ruta: '/inspectoria/crear-pase',      roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
       { icono: <ClipboardList size={20}/>, etiqueta: 'Gestión Pases',       ruta: '/inspectoria/gestion-pases',  roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE] },
-      { icono: <FileText size={20}/>, etiqueta: 'Formulario Accidente', ruta: '/registrar-accidente',          roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
+      { icono: <FileText size={20}/>, etiqueta: 'Formulario Accidente', ruta: '/registrar-accidente',          roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE] },
     ]
   },
   {
@@ -84,10 +85,10 @@ const MENU_ITEMS: MenuItem[] = [
     icono: <BookOpen size={20}/>,
     etiqueta: 'Biblioteca',
     ruta: '/biblioteca',
-    roles: [Rol.ADMIN, Rol.ESTUDIANTE],
+    roles: [Rol.ADMIN, Rol.ESTUDIANTE, Rol.PROFESOR],
     submenu: [
-      { icono: <BookOpen size={20}/>, etiqueta: 'Libros', ruta: '/libros', roles: [Rol.ADMIN] },
-      { icono: <BookOpen size={20}/>, etiqueta: 'Catálogo', ruta: '/catalogo', roles: [Rol.ADMIN, Rol.ESTUDIANTE] },
+      { icono: <BookOpen size={20}/>, etiqueta: 'Libros', ruta: '/libros', roles: [Rol.ADMIN, Rol.ESTUDIANTE, Rol.PROFESOR] },
+      { icono: <BookOpen size={20}/>, etiqueta: 'Catálogo', ruta: '/catalogo', roles: [Rol.ADMIN, Rol.ESTUDIANTE, Rol.PROFESOR] },
       { icono: <ClipboardList size={20}/>, etiqueta: 'Préstamos', ruta: '/prestamos', roles: [Rol.ADMIN] },
       { icono: <ClipboardList size={20}/>, etiqueta: 'Inventario', ruta: '/inventario', roles: [Rol.ADMIN] },
       { icono: <BookOpen size={20}/>, etiqueta: 'Historial', ruta: '/historial-biblioteca', roles: [Rol.ADMIN] },
@@ -365,7 +366,7 @@ export default function Layout({ children, rol, nombre, email, usuarioId, idEsta
             background: '#FFF', borderRadius: '12px', padding: '32px', maxWidth: '400px', width: '90%',
             textAlign: 'center', boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>⏳</div>
+            <Spinner tamaño={48} />
             <h3 style={{ margin: '0 0 8px', color: '#1A3C6B' }}>¿Sigues ahí?</h3>
             <p style={{ fontSize: '14px', color: '#6B7280', margin: '0 0 24px' }}>
               Tu sesión se cerrará por inactividad en menos de <strong>1 minuto</strong>.

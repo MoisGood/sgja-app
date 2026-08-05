@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import Card from '../components/Common/Card';
 import Button from '../components/Common/Button';
 import Modal from '../components/Common/Modal';
+import Spinner from '../components/Common/Spinner';
 
 interface Props {
   idEstablecimiento: string;
@@ -361,7 +362,7 @@ export default function ConfiguracionTecnico({ idEstablecimiento }: Props) {
     loadObservaciones();
   }
 
-  if (cargando) return <p style={{ color: '#6B7280', padding: 24 }}>⏳ Cargando configuración…</p>;
+  if (cargando) return <Spinner texto="Cargando configuración…" />;
 
   function Paginador({ total, pagina, setPagina }: { total: number; pagina: number; setPagina: (n: number) => void }) {
     if (total <= POR_PAGINA) return null;

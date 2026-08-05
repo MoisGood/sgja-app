@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { ClipLoader } from 'react-spinners';
 import { LUGARES_POR_PISO, type LugarData } from '../data/lugares';
 import QRCode from 'qrcode';
 import ModalRequerimiento from './ModalRequerimiento';
+import Spinner from './Common/Spinner';
 import {
   uiReducer, PISOS, ZONE_COLORS, ZONE_LABELS, ESTADO_COLORS,
   type LugarRow, type EquipoRow, type ReqRow,
@@ -526,7 +528,7 @@ const [procesoModal, setProcesoModal] = useState<{ lugar: LugarRow; tickets: Req
 
           {ui.cargando ? (
             <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
-              <span style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>⏳ Cargando mapa interactivo…</span>
+              <Spinner texto="Cargando mapa interactivo…" />
             </div>
           ) : (
             <div ref={wrapperRef} style={{ width: '100%', overflow: 'hidden', position: 'relative', display: 'flex', justifyContent: 'center' }}>
@@ -795,7 +797,7 @@ const [procesoModal, setProcesoModal] = useState<{ lugar: LugarRow; tickets: Req
               style={STYLES.button.primary}
               aria-label={ui.qrUrl ? 'Cerrar código QR' : qrExiste ? 'Ver código QR' : 'Generar código QR'}
               disabled={ui.qrCargando}>
-              {ui.qrCargando ? '⏳' : ui.qrUrl ? '✕ Cerrar QR' : qrExiste ? '📱 Ver QR' : '📱 Generar QR'}
+              {ui.qrCargando ? <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><ClipLoader loading size={14} color="currentColor" /></span> : ui.qrUrl ? '✕ Cerrar QR' : qrExiste ? '📱 Ver QR' : '📱 Generar QR'}
             </button>
             <button onClick={() => dispatch({ type: 'SET_MODAL_REQ', payload: true })}
               style={STYLES.button.secondary}
@@ -837,7 +839,7 @@ const [procesoModal, setProcesoModal] = useState<{ lugar: LugarRow; tickets: Req
           )}
 
           {ui.cargandoDetalle ? (
-            <div style={{ padding: 24, textAlign: 'center', color: '#9ca3af', fontSize: 12 }} aria-live="polite">⏳ Cargando…</div>
+            <Spinner texto="Cargando…" />
           ) : (
             <>
               <div

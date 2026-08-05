@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
-import { Card, Button, EstadoBadge } from '../components/Common';
+import { Card, Button, EstadoBadge, Spinner } from '../components/Common';
 import { obtenerSolicitudesPorEstudiante } from '../services/database';
 import type { Solicitud } from '../types';
 import { getEmojiTipo, getLabelSimple } from '../utils/tipoRegistroHelper';
@@ -74,7 +74,7 @@ export default function DashboardEstudiante({ idEstudiante }: Props) {
   if (cargando) {
     return (
       <div style={styles.contenedor}>
-        <p style={styles.cargando}>⏳ Cargando solicitudes...</p>
+        <Spinner texto="Cargando solicitudes..." />
       </div>
     );
   }

@@ -471,7 +471,7 @@ export async function obtenerSolicitudesDelEstablecimiento(
       query = query.eq('estado', estado);
     }
 
-    const { data, error } = await query.order('fecha', { ascending: false });
+    const { data, error } = await query.order('creado_en', { ascending: false });
 
     if (error) throw error;
     return data || [];

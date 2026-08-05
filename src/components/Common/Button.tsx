@@ -3,6 +3,8 @@
 // src/components/Common/Button.tsx
 // ============================================================
 
+import { ClipLoader } from 'react-spinners';
+
 interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
@@ -72,7 +74,7 @@ export default function Button({
         ...estilosPorTipo[tipo],
       }}
     >
-      {cargando ? '⏳' : children}
+      {cargando ? <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><ClipLoader loading size={16} color="currentColor" /></span> : children}
     </button>
   );
 }

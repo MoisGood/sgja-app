@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button } from '../components/Common';
+import { Button, Spinner } from '../components/Common';
 import { Rol } from '../types';
 import {
   guardarPermisosRol,
@@ -58,24 +58,6 @@ const JERARQUIA: GrupoPaginas[] = [
     rutas: ['/ayuda'],
   },
 ];
-
-function expandirRutasHijas(padre: string, permisos: string[]): string[] {
-  const result = new Set(permisos);
-  const permisosSet = new Set(permisos);
-  for (const grupo of JERARQUIA) {
-    if (grupo.padre === padre || grupo.titulo.toLowerCase() === padre.replace('/', '')) {
-      if (permisosSet.has(padre)) {
-        for (const r of grupo.rutas) result.add(r);
-      }
-    }
-    if (grupo.padre && grupo.rutas.some(r => r !== grupo.padre && permisosSet.has(r))) {
-      if (!permisosSet.has(grupo.padre)) {
-        result.add(grupo.padre);
-      }
-    }
-  }
-  return [...result];
-}
 
 export default function AsignarPermisos({ idEstablecimiento }: Props) {
   const [rolSeleccionado, setRolSeleccionado] = useState<string>(Rol.ADMIN);
@@ -210,10 +192,7 @@ export default function AsignarPermisos({ idEstablecimiento }: Props) {
       setGuardando(true);
       setError(null);
       setExito(null);
-      let permisosActuales = obtenerPermisosActuales();
-      for (const g of JERARQUIA) {
-        if (g.padre) permisosActuales = expandirRutasHijas(g.padre, permisosActuales);
-      }
+      const permisosActuales = obtenerPermisosActuales();
       await guardarPermisosRol(idEstablecimiento, rolSeleccionado, permisosActuales);
       setExito(`✅ Permisos guardados para ${rolSeleccionado}`);
       setTimeout(() => setExito(null), 3000);
@@ -286,7 +265,7 @@ export default function AsignarPermisos({ idEstablecimiento }: Props) {
         </div>
 
         {cargando ? (
-          <p style={styles.cargando}>⏳ Cargando permisos...</p>
+          <Spinner texto="Cargando permisos..." />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {gruposConInfo.map(grupo => {

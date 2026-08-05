@@ -5,6 +5,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "icy-limit-9f6c",
+	"account_id": "d3405b981ea213e2a126fdb2b7d907b9",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-05-23",
 	"migrations": [

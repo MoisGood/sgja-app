@@ -87,8 +87,31 @@ describe('justificarSolicitud (backward compat)', () => {
   it('does not throw when called', async () => {
     const { justificarSolicitud } = await import('../solicitudes.service');
     const { supabase } = await import('../../lib/supabase') as any;
+    supabase.setResult(successResult([{ ...mockSolicitud, estado: EstadoSolicitud.INASISTENCIA_JUSTIFICADA }]));
 
     await expect(justificarSolicitud('s1', mockSolicitud, 'M01', 'Enfermedad')).resolves.not.toThrow();
     expect(supabase.from).toHaveBeenCalledWith('solicitudes');
+  });
+});
+
+describe('justificarInasistencia (guarda de concurrencia)', () => {
+  it('throws when el registro ya no está INASISTENTE (anulado/justificado)', async () => {
+    const { justificarInasistencia } = await import('../solicitudes.service');
+    const { supabase } = await import('../../lib/supabase') as any;
+    supabase.setResult(successResult([]));
+
+    await expect(
+      justificarInasistencia('s1', 'M01', 'Enfermedad', 'insp1', true)
+    ).rejects.toThrow('El registro fue anulado o modificado por otro usuario');
+  });
+
+  it('resolves cuando la fila fue actualizada', async () => {
+    const { justificarInasistencia } = await import('../solicitudes.service');
+    const { supabase } = await import('../../lib/supabase') as any;
+    supabase.setResult(successResult([{ ...mockSolicitud, estado: EstadoSolicitud.INASISTENCIA_JUSTIFICADA }]));
+
+    await expect(
+      justificarInasistencia('s1', 'M01', 'Enfermedad', 'insp1', true)
+    ).resolves.not.toThrow();
   });
 });

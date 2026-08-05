@@ -5,6 +5,7 @@ import {
   obtenerCursosDelEstablecimiento,
   obtenerMotivosDelEstablecimiento,
   obtenerProfesoresDelEstablecimiento,
+  obtenerSolicitudesDelEstablecimiento,
   justificarAtraso,
   justificarInasistencia,
   crearSolicitud,
@@ -12,7 +13,7 @@ import {
 } from '../services/database';
 import type { Estudiante, Solicitud, MotivoJustificacion } from '../types';
 import { EstadoSolicitud, TipoRegistro } from '../types';
-import { esAtraso } from '../utils/tipoRegistroHelper';
+import { supabase } from '../lib/supabase';
 
 interface Props {
   idEstablecimiento: string;
@@ -42,6 +43,7 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<Solicitud | null>(null);
   const [motivoSeleccionado, setMotivoSeleccionado] = useState<string>('');
+  const [tipoModal, setTipoModal] = useState<TipoRegistro>(TipoRegistro.ATRASO);
   const [tieneDocumento, setTieneDocumento] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +60,42 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
   const [modoCrear, setModoCrear] = useState(false);
 
   const selectMotivoRef = useRef<HTMLSelectElement>(null);
+  const modalAbiertoRef = useRef(false);
+  const solicitudSeleccionadaRef = useRef<Solicitud | null>(null);
+  const errorRef = useRef<React.Dispatch<React.SetStateAction<string | null>>>(() => {});
+
+  // Mantener refs sincronizados
+  useEffect(() => { modalAbiertoRef.current = modalAbierto; }, [modalAbierto]);
+  useEffect(() => { solicitudSeleccionadaRef.current = solicitudSeleccionada; }, [solicitudSeleccionada]);
+  useEffect(() => { errorRef.current = setError; }, []);
+
+  // ── Refrescar solicitudes con validación de modal abierto ──
+  const refrescarSolicitudes = async () => {
+    try {
+      const frescas = await obtenerSolicitudesDelEstablecimiento(idEstablecimiento);
+      const ordenadas = [...frescas].sort((a, b) => {
+        const ca = a.creado_en ? new Date(a.creado_en).getTime() : 0;
+        const cb = b.creado_en ? new Date(b.creado_en).getTime() : 0;
+        if (ca && cb && ca !== cb) return cb - ca;
+        const cmpFecha = b.fecha.localeCompare(a.fecha);
+        if (cmpFecha !== 0) return cmpFecha;
+        return (b.hora || '').localeCompare(a.hora || '');
+      });
+      setSolicitudes(ordenadas);
+
+      // Si el modal está abierto, validar que la solicitud siga siendo INASISTENTE
+      if (modalAbiertoRef.current && solicitudSeleccionadaRef.current) {
+        const actual = ordenadas.find(s => s.id_solicitud === solicitudSeleccionadaRef.current!.id_solicitud);
+        if (!actual || actual.estado !== EstadoSolicitud.INASISTENTE) {
+          errorRef.current('Este registro fue anulado o modificado por otro usuario');
+          setModalAbierto(false);
+          setSolicitudSeleccionada(null);
+          setMotivoSeleccionado('');
+          setModoCrear(false);
+        }
+      }
+    } catch { /* ignorar */ }
+  };
 
   // ── Cargar datos iniciales y escuchar cambios en tiempo real ──
   useEffect(() => {
@@ -95,7 +133,15 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
         unsubscribe = escucharSolicitudesInjustificadas(
           idEstablecimiento,
           (solicitudesData) => {
-            setSolicitudes(solicitudesData);
+            const ordenadas = [...solicitudesData].sort((a, b) => {
+              const ca = a.creado_en ? new Date(a.creado_en).getTime() : 0;
+              const cb = b.creado_en ? new Date(b.creado_en).getTime() : 0;
+              if (ca && cb && ca !== cb) return cb - ca;
+              const cmpFecha = b.fecha.localeCompare(a.fecha);
+              if (cmpFecha !== 0) return cmpFecha;
+              return (b.hora || '').localeCompare(a.hora || '');
+            });
+            setSolicitudes(ordenadas);
           }
         );
 
@@ -113,10 +159,21 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
     };
   }, [idEstablecimiento]);
 
+  useEffect(() => {
+    const intervalo = setInterval(refrescarSolicitudes, 10000);
+    return () => clearInterval(intervalo);
+  }, [idEstablecimiento]);
+
+  useEffect(() => {
+    window.addEventListener('paseNuevo', refrescarSolicitudes);
+    return () => window.removeEventListener('paseNuevo', refrescarSolicitudes);
+  }, [idEstablecimiento]);
+
   const abrirModal = (solicitud: Solicitud) => {
     if (solicitud.estado === EstadoSolicitud.INASISTENTE) {
       setModoCrear(false);
       setSolicitudSeleccionada(solicitud);
+      setTipoModal(solicitud.tipo);
       setModalAbierto(true);
       setMotivoSeleccionado('');
       setError(null);
@@ -168,6 +225,7 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
     if (!confirm(`${estudianteLookup.nombre_completo} no tiene registro hoy.\n¿Desea crear la justificación?`)) return;
     setModoCrear(true);
     setSolicitudSeleccionada(null);
+    setTipoModal(tipoNuevo);
     setMotivoSeleccionado('');
     setError(null);
     setModalAbierto(true);
@@ -210,7 +268,7 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
           id_establecimiento: idEstablecimiento,
           id_estudiante: estudianteLookup.id_estudiante,
           id_profesor: idUsuario || '',
-          tipo: tipoNuevo,
+          tipo: tipoModal,
           fecha: fechaForm,
           hora: horaForm,
           estado: EstadoSolicitud.INJUSTIFICADA,
@@ -224,16 +282,25 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
         };
         await crearSolicitud(nueva);
 
-        if (tipoNuevo === TipoRegistro.ATRASO) {
+        if (tipoModal === TipoRegistro.ATRASO) {
           await justificarAtraso(id_solicitud, codigoMotivo, descripcionMotivo, idUsuario);
         } else {
           await justificarInasistencia(id_solicitud, codigoMotivo, descripcionMotivo, idUsuario, tieneDocumento);
         }
         setEstadoLookup('justificado');
       } else if (solicitudSeleccionada) {
-        const esAtrasoItem = esAtraso(solicitudSeleccionada.tipo);
+        // Validar que el registro siga existiendo y en estado INASISTENTE
+        const actual = solicitudes.find(s => s.id_solicitud === solicitudSeleccionada.id_solicitud);
+        if (!actual || actual.estado !== EstadoSolicitud.INASISTENTE) {
+          setError('Este registro fue anulado o modificado por otro usuario');
+          cerrarModal();
+          await refrescarSolicitudes();
+          return;
+        }
 
-        if (esAtrasoItem) {
+        const tipoCambio = tipoModal !== solicitudSeleccionada.tipo;
+
+        if (tipoModal === TipoRegistro.ATRASO) {
           await justificarAtraso(
             solicitudSeleccionada.id_solicitud,
             codigoMotivo,
@@ -250,15 +317,31 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
           );
         }
 
+        // Si cambió el tipo, actualizar también el tipo en la solicitud
+        if (tipoCambio) {
+          const { error: errTipo } = await supabase
+            .from('solicitudes')
+            .update({ tipo: tipoModal })
+            .eq('id_solicitud', solicitudSeleccionada.id_solicitud);
+          if (errTipo) console.warn('No se pudo actualizar el tipo:', errTipo);
+        }
+
         // Refrescar badge del lookup si es el mismo estudiante
         if (estudianteLookup?.id_estudiante === solicitudSeleccionada.id_estudiante) {
           setEstadoLookup('justificado');
         }
       }
 
+      // Refrescar tabla inmediatamente
+      await refrescarSolicitudes();
+
       cerrarModal();
     } catch (err) {
-      setError(`Error al justificar: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+      const mensaje = err instanceof Error ? err.message : 'Error desconocido';
+      const anulado = mensaje.toLowerCase().includes('anulado') || mensaje.toLowerCase().includes('modificado');
+      setError(anulado ? mensaje : `Error al justificar: ${mensaje}`);
+      cerrarModal();
+      await refrescarSolicitudes().catch(() => {});
     } finally {
       setGuardando(false);
     }
@@ -351,10 +434,6 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
                     <span style={{ fontWeight: '600', color: '#374151' }}>Fecha: </span>
                     {fechaForm} a las {horaForm}
                   </div>
-                  <div>
-                    <span style={{ fontWeight: '600', color: '#374151' }}>Tipo: </span>
-                    {tipoNuevo}
-                  </div>
                 </>
               ) : solicitudSeleccionada ? (
                 <>
@@ -366,12 +445,39 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
                     <span style={{ fontWeight: '600', color: '#374151' }}>Fecha: </span>
                     {solicitudSeleccionada.fecha} a las {solicitudSeleccionada.hora}
                   </div>
-                  <div>
-                    <span style={{ fontWeight: '600', color: '#374151' }}>Tipo: </span>
-                    {solicitudSeleccionada.tipo}
-                  </div>
                 </>
               ) : null}
+
+              {/* Selector de tipo */}
+              <div style={{
+                display: 'flex', gap: 8, marginTop: '0.75rem',
+                padding: '0.5rem', background: '#f9fafb', borderRadius: 6,
+              }}>
+                <label style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  padding: '6px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  background: tipoModal === TipoRegistro.ATRASO ? '#FCD34D' : '#f3f4f6',
+                  color: tipoModal === TipoRegistro.ATRASO ? '#92400E' : '#6b7280',
+                  border: tipoModal === TipoRegistro.ATRASO ? '2px solid #F59E0B' : '2px solid transparent',
+                }}>
+                  <input type="radio" name="tipoModal" checked={tipoModal === TipoRegistro.ATRASO}
+                    onChange={() => { setTipoModal(TipoRegistro.ATRASO); setMotivoSeleccionado(''); }}
+                    style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} />
+                  🕐 Atraso
+                </label>
+                <label style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  padding: '6px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  background: tipoModal === TipoRegistro.INASISTENCIA ? '#FCA5A5' : '#f3f4f6',
+                  color: tipoModal === TipoRegistro.INASISTENCIA ? '#991B1B' : '#6b7280',
+                  border: tipoModal === TipoRegistro.INASISTENCIA ? '2px solid #EF4444' : '2px solid transparent',
+                }}>
+                  <input type="radio" name="tipoModal" checked={tipoModal === TipoRegistro.INASISTENCIA}
+                    onChange={() => { setTipoModal(TipoRegistro.INASISTENCIA); setMotivoSeleccionado(''); }}
+                    style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} />
+                  ❌ Inasistencia
+                </label>
+              </div>
             </div>
 
             {/* Motivo */}
@@ -380,14 +486,13 @@ export default function RegistrarJustificacion({ idEstablecimiento, idUsuario = 
                 Motivo de Justificación *
               </label>
               {(() => {
-                const tipoActual = modoCrear ? tipoNuevo : solicitudSeleccionada?.tipo;
-                const motivosFiltrados = motivos.filter(m => !tipoActual || m.tipo_registro === tipoActual);
+                const motivosFiltrados = motivos.filter(m => !tipoModal || m.tipo_registro === tipoModal);
                 return motivosFiltrados.length === 0 ? (
                   <div style={{
                     background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '8px',
                     padding: '1rem', fontSize: '0.875rem', color: '#92400E',
                   }}>
-                    No hay motivos de tipo "{tipoActual}" disponibles.
+                    No hay motivos de tipo "{tipoModal}" disponibles.
                     Ve a <strong>Mantenedores &gt; Justificaciones</strong> para agregarlos.
                   </div>
                 ) : (

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Pencil, Check, X } from 'lucide-react';
 import type { Lugar } from '../types';
+import Spinner from './Common/Spinner';
 
 interface Props {
   idEstablecimiento: string;
@@ -75,7 +76,7 @@ export default function ConfigurarMapa({ idEstablecimiento }: Props) {
     setLugares(prev => prev.map(l => l.id === lugar.id ? { ...l, soporte: nuevoSoporte } : l));
   }
 
-  if (cargando) return <p style={{ color: '#6b7280' }}>⏳ Cargando ubicaciones…</p>;
+  if (cargando) return <Spinner texto="Cargando ubicaciones…" />;
 
   return (
     <div>

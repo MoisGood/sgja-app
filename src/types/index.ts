@@ -108,6 +108,7 @@ export interface Solicitud {
   curso?:              string;         // Curso del estudiante (para referencia)
   id_bloque?:          string;         // ID del bloque donde ocurrió la ausencia
   bloques_afectados?:  number;         // Cuántos bloques consecutivos está ausente
+  creado_en?:          string;         // Timestamp de registro en el sistema (orden de llegada)
 }
 
 export interface TokenQR {

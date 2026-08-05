@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
-import { Card, Button, EstadoBadge } from '../components/Common';
+import { Card, Button, EstadoBadge, Spinner } from '../components/Common';
 import {
   obtenerSolicitudesDelEstablecimiento,
   actualizarEstadoSolicitud,
@@ -72,7 +72,7 @@ export default function DashboardInspector({ idEstablecimiento }: Props) {
   if (cargando) {
     return (
       <div style={styles.contenedor}>
-        <p style={styles.cargando}>⏳ Cargando solicitudes...</p>
+        <Spinner texto="Cargando solicitudes..." />
       </div>
     );
   }

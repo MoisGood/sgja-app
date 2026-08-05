@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react';
-import { Button, Modal } from '../components/Common';
+import { Button, Modal, Spinner } from '../components/Common';
 import {
   obtenerBloquesHorarios,
   crearBloqueHorario,
@@ -184,7 +184,7 @@ export default function BloqueHorario({ idEstablecimiento }: Props) {
       </div>
 
       {cargando ? (
-        <div style={styles.cargando}>⏳ Cargando bloques horarios...</div>
+        <Spinner texto="Cargando bloques horarios..." />
       ) : bloques.length === 0 ? (
         <div style={styles.vacio}>📭 No hay bloques de horario configurados</div>
       ) : (

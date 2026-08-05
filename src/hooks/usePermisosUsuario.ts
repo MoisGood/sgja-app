@@ -48,7 +48,12 @@ export function usePermisosUsuario(
         if (error) throw error;
 
         if (data?.permisos) {
-          setPermisos(Array.isArray(data.permisos) ? data.permisos : []);
+          const base = Array.isArray(data.permisos) ? data.permisos : [];
+          if (Object.values(Rol).includes(rolUsuario as Rol)) {
+            setPermisos([...new Set([...base, ...obtenerPermisosDefecto(rolUsuario)])]);
+          } else {
+            setPermisos(base);
+          }
         } else if (Object.values(Rol).includes(rolUsuario as Rol)) {
           setPermisos(obtenerPermisosDefecto(rolUsuario));
         } else {
@@ -87,7 +92,7 @@ function obtenerPermisosDefecto(rol: Rol): string[] {
     ],
     [Rol.PARADOCENTE]: [],
     [Rol.INSPECTOR]: [],
-    [Rol.PROFESOR]: [],
+    [Rol.PROFESOR]: ['/catalogo', '/biblioteca'],
     [Rol.ESTUDIANTE]: [],
     [Rol.APODERADO]: [],
   };

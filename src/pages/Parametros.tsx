@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '../hooks/useTheme';
+import SpinnerSelector from '../components/Common/SpinnerSelector';
 import { obtenerParametrosDelEstablecimiento, actualizarParametros, crearParametros } from '../services/database';
 import type { Parametros as ParametrosType } from '../services/database';
 import MantenimientoConfig from './MantenimientoConfig';
@@ -449,6 +450,17 @@ export default function Parametros({ idEstablecimiento }: Props) {
                 <li>El tema se aplicará a todas tus futuras sesiones</li>
                 <li>Puedes cambiar el tema en cualquier momento</li>
               </ul>
+            </div>
+
+            {/* Selector de Spinner */}
+            <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: `1px solid ${temaOscuro ? '#374151' : '#e5e7eb'}` }}>
+              <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: temaOscuro ? '#f3f4f6' : '#1f2937', fontWeight: '600' }}>
+                ⏳ Estilo de Carga
+              </h2>
+              <p style={{ margin: '0 0 1rem 0', color: temaOscuro ? '#9ca3af' : '#6b7280', fontSize: '0.875rem' }}>
+                Elige el indicador de carga que prefieras para toda la aplicación
+              </p>
+              <SpinnerSelector temaOscuro={temaOscuro} />
             </div>
           </div>
         )}

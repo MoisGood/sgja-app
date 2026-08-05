@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import QRCode from 'qrcode';
+import { ClipLoader } from 'react-spinners';
+import Spinner from '../components/Common/Spinner';
 
 export default function Configurar2FA({ onCompletado }: { onCompletado?: () => void }) {
   const [paso, setPaso] = useState<'cargando' | 'listo' | 'qr' | 'verificado'>('cargando');
@@ -63,7 +65,7 @@ export default function Configurar2FA({ onCompletado }: { onCompletado?: () => v
         </div>
       )}
 
-      {paso === 'cargando' && <p style={{ color: '#6B7280' }}>⏳ Verificando estado...</p>}
+      {paso === 'cargando' && <Spinner texto="Verificando estado..." />}
 
       {paso === 'listo' && (
         <div style={{ background: '#FFF', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '24px', textAlign: 'center' }}>
@@ -115,7 +117,7 @@ export default function Configurar2FA({ onCompletado }: { onCompletado?: () => v
               padding: '10px 20px', background: codigo.length === 6 ? '#1A3C6B' : '#9CA3AF', color: '#FFF',
               border: 'none', borderRadius: '6px', fontWeight: 600, cursor: codigo.length === 6 ? 'pointer' : 'default'
             }}>
-              {verificando ? '⏳' : 'Verificar'}
+              {verificando ? <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><ClipLoader loading size={14} color="currentColor" /></span> : 'Verificar'}
             </button>
           </div>
           <button type="button" onClick={handleIniciar} style={{

@@ -10,10 +10,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import { Rol } from './types';
+import Spinner from './components/Common/Spinner';
 import Login from './pages/Login';
 import Layout from './components/Layout';
 import DashboardAdmin from './pages/DashboardAdmin';
 import DashboardInspector from './pages/DashboardInspector';
+import DashboardParadocente from './pages/DashboardParadocente';
+import DashboardParadocenteMovil from './pages/DashboardParadocenteMovil';
 
 import DashboardEstudiante from './pages/DashboardEstudiante';
 import DashboardApoderado from './pages/DashboardApoderado';
@@ -65,6 +68,7 @@ import { SkinProvider } from './contexts/SkinContext';
 import QrRedirect from './pages/QrRedirect';
 import Configurar2FA from './pages/Configurar2FA';
 import AyudaPage from './pages/AyudaPage';
+import AyudaProfesor from './pages/AyudaProfesor';
 import AdminAyuda from './pages/AdminAyuda';
 import RegistroAccidente from './pages/RegistrarAccidente';
 
@@ -204,6 +208,8 @@ export default function AppContent() {
             uid,
             tipo: esMovil() ? 'movil' : 'computador',
             sessionId,
+            idEstablecimiento: idEstablecimiento || '',
+            rol: rol || '',
           }));
           ws?.send(JSON.stringify({ tipoMsg: 'ping' }));
         };
@@ -215,6 +221,9 @@ export default function AppContent() {
               kicked = true;
               setKickedByAdmin(true);
               setTimeout(cerrarSesion, 1500);
+            }
+            if (datos.tipoMsg === 'paseNuevo') {
+              window.dispatchEvent(new CustomEvent('paseNuevo', { detail: datos }));
             }
           } catch {}
         };
@@ -254,8 +263,7 @@ export default function AppContent() {
   if (cargando) {
     return (
       <div style={styles.pantallaCarga}>
-        <p style={styles.spinner}>⏳</p>
-        <p style={styles.textoCarga}>Cargando AGIL...</p>
+        <Spinner estiloTexto={{ fontSize: 'inherit', color: 'inherit' }} />
       </div>
     );
   }
@@ -360,8 +368,7 @@ export default function AppContent() {
   if (cargandoMfa) {
     return (
       <div style={styles.pantallaCarga}>
-        <p style={styles.spinner}>⏳</p>
-        <p style={styles.textoCarga}>Verificando seguridad...</p>
+        <Spinner estiloTexto={{ fontSize: 'inherit', color: 'inherit' }} />
       </div>
     );
   }
@@ -405,6 +412,11 @@ export default function AppContent() {
         return <DashboardAdmin idEstablecimiento={idEstablecimiento} />;
       case 'INSPECTOR':
         return <DashboardInspector idEstablecimiento={idEstablecimiento} />;
+      case 'PARADOCENTE': {
+        const movil = typeof window !== 'undefined' && window.innerWidth < 768;
+        if (movil) return <Navigate to="/inspectoria/m/inicio" replace />;
+        return <DashboardParadocente idEstablecimiento={idEstablecimiento} nombre={nombre || ''} apellidos={apellidos || ''} />;
+      }
       case 'PROFESOR':
         return <GestionPases idEstablecimiento={idEstablecimiento} rol={rol!} idUsuarioActual={uid || ''} />;
       case 'ESTUDIANTE':
@@ -574,7 +586,7 @@ export default function AppContent() {
           <Route path="/inspectoria/crear-pase" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
           <Route path="/inspectoria/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PARADOCENTE') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
           <Route path="/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
-          <Route path="/inspectoria/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
+          <Route path="/inspectoria/m/inicio" element={rol === 'PARADOCENTE' ? <DashboardParadocenteMovil idEstablecimiento={idEstablecimiento!} nombre={nombre || ''} apellidos={apellidos || ''} /> : <InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
           <Route path="/inspectoria/m/crear-pase" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
           <Route path="/inspectoria/m/gestion-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PARADOCENTE') ? <RegistrarJustificacion idEstablecimiento={idEstablecimiento!} idUsuario={uid || ''} /> : null} />
           <Route path="/inspectoria/m/ver-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR' || rol === 'PARADOCENTE') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
@@ -587,7 +599,7 @@ export default function AppContent() {
           <Route path="/secretaria/m/perfil" element={<InspectoriaMobilePerfil nombre={nombre || 'Usuario'} email={email || ''} rol={rol as any} />} />
           {/* Biblioteca mobile */}
           <Route path="/biblioteca/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
-          <Route path="/biblioteca/m/catalogo" element={puedeVer('/biblioteca', 'ADMIN') || rol === 'ESTUDIANTE' ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/biblioteca/m/catalogo" element={puedeVer('/biblioteca', 'ADMIN') || rol === 'ESTUDIANTE' || rol === 'PROFESOR' ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/biblioteca/m/config" element={puedeVer('/biblioteca', 'ADMIN') ? <ConfigBiblioteca idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/biblioteca/m/perfil" element={<InspectoriaMobilePerfil nombre={nombre || 'Usuario'} email={email || ''} rol={rol as any} />} />
           <Route path="/parametros" element={puedeVer('/parametros', 'ADMIN') ? <Parametros idEstablecimiento={idEstablecimiento!} /> : null} />
@@ -600,8 +612,8 @@ export default function AppContent() {
           <Route path="/correos" element={puedeVer('/correos', 'ADMIN') ? <Correos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/monitoreo-fallos" element={puedeVer('/monitoreo-fallos', 'ADMIN') ? <MonitoreoFallos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/libros" element={puedeVer('/libros', 'ADMIN') ? <MantenedorLibros idEstablecimiento={idEstablecimiento!} /> : null} />
-          <Route path="/catalogo" element={puedeVer('/catalogo', 'ADMIN') ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
-          <Route path="/biblioteca" element={puedeVer('/biblioteca', 'ADMIN') ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/catalogo" element={puedeVer('/catalogo', 'ADMIN', 'PROFESOR') ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/biblioteca" element={puedeVer('/biblioteca', 'ADMIN', 'PROFESOR') ? <Catalogo idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/prestamos" element={puedeVer('/prestamos', 'ADMIN') ? <Circulacion idEstablecimiento={idEstablecimiento!} usuarioId={uid || ''} /> : null} />
           <Route path="/historial-biblioteca" element={puedeVer('/historial-biblioteca', 'ADMIN') ? <HistorialBiblioteca idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/config-biblioteca" element={puedeVer('/config-biblioteca', 'ADMIN') ? <ConfigBiblioteca idEstablecimiento={idEstablecimiento!} /> : null} />
@@ -627,9 +639,9 @@ export default function AppContent() {
           <Route path="/tecnico/m/qr" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <MobileQrScanner idEstablecimiento={idEstablecimiento!} nombre={nombre || ''} apellidos={apellidos || ''} /> : null} />
           <Route path="/tecnico/m/accesos" element={(rol === 'ADMIN' || rol === 'TECNICO' as string) ? <AccesosRapidos idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/tecnico/configuracion" element={puedeVer('/tecnico', 'ADMIN') ? <ConfiguracionTecnico idEstablecimiento={idEstablecimiento!} /> : null} />
-          <Route path="/ayuda" element={<AyudaPage />} />
-          <Route path="/ayuda/admin" element={rol === 'ADMIN' ? <AdminAyuda /> : <AyudaPage />} />
-          <Route path="/registrar-accidente" element={rol === 'ADMIN' || rol === 'PROFESOR' || rol === 'INSPECTOR' ? <RegistroAccidente idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/ayuda" element={rol === 'PROFESOR' ? <AyudaProfesor /> : <AyudaPage />} />
+          <Route path="/ayuda/admin" element={rol === 'ADMIN' ? <AdminAyuda /> : (rol === 'PROFESOR' ? <AyudaProfesor /> : <AyudaPage />)} />
+          <Route path="/registrar-accidente" element={rol === 'ADMIN' || rol === 'PROFESOR' || rol === 'INSPECTOR' || rol === 'PARADOCENTE' ? <RegistroAccidente idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="*" element={renderRoleDashboard()} />
         </Routes>
       </Layout>
@@ -647,15 +659,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: 'Arial, sans-serif',
     flexDirection: 'column',
     gap: '12px',
-  },
-  spinner: {
-    fontSize: '48px',
-    margin: 0,
-  },
-  textoCarga: {
-    color: '#6B7280',
-    fontSize: '16px',
-    margin: 0,
+    fontSize: '18px',
+    color: '#1A3C6B',
   },
   card: {
     backgroundColor: '#FFFFFF',

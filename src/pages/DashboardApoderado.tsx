@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
-import { Card, EstadoBadge } from '../components/Common';
+import { Card, EstadoBadge, Spinner } from '../components/Common';
 import { obtenerSolicitudesPorEstudiante, obtenerEstudiantesPorApoderado } from '../services/database';
 import { obtenerPrestamosActivos } from '../services/library';
 import type { Solicitud, Estudiante } from '../types';
@@ -62,7 +62,7 @@ export default function DashboardApoderado({ idApoderado, idEstablecimiento }: P
   if (cargando) {
     return (
       <div style={styles.contenedor}>
-        <p style={styles.cargando}>⏳ Cargando información...</p>
+        <Spinner texto="Cargando información..." />
       </div>
     );
   }

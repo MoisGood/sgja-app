@@ -4,7 +4,7 @@ export function createMockSupabase() {
   let _result: any = { data: null, error: null };
 
   const methods: Record<string, any> = {};
-  const chainable = ['select', 'insert', 'update', 'delete', 'eq', 'neq', 'in', 'ilike', 'order', 'limit', 'range', 'not', 'is'];
+  const chainable = ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'in', 'ilike', 'order', 'limit', 'range', 'not', 'is'];
 
   for (const m of chainable) {
     methods[m] = vi.fn(() => chain);

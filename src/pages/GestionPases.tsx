@@ -1,14 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Card } from '../components/Common';
 import {
   obtenerEstudiantesDelEstablecimiento,
+  obtenerProfesoresDelEstablecimiento,
   crearSolicitud,
   obtenerSolicitudesDelEstablecimiento,
   obtenerSolicitudesPorCursoYFecha,
   actualizarSolicitud,
   obtenerBloquesHorarios,
+  escucharSolicitudes,
 } from '../services/database';
-import type { Estudiante, Solicitud, BloqueHorario } from '../types';
+import type { Estudiante, Solicitud, BloqueHorario, Usuario } from '../types';
 import { EstadoSolicitud, TipoRegistro } from '../types';
 import { esAtraso } from '../utils/tipoRegistroHelper';
 
@@ -36,11 +38,14 @@ interface MultiBloqueInfo {
 
 const ITEMS_POR_PAGINA = 10;
 
+const formatearHora = (hora: string) => (hora ? hora.slice(0, 5) : hora);
+
 export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, tabExterno }: Props) {
   const [tab, setTab] = useState<'crear' | 'ver'>('crear');
   const tabEfectivo = tabExterno || tab;
   const [esMobil, setEsMobil] = useState(window.innerWidth < 768);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
+  const [profesoresMap, setProfesoresMap] = useState<Record<string, string>>({});
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -109,6 +114,58 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
     return () => document.removeEventListener('mousedown', cerrar);
   }, [filtroAbierto]);
 
+  useEffect(() => {
+    if (!idEstablecimiento) return;
+
+    const unsubscribe = escucharSolicitudes(idEstablecimiento, (solicitudesData) => {
+      const ordenadas = [...solicitudesData].sort((a, b) => {
+        const ca = (a as any).creado_en;
+        const cb = (b as any).creado_en;
+        if (ca && cb) return new Date(cb).getTime() - new Date(ca).getTime();
+        const cmpFecha = b.fecha.localeCompare(a.fecha);
+        if (cmpFecha !== 0) return cmpFecha;
+        return (b.hora || '').localeCompare(a.hora || '');
+      });
+      setSolicitudes(ordenadas);
+    });
+
+    return () => { unsubscribe(); };
+  }, [idEstablecimiento]);
+
+  const refrescarSolicitudesMovil = useCallback(async () => {
+    if (!idEstablecimiento) return;
+    try {
+      const frescas = await obtenerSolicitudesDelEstablecimiento(idEstablecimiento);
+      const ordenadas = [...frescas].sort((a, b) => {
+        const ca = (a as any).creado_en;
+        const cb = (b as any).creado_en;
+        if (ca && cb) return new Date(cb).getTime() - new Date(ca).getTime();
+        const cmpFecha = b.fecha.localeCompare(a.fecha);
+        if (cmpFecha !== 0) return cmpFecha;
+        return (b.hora || '').localeCompare(a.hora || '');
+      });
+      setSolicitudes(ordenadas);
+    } catch { /* ignorar, el realtime lo cubrirá */ }
+  }, [idEstablecimiento]);
+
+  useEffect(() => {
+    const handler = () => { refrescarSolicitudesMovil(); };
+    window.addEventListener('paseNuevo', handler);
+
+    const intervalo = setInterval(refrescarSolicitudesMovil, 10000);
+
+    const alVolverAlPrimerPlano = () => {
+      if (document.visibilityState === 'visible') refrescarSolicitudesMovil();
+    };
+    document.addEventListener('visibilitychange', alVolverAlPrimerPlano);
+
+    return () => {
+      window.removeEventListener('paseNuevo', handler);
+      clearInterval(intervalo);
+      document.removeEventListener('visibilitychange', alVolverAlPrimerPlano);
+    };
+  }, [idEstablecimiento, refrescarSolicitudesMovil]);
+
   const detectarBloqueActual = (bloquesData: BloqueHorario[]): string => {
     const ahora = new Date();
     const hora = ahora.toTimeString().slice(0, 5);
@@ -126,13 +183,25 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
     return '';
   };
 
+  const nombreProfesorCorto = (nombre: string, apellidos?: string): string => {
+    const inicial = (nombre || '').trim().charAt(0).toUpperCase();
+    const apellido = (apellidos || '').trim().split(/\s+/)[0] || '';
+    return apellido ? `${inicial}.${apellido}` : (nombre || '').trim();
+  };
+
+  const formatearFechaCorta = (fecha: string): string => {
+    const [a, m, d] = (fecha || '').split('-');
+    return a && m && d ? `${d.slice(-2)}-${m.slice(-2)}-${a.slice(-2)}` : fecha;
+  };
+
   const cargarDatos = async () => {
     try {
       setCargando(true);
-      const [estudiantesData, solicitudesData, bloquesData] = await Promise.all([
+      const [estudiantesData, solicitudesData, bloquesData, profesoresData] = await Promise.all([
         obtenerEstudiantesDelEstablecimiento(idEstablecimiento).catch(() => []),
         obtenerSolicitudesDelEstablecimiento(idEstablecimiento).catch(() => []),
         obtenerBloquesHorarios(idEstablecimiento).catch(() => []),
+        obtenerProfesoresDelEstablecimiento(idEstablecimiento).catch(() => [] as Usuario[]),
       ]);
       setBloques(bloquesData);
       const bloquesClase = bloquesData.filter(b => !b.nombre_bloque.toLowerCase().includes('recre'));
@@ -147,6 +216,13 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       }
       setEstudiantes(estudiantesData);
       setSolicitudes(solicitudesData);
+      setProfesoresMap(
+        Object.fromEntries(
+          (profesoresData as Usuario[])
+            .filter(p => p.id_usuario)
+            .map(p => [p.id_usuario, nombreProfesorCorto(p.nombre_completo, p.apellidos)])
+        )
+      );
     } catch (err) {
       setError('Error al cargar datos');
       console.error(err);
@@ -247,7 +323,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
   };
 
   const toggleCardClick = (id: string) => {
-    if (cardsLockedRef.current.has(id)) return;
+    if (estaBloqueado(id)) return;
     if (longPressRef.current?.id === id && longPressRef.current.fired) {
       longPressRef.current = null;
       return;
@@ -268,7 +344,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
   };
 
   const toggleCardDblClick = (id: string) => {
-    if (cardsLockedRef.current.has(id)) return;
+    if (estaBloqueado(id)) return;
     setCardsMultiVisible(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
@@ -277,7 +353,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
   };
 
   const iniciarLongPress = (id: string) => {
-    if (cardsLockedRef.current.has(id)) return;
+    if (estaBloqueado(id)) return;
     if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
     longPressTimerRef.current = window.setTimeout(() => {
       longPressRef.current = { id, fired: true };
@@ -389,7 +465,16 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
 
       creados.forEach(id => cardsLockedRef.current.add(id));
       setExito(true);
-      await cargarDatos();
+      // Refrescar solo solicitudes y cards sin resetear bloque/hora
+      const frescas = await obtenerSolicitudesDelEstablecimiento(idEstablecimiento).catch(() => [] as Solicitud[]);
+      setSolicitudes(frescas);
+      await reloadCards(formData.curso, bloqueSeleccionado || undefined).catch(() => {});
+      // Notificar al inspector vía WebSocket Cloudflare
+      fetch('https://icy-limit-9f6c.soportetipresente.workers.dev/api/notificar-pases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idEstablecimiento }),
+      }).catch(() => {});
       setTimeout(() => setExito(false), 3000);
     } catch (err) {
       // Falla parcial: los creados quedan grabados; bloquearlos para evitar duplicados al reintentar.
@@ -401,18 +486,19 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
     }
   };
 
-  const handleAnularPase = async (id_solicitud: string, id_profesor: string, id_estudiante?: string) => {
-    if (rol !== 'ADMIN' && idUsuarioActual !== id_profesor) {
-      setError('Solo puedes anular tus propios pases');
-      return;
-    }
+  const handleAnularPase = async (id_solicitud: string, _id_profesor: string, id_estudiante?: string) => {
+    setError(null);
     if (!confirm('¿Estás seguro de que deseas anular este pase?')) return;
     try {
       await actualizarSolicitud(id_solicitud, { estado: EstadoSolicitud.NO_PRESENTADA });
-      setSolicitudes(prev => prev.map(s => s.id_solicitud === id_solicitud ? { ...s, estado: EstadoSolicitud.NO_PRESENTADA } : s));
+      const frescas = await obtenerSolicitudesDelEstablecimiento(idEstablecimiento).catch(() => [] as Solicitud[]);
+      setSolicitudes(frescas);
       if (id_estudiante) {
         setCardsEstado(prev => ({ ...prev, [id_estudiante]: 'presente' }));
         cardsLockedRef.current.delete(id_estudiante);
+      }
+      if (cursoSeleccionado) {
+        reloadCards(cursoSeleccionado, bloqueSeleccionado || undefined).catch(() => {});
       }
       setExito(true);
       setTimeout(() => setExito(false), 3000);
@@ -475,7 +561,14 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
       }
       return true;
     })
-    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+    .sort((a, b) => {
+      const ca = (a as any).creado_en;
+      const cb = (b as any).creado_en;
+      if (ca && cb) return new Date(cb).getTime() - new Date(ca).getTime();
+      const cmpFecha = new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
+      if (cmpFecha !== 0) return cmpFecha;
+      return (b.hora || '').localeCompare(a.hora || '');
+    });
 
   const totalPaginas = Math.ceil(solicitudesFiltradas.length / ITEMS_POR_PAGINA);
   const solicitudosPaginadas = solicitudesFiltradas.slice(
@@ -484,6 +577,20 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
   );
 
   const bloqueActual = bloques.find(b => b.id_bloque === bloqueSeleccionado);
+
+  const registrosBloqueActual = useMemo(() => {
+    const map = new Map<string, Solicitud>();
+    if (bloqueSeleccionado && formData.fecha) {
+      solicitudes.forEach(s => {
+        if (s.id_estudiante && s.fecha === formData.fecha && s.id_bloque === bloqueSeleccionado && s.estado !== EstadoSolicitud.NO_PRESENTADA) {
+          if (!map.has(s.id_estudiante)) map.set(s.id_estudiante, s);
+        }
+      });
+    }
+    return map;
+  }, [solicitudes, formData.fecha, bloqueSeleccionado]);
+
+  const estaBloqueado = (id: string) => cardsLockedRef.current.has(id) || registrosBloqueActual.has(id);
 
   if (cargando) {
     return (
@@ -525,7 +632,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
                 >
                   <h4 style={styles.numeroPaso}>
-                    📚 Paso 1: {cursoSeleccionado || 'Selecciona curso'}{bloqueActual ? ` · ${bloqueActual.nombre_bloque} (${bloqueActual.hora_inicio})` : ''}
+                    📚 Paso 1: {cursoSeleccionado || 'Selecciona curso'}{bloqueActual ? ` · ${bloqueActual.nombre_bloque} (${formatearHora(bloqueActual.hora_inicio)})` : ''}
                   </h4>
                   <span style={{ fontSize: 14, color: '#6B7280' }}>{paso1Abierto ? '▾' : '▸'}</span>
                 </button>
@@ -557,7 +664,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                       >
                       {bloquesClase.map((b) => (
                         <option key={b.id_bloque} value={b.id_bloque}>
-                          {b.nombre_bloque} ({b.hora_inicio}-{b.hora_fin})
+                          {b.nombre_bloque} ({formatearHora(b.hora_inicio)}-{formatearHora(b.hora_fin)})
                         </option>
                       ))}
                       </select>
@@ -565,7 +672,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                   </div>
                   {bloqueActual && (
                     <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6 }}>
-                      ⏰ Bloque detectado: {bloqueActual.nombre_bloque} ({bloqueActual.hora_inicio}-{bloqueActual.hora_fin})
+                      ⏰ Bloque detectado: {bloqueActual.nombre_bloque} ({formatearHora(bloqueActual.hora_inicio)}-{formatearHora(bloqueActual.hora_fin)})
                       {idUsuarioActual && cursoSeleccionado && ' — Registrando tu presencia'}
                     </div>
                   )}
@@ -576,7 +683,19 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
             {/* Student cards */}
             {cursoSeleccionado && (
               <div style={styles.paso} ref={paso2Ref}>
-                <h4 style={styles.numeroPaso}>👤 Paso 2: Marca los ausentes</h4>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <h4 style={styles.numeroPaso}>👤 Paso 2: Marca los ausentes</h4>
+                  {esMobil && (
+                    <button
+                      type="button"
+                      onClick={refrescarSolicitudesMovil}
+                      title="Actualizar justificaciones"
+                      style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 12px', border: '1px solid #BFDBFE', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', backgroundColor: '#EFF6FF', color: '#1D4ED8', whiteSpace: 'nowrap' }}
+                    >
+                      🔄 Actualizar
+                    </button>
+                  )}
+                </div>
                 {esMobil && puedeCrear && (
                   <div style={{ display: 'flex', gap: 8, marginBottom: 10, alignItems: 'stretch' }}>
                     <button
@@ -607,22 +726,29 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                     const estado = cardsEstado[estId] || 'presente';
                     const esAtraso = estado === 'atraso';
                     const esInasistencia = estado === 'inasistencia';
-                    const esLocked = cardsLockedRef.current.has(estId);
+                    const regBloque = registrosBloqueActual.get(estId);
+                    const esLocked = cardsLockedRef.current.has(estId) || !!regBloque;
                     const esMarked = esAtraso || esInasistencia;
 
-                    const bgColor = esLocked
-                      ? (() => {
-                          const sol = solicitudes.find(s => s.id_estudiante === estId && s.fecha === formData.fecha && s.id_bloque === bloqueSeleccionado);
-                          if (!sol) return '#F3F4F6';
-                          if (sol.estado === EstadoSolicitud.INASISTENCIA_JUSTIFICADA || sol.estado === EstadoSolicitud.ATRASO_JUSTIFICADO) return '#DCFCE7';
-                          if (sol.tipo === 'ATRASO') return '#FEF3C7';
-                          return '#FEE2E2';
-                        })()
-                      : esInasistencia
-                        ? 'linear-gradient(135deg,#FEE2E2,#FCA5A5)'
-                        : esAtraso
-                          ? 'linear-gradient(135deg,#FEF3C7,#FCD34D)'
-                          : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)';
+                    const bgColor = regBloque
+                      ? regBloque.estado === EstadoSolicitud.INASISTENCIA_JUSTIFICADA || regBloque.estado === EstadoSolicitud.ATRASO_JUSTIFICADO
+                        ? '#E5E7EB'
+                        : regBloque.tipo === 'ATRASO'
+                          ? '#FEF3C7'
+                          : '#FEE2E2'
+                      : esLocked
+                        ? (() => {
+                            const sol = solicitudes.find(s => s.id_estudiante === estId && s.fecha === formData.fecha && s.id_bloque === bloqueSeleccionado);
+                            if (!sol) return '#F3F4F6';
+                            if (sol.estado === EstadoSolicitud.INASISTENCIA_JUSTIFICADA || sol.estado === EstadoSolicitud.ATRASO_JUSTIFICADO) return '#E5E7EB';
+                            if (sol.tipo === 'ATRASO') return '#FEF3C7';
+                            return '#FEE2E2';
+                          })()
+                        : esInasistencia
+                          ? 'linear-gradient(135deg,#FEE2E2,#FCA5A5)'
+                          : esAtraso
+                            ? 'linear-gradient(135deg,#FEF3C7,#FCD34D)'
+                            : 'linear-gradient(135deg,#D1FAE5,#A7F3D0)';
 
                     const bordeCard = esLocked
                       ? '2px solid #D1D5DB'
@@ -642,7 +768,39 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                         style={{ ...styles.cardItem, background: bgColor, border: bordeCard, cursor: esLocked ? 'default' : 'pointer', opacity: esLocked ? 0.75 : 1, ...(esMobil ? { WebkitUserSelect: 'none' as const, userSelect: 'none' as const, touchAction: 'manipulation' as const } : {}) }}
                       >
                         {esLocked && <span style={{ position: 'absolute', top: 3, right: 3, fontSize: 10, color: '#6B7280', zIndex: 5 }}>🔒</span>}
-                        {esMarked && (
+                        {regBloque && (regBloque.estado === EstadoSolicitud.INASISTENCIA_JUSTIFICADA || regBloque.estado === EstadoSolicitud.ATRASO_JUSTIFICADO) ? (
+                          esMobil ? (
+                            <div style={{
+                              position: 'absolute',
+                              inset: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              zIndex: 6,
+                              pointerEvents: 'none',
+                              overflow: 'hidden',
+                            }}>
+                              <span style={{
+                                fontSize: 6,
+                                fontWeight: 800,
+                                color: '#2563EB',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                transform: 'rotate(-25deg)',
+                                background: 'rgba(219, 234, 254, 0.75)',
+                                padding: '2px 6px',
+                                borderRadius: 2,
+                                lineHeight: '8px',
+                              }}>
+                                JUSTIFICADO
+                              </span>
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, textTransform: 'uppercase', lineHeight: '9px', letterSpacing: '0.2px' }}>
+                              justificado
+                            </div>
+                          )
+                        ) : esMarked && (
                           <div style={{ fontSize: 8, color: '#1F2937', fontWeight: 700, textTransform: 'uppercase', lineHeight: '9px', letterSpacing: '0.2px' }}>
                             {esInasistencia ? 'inasistencia' : 'atraso'}
                           </div>
@@ -764,7 +922,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                     </div>
                     {bloqueActual && (
                       <div style={{ fontSize: 10, color: '#6B7280', marginTop: 2 }}>
-                        ⏰ {bloqueActual.nombre_bloque} ({bloqueActual.hora_inicio}-{bloqueActual.hora_fin})
+                        ⏰ {bloqueActual.nombre_bloque} ({formatearHora(bloqueActual.hora_inicio)}-{formatearHora(bloqueActual.hora_fin)})
                       </div>
                     )}
                   </div>
@@ -823,7 +981,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                           setBloquesMultiSeleccionados(next);
                         }}
                       />
-                      <span>{b.nombre_bloque} ({b.hora_inicio}-{b.hora_fin})</span>
+                      <span>{b.nombre_bloque} ({formatearHora(b.hora_inicio)}-{formatearHora(b.hora_fin)})</span>
                     </label>
                   );
                 })}
@@ -889,21 +1047,25 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                       const puedeanular = rol === 'ADMIN' || sol.id_profesor === idUsuarioActual;
                       return (
                         <div key={sol.id_solicitud} style={styles.mobilCard}>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px 12px', alignItems: 'center' }}>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: '#1F2937' }}>
-                              {est?.nombre_completo} - {est?.curso}
-                            </div>
-                            <div style={{ justifySelf: 'end' }}>
-                              <span style={{ ...styles.badge, ...colorEstado(sol.estado), flexShrink: 0 }}>{etiquetaEstado(sol)}</span>
-                            </div>
-                            <div style={{ fontSize: 12, color: '#6B7280' }}>RUT: {est?.rut}</div>
-                            <div style={{ justifySelf: 'end' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: '#1F2937' }}>{est?.nombre_completo}</div>
+                            <span style={{ ...styles.badge, ...colorEstado(sol.estado), flexShrink: 0 }}>{etiquetaEstado(sol)}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: 12, color: '#6B7280' }}>
+                            <span>{est?.curso}</span>
+                            <span>·</span>
+                            <span>{formatearFechaCorta(sol.fecha)}</span>
+                            <span>·</span>
+                            <span>🕐 {sol.hora}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                            <span style={{ fontSize: 12, color: '#374151' }}>
+                              {profesoresMap[sol.id_profesor] ? `👤 ${profesoresMap[sol.id_profesor]}` : `👤 Prof. ${sol.id_profesor.slice(0, 6)}`}
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <span style={{ ...styles.badge, ...(esAtraso(sol.tipo) ? { backgroundColor: '#FEF3C7', color: '#92400E' } : { backgroundColor: '#FEE2E2', color: '#991B1B' }) }}>
                                 {sol.tipo}
                               </span>
-                            </div>
-                            <div style={{ fontSize: 12, color: '#374151' }}>📅 {sol.fecha} · 🕐 {sol.hora}</div>
-                            <div style={{ justifySelf: 'end' }}>
                               {sol.estado === EstadoSolicitud.NO_PRESENTADA ? (
                                 <span style={{ fontSize: 12, color: '#6B7280', fontWeight: 600 }}>✕ Anulado</span>
                               ) : puedeanular && sol.estado !== 'ATRASO_JUSTIFICADO' && sol.estado !== 'INASISTENCIA_JUSTIFICADA' ? (
@@ -911,7 +1073,7 @@ export default function GestionPases({ idEstablecimiento, rol, idUsuarioActual, 
                                   ✕ Anular
                                 </button>
                               ) : null}
-                            </div>
+                            </span>
                           </div>
                         </div>
                       );

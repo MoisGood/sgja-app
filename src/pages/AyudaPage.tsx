@@ -192,7 +192,7 @@ const FaqCard = ({ titulo, contenido }: { titulo: string; contenido: string }) =
 };
 
 // =============== SISTEMA DE TICKETS (con catálogo de errores) ===============
-const SistemaTickets = () => {
+export const SistemaTickets = () => {
   const { uid, rol } = useAuth();
   const [tickets, setTickets] = useState<any[]>([]);
   const [catalogo, setCatalogo] = useState<any[]>([]);

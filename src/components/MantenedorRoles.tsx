@@ -11,6 +11,7 @@ import {
   eliminarRolPersonalizado,
   actualizarRolPersonalizado,
 } from '../services/database';
+import Spinner from './Common/Spinner';
 
 interface Props {
   idEstablecimiento: string;
@@ -414,7 +415,7 @@ export function MantenedorRoles({ idEstablecimiento, onRolesActualizados }: Prop
       )}
 
       {/* Lista de Roles */}
-      {cargando && <p style={{ color: '#666', fontSize: '0.875rem' }}>⏳ Cargando roles...</p>}
+      {cargando && <Spinner texto="Cargando roles..." />}
 
       {!cargando && rolesPersonalizados.length === 0 && !mostrarFormulario && (
         <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>No hay roles personalizados aún</p>

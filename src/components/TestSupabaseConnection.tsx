@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import Spinner from './Common/Spinner';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -82,7 +83,7 @@ export function TestSupabaseConnection() {
       backgroundColor: status === 'connected' ? '#f0fff4' : status === 'error' ? '#fff5f5' : '#f0f4ff',
     }}>
       <h2 style={{ margin: '0 0 10px 0' }}>
-        {status === 'loading' && '⏳ Probando conexión...'}
+        {status === 'loading' && <Spinner texto="Probando conexión..." />}
         {status === 'connected' && '✅ Conexión exitosa'}
         {status === 'error' && '❌ Error de conexión'}
       </h2>

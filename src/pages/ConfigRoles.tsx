@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { ClipLoader } from 'react-spinners';
 import { obtenerReglas, guardarRegla } from '../services/library';
 import type { LibraryRule } from '../types';
 
@@ -112,7 +113,7 @@ export default function ConfigRoles({ idEstablecimiento }: Props) {
             ) : (
               <>
                 <button type="button" onClick={guardar} disabled={guardando} style={{ padding: '10px 20px', background: '#10B981', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', opacity: guardando ? 0.6 : 1 }}>
-                  {guardando ? '⏳' : '💾'} Guardar
+                  {guardando ? <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><ClipLoader loading size={14} color="currentColor" /></span> : '💾'} Guardar
                 </button>
                 <button type="button" onClick={limpiar} style={{ padding: '10px 20px', background: '#F59E0B', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   🗑️ Por defecto

@@ -87,7 +87,7 @@ export async function obtenerSolicitudesDelEstablecimiento(
       query = query.eq('estado', estado);
     }
 
-    query = query.order('fecha', { ascending: false });
+    query = query.order('creado_en', { ascending: false });
 
     if (limitResultados) {
       query = query.limit(limitResultados);
@@ -171,8 +171,9 @@ export async function actualizarEstadoSolicitud(
     observaciones?: string;
     respaldo_recibido?: boolean;
     tipo_respaldo?: string;
-  }
-): Promise<void> {
+  },
+  estadoBase?: EstadoSolicitud
+): Promise<boolean> {
   try {
     const updateData: Record<string, any> = {
       estado: nuevoEstado,
@@ -188,12 +189,20 @@ export async function actualizarEstadoSolicitud(
     if (datos?.respaldo_recibido !== undefined) updateData.respaldo_recibido = datos.respaldo_recibido;
     if (datos?.tipo_respaldo) updateData.tipo_respaldo = datos.tipo_respaldo;
 
-    const { error } = await supabase
+    let query = supabase
       .from('solicitudes')
       .update(updateData)
       .eq('id_solicitud', idSolicitud);
 
+    // Guarda de concurrencia: solo transiciona si el registro sigue en el estado base esperado
+    if (estadoBase) {
+      query = query.eq('estado', estadoBase);
+    }
+
+    const { data, error } = await query.select();
+
     if (error) throw error;
+    return estadoBase ? (data || []).length > 0 : true;
   } catch (error) {
     console.error('Error al actualizar estado de solicitud:', error);
     throw error;
@@ -210,12 +219,13 @@ export async function justificarAtraso(
   idInspectorJustificador: string,
   observaciones?: string
 ): Promise<void> {
-  await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.ATRASO_JUSTIFICADO, {
+  const afectada = await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.ATRASO_JUSTIFICADO, {
     id_inspector_justificador: idInspectorJustificador,
     motivo_codigo: motivoCodigo,
     motivo_descripcion: motivoDescripcion,
     observaciones,
-  });
+  }, EstadoSolicitud.INASISTENTE);
+  if (!afectada) throw new Error('El registro fue anulado o modificado por otro usuario');
 }
 
 /** Paradocente marca atraso sin justificación */
@@ -224,10 +234,11 @@ export async function marcarAtrasoInjustificado(
   idInspectorJustificador: string,
   observaciones?: string
 ): Promise<void> {
-  await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.ATRASO_INJUSTIFICADO, {
+  const afectada = await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.ATRASO_INJUSTIFICADO, {
     id_inspector_justificador: idInspectorJustificador,
     observaciones,
-  });
+  }, EstadoSolicitud.INASISTENTE);
+  if (!afectada) throw new Error('El registro fue anulado o modificado por otro usuario');
 }
 
 /** Paradocente justifica inasistencia con documento */
@@ -239,13 +250,14 @@ export async function justificarInasistencia(
   respaldoRecibido?: boolean,
   observaciones?: string
 ): Promise<void> {
-  await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.INASISTENCIA_JUSTIFICADA, {
+  const afectada = await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.INASISTENCIA_JUSTIFICADA, {
     id_inspector_justificador: idInspectorJustificador,
     motivo_codigo: motivoCodigo,
     motivo_descripcion: motivoDescripcion,
     respaldo_recibido: respaldoRecibido || false,
     observaciones,
-  });
+  }, EstadoSolicitud.INASISTENTE);
+  if (!afectada) throw new Error('El registro fue anulado o modificado por otro usuario');
 }
 
 /** Paradocente deja inasistencia como no justificada */
@@ -254,15 +266,17 @@ export async function rechazarInasistencia(
   idInspectorJustificador: string,
   observaciones?: string
 ): Promise<void> {
-  await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.INASISTENCIA_NO_JUSTIFICADA, {
+  const afectada = await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.INASISTENCIA_NO_JUSTIFICADA, {
     id_inspector_justificador: idInspectorJustificador,
     observaciones,
-  });
+  }, EstadoSolicitud.INASISTENTE);
+  if (!afectada) throw new Error('El registro fue anulado o modificado por otro usuario');
 }
 
 /** Profesor anula un pase */
 export async function anularSolicitud(idSolicitud: string): Promise<void> {
-  await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.NO_PRESENTADA);
+  const afectada = await actualizarEstadoSolicitud(idSolicitud, EstadoSolicitud.NO_PRESENTADA, undefined, EstadoSolicitud.INASISTENTE);
+  if (!afectada) throw new Error('El registro fue justificado o modificado por otro usuario');
 }
 
 // ── Backward compatibility ──────────────────────────────────────────────
@@ -350,7 +364,8 @@ export function escucharSolicitudes(
             .from('solicitudes')
             .select('*')
             .eq('id_establecimiento', idEstablecimiento)
-            .eq('activo', true);
+            .eq('activo', true)
+            .order('creado_en', { ascending: false });
           callback((data || []).map(prepareSolicitud));
         }
       )

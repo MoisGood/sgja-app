@@ -27,6 +27,27 @@ const LABEL_ROL: Record<Rol, string> = {
   [Rol.APODERADO]: 'Apoderado',
 };
 
+interface DrawerItem {
+  etiqueta: string;
+  icono: string;
+  ruta: string;
+  roles: Rol[];
+}
+
+const DRAWER_ITEMS: DrawerItem[] = [
+  { etiqueta: 'Inicio', icono: 'home', ruta: 'inicio', roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE, Rol.PROFESOR, Rol.ESTUDIANTE, Rol.APODERADO] },
+  { etiqueta: 'Crear Pase', icono: 'add_circle', ruta: 'crear-pase', roles: [Rol.ADMIN] },
+  { etiqueta: 'Pases', icono: 'add_circle', ruta: 'crear-pase', roles: [Rol.PROFESOR] },
+  { etiqueta: 'Pases', icono: 'assignment', ruta: 'gestion-pases', roles: [Rol.INSPECTOR] },
+  { etiqueta: 'Gestión', icono: 'assignment', ruta: 'gestion-pases', roles: [Rol.ADMIN, Rol.PARADOCENTE] },
+  { etiqueta: 'Ver Pases', icono: 'visibility', ruta: 'ver-pases', roles: [Rol.INSPECTOR, Rol.PARADOCENTE] },
+  { etiqueta: 'Formulario de Accidente', icono: 'emergency', ruta: '/registrar-accidente', roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE, Rol.PROFESOR] },
+  { etiqueta: 'Historial', icono: 'history', ruta: 'historial-pases', roles: [Rol.INSPECTOR, Rol.PROFESOR, Rol.ESTUDIANTE, Rol.APODERADO] },
+  { etiqueta: 'Biblioteca', icono: 'book', ruta: 'biblioteca', roles: [Rol.ESTUDIANTE] },
+  { etiqueta: 'Catálogo', icono: 'book', ruta: '/biblioteca/m/catalogo', roles: [Rol.PROFESOR] },
+  { etiqueta: 'Perfil', icono: 'person', ruta: 'perfil', roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE, Rol.PROFESOR, Rol.ESTUDIANTE, Rol.APODERADO] },
+];
+
 const titularEstablecimiento = (nombre?: string): string => {
   if (!nombre) return '';
   const partes = nombre.trim().split(/\s+/);
@@ -224,20 +245,16 @@ export default function SharedMobileLayout({ children, rol, email, areaPrefix, b
                 <p style={{ fontSize: 12, fontWeight: 700, color: temaOscuro ? '#9ca3af' : '#887275', letterSpacing: '0.05em', padding: '8px 12px 4px', margin: 0 }}>
                   NAVEGACIÓN
                 </p>
-                <button
-                  onClick={() => { setMenuAbierto(false); navigate(navLink('inicio')); }}
-                  style={drawerItemStyle(location.pathname === navLink('inicio'), temaOscuro)}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>home</span>
-                  Inicio
-                </button>
-                <button
-                  onClick={() => { setMenuAbierto(false); navigate(navLink('perfil')); }}
-                  style={drawerItemStyle(location.pathname === navLink('perfil'), temaOscuro)}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>person</span>
-                  Perfil
-                </button>
+                {DRAWER_ITEMS.filter(item => item.roles.includes(rol)).map(item => (
+                  <button
+                    key={`${item.ruta}-${item.etiqueta}`}
+                    onClick={() => { setMenuAbierto(false); navigate(item.ruta.startsWith('/') ? item.ruta : navLink(item.ruta)); }}
+                    style={drawerItemStyle(location.pathname === (item.ruta.startsWith('/') ? item.ruta : navLink(item.ruta)), temaOscuro)}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{item.icono}</span>
+                    {item.etiqueta}
+                  </button>
+                ))}
               </div>
 
               <div style={{

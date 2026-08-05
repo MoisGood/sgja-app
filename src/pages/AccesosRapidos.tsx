@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../lib/supabase';
+import Spinner from '../components/Common/Spinner';
 
 interface Props { idEstablecimiento: string }
 
@@ -244,7 +245,7 @@ export default function AccesosRapidos({ idEstablecimiento }: Props) {
       <div style={sCard}>
         <h2 style={sTitle}>📋 Historial Reciente</h2>
         {cargandoHist ? (
-          <p style={{ color: '#9CA3AF', fontSize: 12, textAlign: 'center', padding: 12 }}>⏳ Cargando…</p>
+          <Spinner texto="Cargando…" />
         ) : historial.length === 0 ? (
           <p style={{ color: '#9CA3AF', fontSize: 12, textAlign: 'center', padding: 12 }}>Sin requerimientos</p>
         ) : (

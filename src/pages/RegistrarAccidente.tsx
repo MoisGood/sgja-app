@@ -6,7 +6,7 @@ import { obtenerEstablecimiento } from '../services/establecimientos.service';
 import type { Estudiante, Establecimiento } from '../types';
 import { Search, FileText, Trash2 } from 'lucide-react';
 import VistaPreviaPDF from '../components/VistaPreviaPDF';
-import { generarPDF, pdfToBlobUrl, generarPDFDebug, type DatosPDF } from '../services/pdf.service';
+import { generarPDF, pdfToBlobUrl, type DatosPDF } from '../services/pdf.service';
 
 interface Props { idEstablecimiento: string; }
 
@@ -156,17 +156,6 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
     }
   };
 
-  const handleDebugCoords = async () => {
-    try {
-      const pdfBytes = await generarPDFDebug();
-      const url = pdfToBlobUrl(pdfBytes);
-      setPdfUrl(url);
-      setMostrarPreview(true);
-    } catch {
-      setError('Error al generar debug');
-    }
-  };
-
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)' }}>
@@ -219,11 +208,6 @@ const RegistroAccidente = ({ idEstablecimiento }: Props) => {
           }}>
           <FileText size={14} /> PDF
         </button>
-        <span onClick={handleDebugCoords}
-          style={{ fontSize: 10, color: '#9CA3AF', cursor: 'pointer', userSelect: 'none' }}
-          title="Mostrar coordenadas de campos en el PDF">
-          🎯
-        </span>
 
         <button onClick={() => {
           const iframe = iframeRef.current;

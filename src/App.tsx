@@ -8,6 +8,7 @@ import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { router } from './router';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { SpinnerProvider } from './contexts/SpinnerContext';
 import { MonitorLecturas } from './components/MonitorLecturas';
 import { TestMonitor } from './components/TestMonitor';
 import { syncEngine } from './services/syncEngine';
@@ -39,10 +40,12 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <RouterProvider router={router} />
-      <Toaster richColors position="top-right" />
-      {mostrarMonitor && <MonitorLecturas />}
-      {mostrarMonitor && <TestMonitor />}
+      <SpinnerProvider>
+        <RouterProvider router={router} />
+        <Toaster richColors position="top-right" />
+        {mostrarMonitor && <MonitorLecturas />}
+        {mostrarMonitor && <TestMonitor />}
+      </SpinnerProvider>
     </ThemeProvider>
   );
 }

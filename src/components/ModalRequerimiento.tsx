@@ -1,5 +1,6 @@
 import { useState, useEffect, forwardRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { ClipLoader } from 'react-spinners';
 import { validarTicket, crearRequerimiento } from '../services/requerimiento.service';
 import { subirEvidencia } from '../services/evidenciaService';
 
@@ -383,7 +384,7 @@ const ModalRequerimiento = forwardRef<HTMLDivElement, Props>(function ModalReque
               color: '#fff', fontSize: 13, cursor: guardando || !descripcion.trim() || !idUsuarioDb ? 'default' : 'pointer',
               fontWeight: 500,
             }}>
-            {guardando ? '⏳ Guardando…' : '✓ Crear Requerimiento'}
+            {guardando ? <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><ClipLoader loading size={14} color="currentColor" /></span> : '✓ Crear Requerimiento'}
           </button>
         </div>
       </div>
