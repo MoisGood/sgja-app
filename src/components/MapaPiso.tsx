@@ -976,7 +976,7 @@ const [procesoModal, setProcesoModal] = useState<{ lugar: LugarRow; tickets: Req
                                             onBlur={async () => {
                                               const val = editUsuarioVal.trim();
                                               if (val && !usuariosList.includes(val) && confirm(`¿Crear usuario "${val}"?`)) {
-                                                await supabase.from('usuarios').insert({ nombre_completo: val, id_establecimiento: idEstablecimiento, activo: true });
+                                                await supabase.from('usuarios').insert({ uid: crypto.randomUUID(), nombre: val, nombre_completo: val, email: `mapa-${Date.now()}@sgja.cl`, id_establecimiento: idEstablecimiento, activo: true });
                                                 setUsuariosList(prev => [...prev, val]);
                                               }
                                               await supabase.from('equipos').update({ usuario: val || null }).eq('id', eq.id);
@@ -987,7 +987,7 @@ const [procesoModal, setProcesoModal] = useState<{ lugar: LugarRow; tickets: Req
                                               if (e.key === 'Enter') {
                                                 const val = editUsuarioVal.trim();
                                                 if (val && !usuariosList.includes(val) && confirm(`¿Crear usuario "${val}"?`)) {
-                                                  await supabase.from('usuarios').insert({ nombre_completo: val, id_establecimiento: idEstablecimiento, activo: true });
+                                                  await supabase.from('usuarios').insert({ uid: crypto.randomUUID(), nombre: val, nombre_completo: val, email: `mapa-${Date.now()}@sgja.cl`, id_establecimiento: idEstablecimiento, activo: true });
                                                   setUsuariosList(prev => [...prev, val]);
                                                 }
                                                 await supabase.from('equipos').update({ usuario: val || null }).eq('id', eq.id);
@@ -1007,7 +1007,7 @@ const [procesoModal, setProcesoModal] = useState<{ lugar: LugarRow; tickets: Req
                                             <button
                                               onClick={async () => {
                                                 const val = editUsuarioVal.trim();
-                                                await supabase.from('usuarios').insert({ nombre_completo: val, id_establecimiento: idEstablecimiento, activo: true });
+                                                await supabase.from('usuarios').insert({ uid: crypto.randomUUID(), nombre: val, nombre_completo: val, email: `mapa-${Date.now()}@sgja.cl`, id_establecimiento: idEstablecimiento, activo: true });
                                                 setUsuariosList(prev => [...prev, val]);
                                                 await supabase.from('equipos').update({ usuario: val }).eq('id', eq.id);
                                                 setEditUsuario(null);

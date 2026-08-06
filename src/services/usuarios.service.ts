@@ -82,6 +82,7 @@ export async function crearUsuario(uid: string, datos: Partial<Usuario>): Promis
       .insert([{
         id: uid,
         ...datos,
+        uid,
         fecha_creacion: new Date().toISOString(),
         activo: true,
       }]);
@@ -114,6 +115,7 @@ export async function crearUsuarioConAutenticacion(
       .from('usuarios')
       .insert([{
         id: uid,
+        uid,
         email,
         nombre: nombre_completo,
         rol,
