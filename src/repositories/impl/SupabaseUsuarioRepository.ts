@@ -52,7 +52,7 @@ export class SupabaseUsuarioRepository implements IUsuarioRepository {
   }
 
   async asignarEstablecimiento(uid: string, idEstablecimiento: string | null): Promise<string | null> {
-    const { error } = await supabase.from('usuarios').update({ id_establecimiento: idEstablecimiento }).eq('uid', uid);
+    const { error } = await supabase.from('usuarios').update({ id_establecimiento: idEstablecimiento }).eq('id', uid);
     if (error) return error.message;
     return null;
   }

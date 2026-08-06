@@ -188,18 +188,18 @@ export async function obtenerUsuarioPorUid(uid: string): Promise<UsuarioDB | nul
       const { data, error } = await supabase
         .from('usuarios')
         .select('*')
-        .eq('uid', uid)
+        .eq('id', uid)
         .single();
 
       if (!error && data) {
         return data;
       }
 
-      // Compatibilidad: en algunos entornos antiguos el auth UID quedó guardado en "id".
+      // Compatibilidad: en algunos entornos antiguos el auth UID quedó guardado en "uid".
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('usuarios')
         .select('*')
-        .eq('id', uid)
+        .eq('uid', uid)
         .single();
 
       if (fallbackError) {
@@ -304,7 +304,7 @@ export async function actualizarUsuario(
         ...datos,
         actualizado_en: new Date().toISOString(),
       })
-      .eq('uid', uid);
+      .eq('id', uid);
 
     if (error) throw error;
     return true;
@@ -322,7 +322,7 @@ export async function eliminarUsuario(uid: string): Promise<boolean> {
     const { error } = await supabase
       .from('usuarios')
       .update({ activo: false })
-      .eq('uid', uid);
+      .eq('id', uid);
 
     if (error) throw error;
     return true;

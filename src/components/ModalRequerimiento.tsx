@@ -51,7 +51,7 @@ const ModalRequerimiento = forwardRef<HTMLDivElement, Props>(function ModalReque
     supabase.auth.getUser().then(({ data }) => {
       const uid = data?.user?.id;
       if (uid) {
-        supabase.from('usuarios').select('id').eq('uid', uid).maybeSingle()
+        supabase.from('usuarios').select('id').eq('id', uid).maybeSingle()
           .then(({ data: u }) => { if (u) setIdUsuarioDb(u.id); });
       }
     });

@@ -95,7 +95,7 @@ export default function Requerimientos({ idEstablecimiento }: Props) {
       const { data: user } = await supabase.auth.getUser();
       const uid = user?.user?.id;
       if (!uid) { alert('Debes iniciar sesión'); return; }
-      const { data: u } = await supabase.from('usuarios').select('id').eq('uid', uid).maybeSingle();
+      const { data: u } = await supabase.from('usuarios').select('id').eq('id', uid).maybeSingle();
       if (!u) { alert('Usuario no encontrado en la base de datos'); return; }
       await crearRequerimiento({
         idEstablecimiento,

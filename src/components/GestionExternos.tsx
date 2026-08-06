@@ -40,7 +40,7 @@ export default function GestionExternos({ idEstablecimiento }: Props) {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user?.id) {
-        supabase.from('usuarios').select('id').eq('uid', data.user.id).maybeSingle()
+        supabase.from('usuarios').select('id').eq('id', data.user.id).maybeSingle()
           .then(({ data: u }) => { if (u) setUid(u.id); });
       }
     });

@@ -100,7 +100,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
   useEffect(() => {
     if (!idEstablecimiento || !idUsuario) return;
     // Resolver usuarios.id desde auth.uid
-    supabase.from('usuarios').select('id').eq('uid', idUsuario).maybeSingle()
+    supabase.from('usuarios').select('id').eq('id', idUsuario).maybeSingle()
       .then(({ data }) => { if (data) setIdUsuarioDb(data.id); });
 
     const ticketId = searchParams.get('ticket');
@@ -322,7 +322,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
     setMensaje('');
 
     const { data: userData, error: userErr } = await supabase
-      .from('usuarios').select('id').eq('uid', idUsuario).maybeSingle();
+      .from('usuarios').select('id').eq('id', idUsuario).maybeSingle();
     if (userErr || !userData) {
       setMensaje('❌ Error: usuario no encontrado en la base de datos.');
       setCreando(false);
@@ -954,7 +954,7 @@ export default function Ticket({ idEstablecimiento, idUsuario }: Props) {
                       const tmpl = plantillas.find(p => p.id === plantillaSel);
                       if (!tmpl) { setEnviandoCorreo(false); return; }
                       const { data: solData } = await supabase.from('usuarios').select('nombre').eq('id', ticketData.id_solicitante).maybeSingle();
-                      const { data: tecData } = await supabase.from('usuarios').select('nombre').eq('uid', idUsuario).maybeSingle();
+                      const { data: tecData } = await supabase.from('usuarios').select('nombre').eq('id', idUsuario).maybeSingle();
                       const vars: Record<string, string> = {
                         codigo: ticketData.codigo || ticketData.id || '', lugar: lugarTicket || '', equipo: equipoTicket || '',
                         descripcion: ticketData.descripcion || '', diagnostico: diagnostico || '', solucion: solucion || '',

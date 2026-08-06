@@ -13,7 +13,7 @@ export default function MenuTecnico({ idEstablecimiento: _idEst }: Props) {
     supabase.auth.getUser().then(async ({ data }) => {
       if (data?.user?.email) setUsuario(data.user.email);
       if (data?.user?.id) {
-        const { data: u } = await supabase.from('usuarios').select('rol').eq('uid', data.user.id).single();
+        const { data: u } = await supabase.from('usuarios').select('rol').eq('id', data.user.id).single();
         if (u) setRol(u.rol);
       }
     });

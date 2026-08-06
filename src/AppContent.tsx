@@ -149,7 +149,7 @@ export default function AppContent() {
       const { data: userRow } = await supabase
         .from('usuarios')
         .select('mfa_obligatorio')
-        .eq('uid', uid)
+        .eq('id', uid)
         .single();
       if (userRow?.mfa_obligatorio) {
         const { data: factors } = await supabase.auth.mfa.listFactors();

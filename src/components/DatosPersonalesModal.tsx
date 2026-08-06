@@ -74,7 +74,7 @@ export default function DatosPersonalesModal({ abierto, onCerrar, usuarioId, nom
       const [datosRes, establecimientosRes, usuarioRes] = await Promise.all([
         supabase.from('datospersonalesusuarios').select('*').eq('uid', usuarioId).maybeSingle(),
         supabase.from('establecimientos').select('id, nombre').eq('activo', true).order('nombre'),
-        supabase.from('usuarios').select('id_establecimiento').eq('uid', usuarioId).single(),
+        supabase.from('usuarios').select('id_establecimiento').eq('id', usuarioId).single(),
       ]);
       setDatos(datosRes.data as DatosPersonales | null);
       setEstablecimientos(establecimientosRes.data || []);
