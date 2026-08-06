@@ -106,7 +106,23 @@ export async function crearUsuarioConAutenticacion(
       password: Math.random().toString(36).slice(-8),
     });
 
-    if (authError) throw authError;
+    if (authError) {
+      if (authError.status === 422 || /already registered/i.test(authError.message)) {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('asociar_usuario_existente', {
+          p_email: email,
+          p_nombre: nombre_completo,
+          p_rol: rol,
+          p_id_establecimiento: id_establecimiento,
+        });
+
+        if (rpcError) throw rpcError;
+        const rpc = rpcData as { error?: string | null; encontrado?: boolean } | null;
+        if (rpc?.error) throw new Error(rpc.error);
+        if (rpc?.encontrado) return '';
+        throw new Error('El email ya está registrado en el sistema, pero no se pudo asociar un perfil');
+      }
+      throw authError;
+    }
 
     const uid = authData.user?.id;
     if (!uid) throw new Error('No UID returned from auth signup');
