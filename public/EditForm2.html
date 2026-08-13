@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -78,15 +78,18 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#e8ecf1;height:10
 
 <div class="toolbar">
   <span style="font-size:14px;font-weight:700;color:#1A3C6B;white-space:nowrap;">SGJA Editor</span>
-  <input type="text" id="nombre-form" placeholder="Nombre del formulario" value="formulario" style="width:160px;padding:4px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;">
+  <input type="text" id="nombre-form" placeholder="Nombre del formulario" value="formulario" oninput="guardar()" style="width:160px;padding:4px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;">
   <button onclick="exportarHTML()" style="background:#1A3C6B;color:#fff;border-color:#1A3C6B;font-weight:600;">Exportar HTML</button>
   <button onclick="guardar();window.open('previaform.html','_blank')">Vista previa</button>
   <button onclick="exportarJSON()" title="Guardar disenio como JSON para editar despues">Guardar JSON</button>
   <button onclick="document.getElementById('fileIn').click()">Cargar JSON</button>
   <input type="file" id="fileIn" accept=".json" style="display:none" onchange="importarJSON(event)">
+  <button onclick="document.getElementById('fileHtmlIn').click()">Cargar HTML</button>
+  <input type="file" id="fileHtmlIn" accept=".html,.htm" style="display:none" onchange="importarHTML(event)">
+  <button onclick="limpiarTodo()" style="background:#DC2626;color:#fff;border-color:#DC2626;">Limpiar campos</button>
   <button onclick="togglePreview()">Preview</button>
   <span id="campo-count" style="font-size:11px;color:#666;white-space:nowrap;">0 campos</span>
-  <span id="save-indicator" style="font-size:14px;margin-left:4px;" title="0 cambios en historial">○</span>
+  <span id="save-indicator" style="font-size:14px;margin-left:4px;" title="0 cambios en historial">â—‹</span>
 </div>
 
 <div style="display:flex;flex:1;overflow:hidden;">
@@ -99,6 +102,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#e8ecf1;height:10
     <button onclick="agregar('date')">Date</button>
     <button onclick="agregar('time')">Time</button>
     <button onclick="agregar('checkbox')">Checkbox</button>
+    <button onclick="agregar('radio')">Sexo (radio)</button>
+    <button onclick="agregar('select')">Lista (select)</button>
     <button onclick="agregar('label')">Label</button>
     <button onclick="agregar('firma')">Firma</button>
     <button onclick="agregar('linea')">Linea</button>
@@ -135,7 +140,7 @@ let secciones = [{ id: 's1', label: 'Seccion 1', bgColor: '#ffffff' }];
 let seccionActiva = 's1';
 const STORAGE_KEY = 'editor_form_v2';
 
-// ─── Undo/Redo ─────────────────────────────────────────────
+// â”€â”€â”€ Undo/Redo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let undoStack = [];
 let redoStack = [];
 const MAX_UNDO = 50;
@@ -175,12 +180,12 @@ function redo() {
   toast('Rehacer');
 }
 
-// ─── Save indicator ────────────────────────────────────────
+// â”€â”€â”€ Save indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let saveTimer = null;
 function updateSaveIndicator() {
   const el = document.getElementById('save-indicator');
   if (!el) return;
-  el.textContent = undoStack.length > 0 ? '●' : '○';
+  el.textContent = undoStack.length > 0 ? 'â—' : 'â—‹';
   el.style.color = undoStack.length > 0 ? '#10B981' : '#9CA3AF';
   el.title = undoStack.length + ' cambios en historial';
 }
@@ -188,11 +193,11 @@ function updateSaveIndicator() {
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function toast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
 function guardar() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({campos, secciones, seccionActiva})); } catch(e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({campos, secciones, seccionActiva, nombreForm: (document.getElementById('nombre-form') || {}).value || ''})); } catch(e) {}
   updateSaveIndicator();
 }
 
-// ─── Agregar campo ──────────────────────────────────────────
+// â”€â”€â”€ Agregar campo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function agregar(tipo) {
   saveState();
   const filasSec = obtenerFilas(seccionActiva);
@@ -207,7 +212,7 @@ function agregar(tipo) {
   const campo = {
     id: uid(),
     tipo,
-    label: tipo === 'label' ? 'Titulo' : tipo === 'firma' ? 'Firma' : tipo === 'checkbox' ? 'Casilla' : tipo === 'buscarut' ? 'RUT' : '',
+    label: tipo === 'label' ? 'Titulo' : tipo === 'firma' ? 'Firma' : tipo === 'checkbox' ? 'Casilla' : tipo === 'radio' ? 'Sexo' : tipo === 'select' ? 'Lista' : tipo === 'buscarut' ? 'RUT' : '',
     name: '',
     fx,
     placeholder: '',
@@ -226,8 +231,10 @@ function agregar(tipo) {
     textAlign: '',
     borderRadius: '',
     boxShadow: '',
-    borderGeneral: ''
+    borderGeneral: '',
+    opciones: ['Masculino','Femenino']
   };
+  if (tipo === 'select') campo.opciones = ['Opcion 1','Opcion 2'];
   campos.push(campo);
   seleccionado = campo.id;
   guardar();
@@ -236,11 +243,15 @@ function agregar(tipo) {
   toast(tipo);
 }
 
-// ─── Filas ──────────────────────────────────────────────────
+// â”€â”€â”€ Filas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function obtenerFilas(secId) {
   const filas = [];
-  campos.filter(c => c.seccion === secId).forEach(c => {
-    if (!filas.includes(c.fila)) filas.push(c.fila);
+  const vistos = new Set();
+  campos.forEach(c => {
+    if (c.seccion === secId && !vistos.has(c.fila)) {
+      vistos.add(c.fila);
+      filas.push(c.fila);
+    }
   });
   return filas;
 }
@@ -251,7 +262,7 @@ function agregarFila(secId) {
   popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:16px;z-index:10000;min-width:260px;';
   popup.innerHTML = '<div style="font-size:13px;font-weight:700;color:#1F2937;margin-bottom:10px;">Tipo de campo</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">' +
-    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla'].map(t =>
+    ['text','textarea','date','time','checkbox','radio','select','label','firma','linea','spacer','buscarut','tabla'].map(t =>
       '<button onclick="this.closest(\'div[style*=fixed]\').remove();crearFilaConTipo(\''+secId+'\',\''+t+'\')" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;font-size:11px;cursor:pointer;text-align:left;color:#374151;">'+t+'</button>'
     ).join('') + '</div>' +
     '<div style="text-align:right;margin-top:8px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:4px 12px;font-size:11px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;">Cancelar</button></div>';
@@ -271,9 +282,10 @@ function eliminarFila(secId, filaId) {
 function crearFilaConTipo(secId, tipo) {
   saveState();
   const nuevaFila = uid();
-  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3 };
-  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
+  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3, opciones:['Masculino','Femenino'] };
+  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='radio'?'Sexo':tipo==='select'?'Lista':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
   const campo = { id: uid(), tipo, label: labelDefault, name:'', fx: (tipo==='label'||tipo==='linea')?'fx3':'fx1', seccion: secId, fila: nuevaFila, ...defaults };
+  if (tipo === 'select') campo.opciones = ['Opcion 1','Opcion 2'];
   campos.push(campo);
   seleccionado = campo.id;
   guardar();
@@ -286,7 +298,7 @@ function agregarFilaEn(secId, beforeFilaId) {
   popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:16px;z-index:10000;min-width:260px;';
   popup.innerHTML = '<div style="font-size:13px;font-weight:700;color:#1F2937;margin-bottom:10px;">Tipo de campo</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">' +
-    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla'].map(t =>
+    ['text','textarea','date','time','checkbox','radio','select','label','firma','linea','spacer','buscarut','tabla'].map(t =>
       '<button onclick="this.closest(\'div[style*=fixed]\').remove();crearFilaEnPos(\''+secId+'\',\''+t+'\',\''+beforeFilaId+'\')" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;font-size:11px;cursor:pointer;text-align:left;color:#374151;">'+t+'</button>'
     ).join('') + '</div>' +
     '<div style="text-align:right;margin-top:8px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:4px 12px;font-size:11px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;">Cancelar</button></div>';
@@ -297,8 +309,8 @@ function agregarFilaEn(secId, beforeFilaId) {
 function crearFilaEnPos(secId, tipo, beforeFilaId) {
   saveState();
   const nuevaFila = uid();
-  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3 };
-  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
+  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3, opciones:['Masculino','Femenino'] };
+  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='radio'?'Sexo':tipo==='select'?'Lista':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
   const campo = { id: uid(), tipo, label: labelDefault, name:'', fx: (tipo==='label'||tipo==='linea')?'fx3':'fx1', seccion: secId, fila: nuevaFila, ...defaults };
   const idx = campos.findIndex(x => x.fila === beforeFilaId && x.seccion === secId);
   if (idx >= 0) campos.splice(idx, 0, campo); else campos.push(campo);
@@ -329,7 +341,7 @@ function filaInsertDrop(e, secId, beforeFilaId) {
   render();
 }
 
-// ─── Secciones ──────────────────────────────────────────────
+// â”€â”€â”€ Secciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function agregarSeccion() {
   saveState();
   const n = secciones.length + 1;
@@ -353,7 +365,7 @@ function eliminarSeccion(secId) {
   toast('Seccion eliminada');
 }
 
-// ─── Render ─────────────────────────────────────────────────
+// â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function render() {
   const l = document.getElementById('lienzo');
   document.getElementById('campo-count').textContent = campos.length + ' campos';
@@ -406,6 +418,28 @@ function render() {
   l.innerHTML = html;
 }
 
+function itemLista(op) {
+  const isCnt = op.charAt(op.length - 1) === '*';
+  const body = isCnt ? op.slice(0, -1) : op;
+  const isInp = body.indexOf('#') !== -1;
+  let label = body;
+  let n = '';
+  let fijo = '';
+  let ancho = 70;
+  if (isInp) {
+    const idx = body.indexOf('#');
+    label = body.slice(0, idx).trim();
+    let rest = body.slice(idx + 1);
+    const fm = rest.match(/^(\d+)/);
+    if (fm) { n = fm[1]; rest = rest.slice(fm[1].length); }
+    fijo = rest.replace(/^\s*,\s*/, '').trim();
+    ancho = n ? (35 * parseInt(n, 10) + 30) : 70;
+  } else {
+    label = body.trim();
+  }
+  return { isCnt, isInp, label, n, fijo, ancho };
+}
+
 function renderCampoHTML(c) {
   const sel = c.id === seleccionado ? ' seleccionado' : '';
   const fx = c.fx || 'fx1';
@@ -413,7 +447,7 @@ function renderCampoHTML(c) {
 
   switch (c.tipo) {
     case 'text':
-      inner = '<label>' + (c.label || 'Label') + '</label><input type="text" placeholder="' + (c.placeholder || '') + '" value="' + (c.valor || '') + '" readonly>';
+      inner = '<label>' + (c.label || 'Label') + '</label><div style="display:flex;align-items:center;gap:6px;">' + (c.labelCheck ? '<input type="checkbox" disabled style="width:auto;flex:0 0 auto;">' : '') + '<input type="text" placeholder="' + (c.placeholder || '') + '" value="' + (c.valor || '') + '" readonly style="flex:1;">' + '</div>';
       break;
     case 'textarea':
       inner = '<label>' + (c.label || 'Label') + '</label><textarea placeholder="' + (c.placeholder || '') + '" readonly></textarea>';
@@ -426,6 +460,30 @@ function renderCampoHTML(c) {
       break;
     case 'checkbox':
       inner = '<label class="chk-item"><input type="checkbox" disabled> ' + (c.labelCheckbox || c.label || 'Casilla') + '</label>';
+      break;
+    case 'radio':
+      const opsRadio = c.opciones && c.opciones.length ? c.opciones : ['Masculino','Femenino'];
+      inner = '<label>' + (c.label || 'Sexo') + '</label><div style="display:flex;gap:8px;flex-wrap:wrap;">' + opsRadio.map(function(op) { return '<label class="chk-item" style="cursor:pointer;"><input type="radio" disabled> ' + op + '</label>'; }).join('') + '</div>';
+      break;
+    case 'select':
+      const optsSel = c.opciones && c.opciones.length ? c.opciones : ['Opcion 1','Opcion 2'];
+      if (c.multiple) {
+        const layGrid = c.layout === '2fil' ? 'grid-auto-flow:column;grid-template-rows:1fr 1fr;overflow-x:auto;' : 'grid-template-columns:1fr 1fr;overflow-y:auto;';
+        if (c.contador) {
+          inner = '<div style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:6px;"><label style="margin:0;">' + (c.label || 'Lista') + ' <span style="color:#1A3C6B;font-weight:700;">0</span></label><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></div><div style="display:grid;gap:6px;max-height:150px;padding:4px 4px 4px 0;' + layGrid + '">' + optsSel.map(o => {
+            const p = itemLista(o);
+            return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap;"><input type="checkbox" disabled> ' + p.label + (p.isInp ? ' <input type="text" disabled placeholder="valor" style="width:' + p.ancho + 'px;padding:3px 6px;border:1px solid #d1d5db;border-radius:3px;font-size:12px;">' + (p.fijo ? ' ' + p.fijo : '') : '') + (p.isCnt ? ' <span style="color:#1A3C6B;font-weight:600;">(x0)</span>' : '') + '</label>';
+          }).join('') + '</div>';
+        } else {
+          inner = '<label>' + (c.label || 'Lista') + '</label><div style="display:grid;gap:6px;max-height:150px;padding:4px 4px 4px 0;' + layGrid + '">' + optsSel.map(o => {
+            const p = itemLista(o);
+            return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap;"><input type="checkbox" disabled> ' + p.label + (p.isInp ? ' <input type="text" disabled placeholder="valor" style="width:' + p.ancho + 'px;padding:3px 6px;border:1px solid #d1d5db;border-radius:3px;font-size:12px;">' + (p.fijo ? ' ' + p.fijo : '') : '') + '</label>';
+          }).join('') + '</div>';
+        }
+      } else {
+        inner = '<label>' + (c.label || 'Lista') + '</label><select disabled style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;font-family:inherit;color:#1F2937;background:#fff;"><option>' + optsSel.join('</option><option>') + '</option></select>';
+      }
+      break;
       break;
     case 'label':
       const lblSt = (c.fontSize ? 'font-size:'+c.fontSize+';' : '') + (c.fontWeight ? 'font-weight:'+c.fontWeight+';' : '') + (c.textAlign ? 'text-align:'+c.textAlign+';' : '') + (c.fontColor ? 'color:'+c.fontColor+';' : '') + (c.padding ? 'padding:'+c.padding+';' : '') + (c.margin ? 'margin:'+c.margin+';' : '') + (c.zIndex ? 'position:relative;z-index:'+c.zIndex+';' : '');
@@ -445,7 +503,7 @@ function renderCampoHTML(c) {
       const spacerSt = (c.padding ? 'padding:'+c.padding+';' : '') + (c.margin ? 'margin:'+c.margin+';' : '') + (c.zIndex ? 'position:relative;z-index:'+c.zIndex+';' : '');
       return '<div class="campo ' + fx + '" style="min-height:40px;border:2px dashed #d1d5db;display:flex;align-items:center;justify-content:center;font-size:9px;color:#9CA3AF;cursor:pointer;' + spacerSt + sel + '" data-id="' + c.id + '" onclick="event.stopPropagation();seleccionar(\'' + c.id + '\')" draggable="true" ondragstart="campoDragStart(event,\'' + c.id + '\')">spacer<button class="campo-eliminar" onclick="event.stopPropagation();eliminar(\'' + c.id + '\')">X</button></div>';
     case 'buscarut':
-      inner = '<label>' + (c.label || 'RUT') + '</label><div style="display:flex;gap:4px;align-items:center;"><input type="text" placeholder="12.345.678-9" readonly style="flex:1;"><button type="button" style="padding:6px 10px;background:#1A3C6B;color:#fff;border:none;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap;">Buscar</button></div>';
+      inner = '<label>' + (c.label || 'RUT') + '</label><div style="display:flex;align-items:center;position:relative;"><input type="text" placeholder="12.345.678-9" readonly style="flex:1;padding-right:30px;"><button type="button" aria-label="Buscar" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);background:none;border:none;color:#6B7280;cursor:pointer;padding:4px;display:flex;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button></div>';
       break;
     case 'tabla':
       var cab = c.tablaCabeceras || ['Columna 1','Columna 2','Columna 3'];
@@ -465,7 +523,7 @@ function renderCampoHTML(c) {
     inner + '</div>';
 }
 
-// ─── Seleccion ──────────────────────────────────────────────
+// â”€â”€â”€ Seleccion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function seleccionar(id) {
   seleccionado = id;
   render();
@@ -484,7 +542,7 @@ function eliminar(id) {
   render();
 }
 
-// ─── Drag & Drop ────────────────────────────────────────────
+// â”€â”€â”€ Drag & Drop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let dragData = null;
 let dragGhost = null;
 
@@ -568,7 +626,7 @@ function filaDrop(e, secId, filaId) {
         nuevoOrden.splice(idxTo, 0, dragData.filaId);
         // Actualizar orden basado en posicion
         nuevoOrden.forEach((f, i) => {
-          campos.filter(c => c.fila === f && c.seccion === secId).forEach(c => c._orden = i);
+          campos.forEach(c => { if (c.fila === f && c.seccion === secId) c._orden = i; });
         });
       }
     }
@@ -584,7 +642,7 @@ function agregarCampoAFila(secId, filaId) {
   popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:16px;z-index:10000;min-width:260px;';
   popup.innerHTML = '<div style="font-size:13px;font-weight:700;color:#1F2937;margin-bottom:10px;">Tipo de campo</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">' +
-    ['text','textarea','date','time','checkbox','label','firma','linea','spacer','buscarut','tabla'].map(t =>
+    ['text','textarea','date','time','checkbox','radio','select','label','firma','linea','spacer','buscarut','tabla'].map(t =>
       '<button onclick="this.closest(\'div[style*=fixed]\').remove();crearCampoEnFila(\''+secId+'\',\''+filaId+'\',\''+t+'\')" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;font-size:11px;cursor:pointer;text-align:left;color:#374151;">'+t+'</button>'
     ).join('') + '</div>' +
     '<div style="text-align:right;margin-top:8px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:4px 12px;font-size:11px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;">Cancelar</button></div>';
@@ -594,9 +652,10 @@ function agregarCampoAFila(secId, filaId) {
 
 function crearCampoEnFila(secId, filaId, tipo) {
   saveState();
-  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3 };
-  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
+  const defaults = { placeholder:'', maxlength:null, pattern:'', rows:3, labelCheckbox:'', firmaLabel:'Firma', valor:'', bgColor:'', fontColor:'', fontSize:'', fontWeight:'', textAlign:'', borderRadius:'', boxShadow:'', borderGeneral:'', botonLabel:'Buscar', tablaCabeceras:['Columna 1','Columna 2','Columna 3'], tablaFilas:3, opciones:['Masculino','Femenino'] };
+  const labelDefault = tipo==='label'?'Titulo':tipo==='firma'?'Firma':tipo==='checkbox'?'Casilla':tipo==='radio'?'Sexo':tipo==='select'?'Lista':tipo==='buscarut'?'RUT':tipo==='tabla'?'Tabla':'';
   const campo = { id: uid(), tipo, label: labelDefault, name:'', fx: (tipo==='label'||tipo==='linea')?'fx3':'fx1', seccion: secId, fila: filaId, ...defaults };
+  if (tipo === 'select') campo.opciones = ['Opcion 1','Opcion 2'];
   campos.push(campo);
   seleccionado = campo.id;
   guardar();
@@ -604,7 +663,7 @@ function crearCampoEnFila(secId, filaId, tipo) {
   mostrarPropiedades();
 }
 
-// ─── Propiedades ────────────────────────────────────────────
+// â”€â”€â”€ Propiedades â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function mostrarPropiedades() {
   const p = document.getElementById('panel-propiedades');
   const c = campos.find(x => x.id === seleccionado);
@@ -635,6 +694,7 @@ function mostrarPropiedades() {
   }
   if (c.tipo==='text') {
     props += '<label>Pattern</label><input value="' + (c.pattern||'') + '" placeholder="[0-9]{7,8}-[0-9kK]" oninput="actualizarProp(\''+c.id+'\',\'pattern\',this.value)">';
+    props += '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" '+(c.labelCheck?'checked':'')+' onchange="actualizarProp(\''+c.id+'\',\'labelCheck\',this.checked)" style="width:auto;"> Check en label</label>';
   }
   if (c.tipo==='textarea') {
     props += '<label>Filas</label><input type="number" value="' + (c.rows||3) + '" onchange="actualizarProp(\''+c.id+'\',\'rows\',parseInt(this.value))">';
@@ -642,11 +702,17 @@ function mostrarPropiedades() {
   if (c.tipo==='checkbox') {
     props += '<label>Texto casilla</label><input value="' + (c.labelCheckbox||'') + '" oninput="actualizarProp(\''+c.id+'\',\'labelCheckbox\',this.value)">';
   }
+  if (c.tipo==='radio') {
+    props += '<label>Opciones (1 por linea)</label><textarea rows="3" oninput="actualizarProp(\''+c.id+'\',\'opciones\',this.value.split(\'\\n\').filter(Boolean))" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;font-family:inherit;">' + (c.opciones||['Masculino','Femenino']).join('\n') + '</textarea>';
+  }
+  if (c.tipo==='select') {
+    props += '<label>Opciones (1 por linea)</label><textarea rows="3" oninput="actualizarProp(\''+c.id+'\',\'opciones\',this.value.split(\'\\n\').filter(Boolean))" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;font-family:inherit;">' + (c.opciones||['Opcion 1','Opcion 2']).join('\n') + '</textarea>';
+    props += '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" '+(c.multiple?'checked':'')+' onchange="actualizarProp(\''+c.id+'\',\'multiple\',this.checked)" style="width:auto;"> Seleccion multiple</label>';
+    if (c.multiple) props += '<label>Distribucion</label><select onchange="actualizarProp(\''+c.id+'\',\'layout\',this.value)"><option value="2col" '+(c.layout!=='2fil'?'selected':'')+'>2 columnas / N filas</option><option value="2fil" '+(c.layout==='2fil'?'selected':'')+'>2 filas / N columnas</option></select>';
+    if (c.multiple) props += '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" '+(c.contador?'checked':'')+' onchange="actualizarProp(\''+c.id+'\',\'contador\',this.checked)" style="width:auto;"> Modo contador (clic suma)</label>';
+  }
   if (c.tipo==='firma') {
     props += '<label>Texto firma</label><input value="' + (c.firmaLabel||'Firma') + '" oninput="actualizarProp(\''+c.id+'\',\'firmaLabel\',this.value)">';
-  }
-  if (c.tipo==='buscarut') {
-    props += '<label>Texto boton</label><input value="' + (c.botonLabel||'Buscar') + '" oninput="actualizarProp(\''+c.id+'\',\'botonLabel\',this.value)">';
   }
   if (c.tipo==='tabla') {
     props += '<label>Cabeceras (1 por linea)</label><textarea rows="3" oninput="actualizarProp(\''+c.id+'\',\'tablaCabeceras\',this.value.split(\'\\n\').filter(Boolean))" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;font-family:inherit;">' + (c.tablaCabeceras||['Columna 1','Columna 2','Columna 3']).join('\n') + '</textarea>';
@@ -708,7 +774,7 @@ function actualizarSeccionProp(id, prop, val) {
   render();
 }
 
-// ─── Exportar HTML ──────────────────────────────────────────
+// â”€â”€â”€ Exportar HTML â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function exportarHTML() {
   const nom = document.getElementById('nombre-form').value || 'formulario';
 
@@ -719,7 +785,7 @@ function exportarHTML() {
     const st = pSt ? ' style="'+pSt.trim()+'"' : '';
     switch (c.tipo) {
       case 'text':
-        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="text" name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + (c.pattern ? ' pattern="'+c.pattern+'"' : '') + ' autocomplete="off"></div>';
+        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;align-items:center;gap:6px;">' + (c.labelCheck ? '<input type="checkbox" name="' + (c.name ? c.name+'_check' : '') + '" value="1" style="width:auto;flex:0 0 auto;">' : '') + '<input type="text" name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + (c.pattern ? ' pattern="'+c.pattern+'"' : '') + ' autocomplete="off" style="flex:1;">' + '</div></div>';
       case 'textarea':
         return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><textarea name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + '></textarea></div>';
       case 'date':
@@ -728,6 +794,28 @@ function exportarHTML() {
         return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="time" name="' + (c.name||'') + '"></div>';
       case 'checkbox':
         return '<div class="campo fx1"' + st + '><label class="chk-item"><input type="checkbox" name="' + (c.name||'') + '" value="1"> ' + (c.labelCheckbox || lbl || 'Casilla') + '</label></div>';
+      case 'radio':
+        var opsRadio = c.opciones && c.opciones.length ? c.opciones : ['Masculino','Femenino'];
+        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;gap:10px;flex-wrap:wrap;">' + opsRadio.map(function(op){ return '<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="radio" name="' + (c.name||'') + '" value="' + op + '"> ' + op + '</label>'; }).join('') + '</div></div>';
+      case 'select':
+        var optsSel = c.opciones && c.opciones.length ? c.opciones : ['Opcion 1','Opcion 2'];
+        if (c.multiple) {
+          const layGrid = c.layout === '2fil' ? 'grid-auto-flow:column;grid-template-rows:1fr 1fr;overflow-x:auto;' : 'grid-template-columns:1fr 1fr;overflow-y:auto;';
+          if (c.contador) {
+            return '<div class="campo ' + fx + '" style="position:relative;' + pSt + '"><label>' + lbl + ' <span class="cnt-total" style="color:#1A3C6B;font-weight:700;">0</span></label><button type="button" onclick="resetLista(this)" aria-label="Reiniciar contadores" style="position:absolute;top:4px;right:4px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:#1A3C6B;padding:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button><div style="display:grid;gap:6px;max-height:150px;' + layGrid + '">' + optsSel.map(function(op, i){
+              var p = itemLista(op);
+              var inp = p.isInp ? ' <input type="text" name="' + (c.name ? c.name+'_'+i : '') + '" data-w="' + p.n + '" placeholder="valor" style="width:' + p.ancho + 'px;padding:3px 6px;border:1px solid #d1d5db;border-radius:3px;font-size:12px;"' + (p.isCnt ? ' onclick="event.stopPropagation()"' : '') + '>' + (p.fijo ? ' <span class="fijo">' + p.fijo + '</span>' : '') : '';
+              if (p.isCnt) return '<label class="cnt-item" onclick="event.preventDefault();incrementar(this)" ondblclick="event.preventDefault();resetItem(this)" style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;white-space:nowrap;user-select:none;"><input type="checkbox" name="' + (c.name||'') + '" value="' + op + '" style="pointer-events:none;"> ' + p.label + inp + ' <span class="cnt">(x0)</span></label>';
+              return '<label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;white-space:nowrap;"><input type="checkbox" name="' + (c.name||'') + '" value="' + op + '" onchange="actTotal(this.closest(\'.campo\'))"> ' + p.label + inp + '</label>';
+            }).join('') + '</div></div>';
+          }
+          return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:grid;gap:6px;max-height:150px;' + layGrid + '">' + optsSel.map(function(op, i){
+            var p = itemLista(op);
+            var inp = p.isInp ? ' <input type="text" name="' + (c.name ? c.name+'_'+i : '') + '" data-w="' + p.n + '" placeholder="valor" style="width:' + p.ancho + 'px;padding:3px 6px;border:1px solid #d1d5db;border-radius:3px;font-size:12px;">' + (p.fijo ? ' <span class="fijo">' + p.fijo + '</span>' : '') : '';
+            return '<label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;white-space:nowrap;"><input type="checkbox" name="' + (c.name||'') + '" value="' + op + '"> ' + p.label + inp + '</label>';
+          }).join('') + '</div></div>';
+        }
+        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><select name="' + (c.name||'') + '" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-family:inherit;background:#fff;">' + optsSel.map(function(op){ return '<option value="' + op + '">' + op + '</option>'; }).join('') + '</select></div>';
       case 'label':
         var lblSt = (c.fontSize ? 'font-size:'+c.fontSize+';' : '') + (c.fontWeight ? 'font-weight:'+c.fontWeight+';' : '') + (c.textAlign ? 'text-align:'+c.textAlign+';' : '') + (c.fontColor ? 'color:'+c.fontColor+';' : '') + (c.zIndex ? 'position:relative;z-index:'+c.zIndex+';' : '');
         return '<div class="sub-title"' + (lblSt ? ' style="'+lblSt+'"' : '') + '>' + lbl + '</div>';
@@ -744,7 +832,7 @@ function exportarHTML() {
       case 'spacer':
         return '<div class="' + fx + '"' + st + '></div>';
       case 'buscarut':
-        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;gap:4px;align-items:center;"><input type="text" name="' + (c.name||'rut') + '" placeholder="12.345.678-9" pattern="[0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}-[0-9kK]" autocomplete="off" style="flex:1;"><button type="button" onclick="buscarPorRut(this)" style="padding:7px 14px;background:#1A3C6B;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">' + (c.botonLabel || 'Buscar') + '</button></div></div>';
+        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;align-items:center;position:relative;"><input type="text" name="' + (c.name||'rut') + '" placeholder="12.345.678-9" pattern="[0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}-[0-9kK]" autocomplete="off" style="flex:1;padding-right:32px;"><button type="button" onclick="buscarPorRut(this)" aria-label="Buscar" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);background:none;border:none;color:#1A3C6B;cursor:pointer;padding:4px;display:flex;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button></div></div>';
       case 'tabla':
         var cab = c.tablaCabeceras || ['Columna 1','Columna 2','Columna 3'];
         var nfilas = c.tablaFilas || 3;
@@ -789,8 +877,10 @@ function exportarHTML() {
   });
 
   var navJS = secciones.length >= 2
-    ? 'function irA(n){document.querySelectorAll(".sec").forEach(function(e){e.style.display=e.dataset.paso==n?"block":"none"});window.scrollTo(0,0);}function finalizar(){alert("Formulario completado");}function toast(m){var t=document.createElement("div");t.textContent=m;t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;z-index:9999;";document.body.appendChild(t);setTimeout(function(){t.remove();},2000);}function buscarPorRut(btn){var wrap=btn.parentElement;var inp=wrap.querySelector("input");var rut=inp.value.trim();if(!rut){inp.focus();return;}btn.textContent="Buscando...";btn.disabled=true;setTimeout(function(){btn.textContent="Buscar";btn.disabled=false;toast("RUT "+rut+" no encontrado");},1500);}document.addEventListener("DOMContentLoaded",function(){irA(1);});'
-    : 'function finalizar(){alert("Formulario completado");}function toast(m){var t=document.createElement("div");t.textContent=m;t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;z-index:9999;";document.body.appendChild(t);setTimeout(function(){t.remove();},2000);}function buscarPorRut(btn){var wrap=btn.parentElement;var inp=wrap.querySelector("input");var rut=inp.value.trim();if(!rut){inp.focus();return;}btn.textContent="Buscando...";btn.disabled=true;setTimeout(function(){btn.textContent="Buscar";btn.disabled=false;toast("RUT "+rut+" no encontrado");},1500);}';
+    ? 'function irA(n){document.querySelectorAll(".sec").forEach(function(e){e.style.display=e.dataset.paso==n?"block":"none"});window.scrollTo(0,0);}function finalizar(){alert("Formulario completado");}function toast(m){var t=document.createElement("div");t.textContent=m;t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;z-index:9999;";document.body.appendChild(t);setTimeout(function(){t.remove();},2000);}function buscarPorRut(btn){var wrap=btn.parentElement;var inp=wrap.querySelector("input");var rut=inp.value.trim();if(!rut){inp.focus();return;}btn.disabled=true;setTimeout(function(){btn.disabled=false;toast("RUT "+rut+" no encontrado");},1500);}document.addEventListener("DOMContentLoaded",function(){irA(1);});'
+    : 'function finalizar(){alert("Formulario completado");}function toast(m){var t=document.createElement("div");t.textContent=m;t.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;z-index:9999;";document.body.appendChild(t);setTimeout(function(){t.remove();},2000);}function buscarPorRut(btn){var wrap=btn.parentElement;var inp=wrap.querySelector("input");var rut=inp.value.trim();if(!rut){inp.focus();return;}btn.disabled=true;setTimeout(function(){btn.disabled=false;toast("RUT "+rut+" no encontrado");},1500);}';
+
+  var cntJS = 'function actTotal(campo){var tot=0;Array.from(campo.querySelectorAll(".cnt-item")).forEach(function(l){tot+=parseInt(l.querySelector(".cnt").textContent.replace(/\\D/g,""))||0;});Array.from(campo.querySelectorAll("input[type=checkbox]")).forEach(function(chk){if(!chk.closest(".cnt-item")&&chk.checked)tot++;});var el=campo.querySelector(".cnt-total");if(el)el.textContent=tot;}function incrementar(lbl){var chk=lbl.querySelector("input");var cnt=lbl.querySelector(".cnt");var n=parseInt((cnt.textContent||"").replace(/\\D/g,""))||0;n++;chk.checked=true;cnt.textContent="(x"+n+")";actTotal(lbl.closest(".campo"));}function resetItem(lbl){var chk=lbl.querySelector("input");var cnt=lbl.querySelector(".cnt");chk.checked=false;cnt.textContent="(x0)";actTotal(lbl.closest(".campo"));}function resetLista(btn){var campo=btn.closest(".campo");Array.from(campo.querySelectorAll(".cnt-item")).forEach(function(l){l.querySelector("input").checked=false;l.querySelector(".cnt").textContent="(x0)";});Array.from(campo.querySelectorAll("input[type=checkbox]")).forEach(function(chk){if(!chk.closest(".cnt-item"))chk.checked=false;});actTotal(campo);}';
 
   var tit = nom.charAt(0).toUpperCase() + nom.slice(1);
   var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>' + tit + ' - SGJA</title><style>'
@@ -825,24 +915,28 @@ function exportarHTML() {
     + '<form id="form" onsubmit="return false">'
     + body
     + '</form></div>'
-    + (navJS ? '<scr' + 'ipt>' + navJS + '</scr' + 'ipt>' : '')
+    + (navJS ? '<scr' + 'ipt>' + navJS + cntJS + '</scr' + 'ipt>' : '')
     + '</body></html>';
 
   var blob = new Blob([html], { type: 'text/html' });
   var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  var url = URL.createObjectURL(blob);
+  a.href = url;
   a.download = nom + '.html';
   a.click();
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
   toast('HTML exportado');
 }
 
-// ─── JSON import/export ─────────────────────────────────────
+// â”€â”€â”€ JSON import/export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function exportarJSON() {
   const blob = new Blob([JSON.stringify({campos, secciones, seccionActiva}, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(blob);
+  a.href = url;
   a.download = (document.getElementById('nombre-form').value || 'formulario') + '.json';
   a.click();
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
   toast('JSON guardado');
 }
 
@@ -867,7 +961,250 @@ function importarJSON(e) {
   e.target.value = '';
 }
 
-// ─── Search filter ──────────────────────────────────────────
+// â”€â”€â”€ Limpiar campos desde 0 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function limpiarTodo() {
+  if (!confirm('Eliminar todos los campos y secciones y empezar desde cero?')) return;
+  saveState();
+  campos = [];
+  secciones = [{ id: 's1', label: 'Seccion 1', bgColor: '#ffffff' }];
+  seccionActiva = 's1';
+  seleccionado = null;
+  guardar();
+  render();
+  mostrarPropiedades();
+  toast('Editor limpiado desde 0');
+}
+
+// â”€â”€â”€ Cargar HTML exportado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function parseStyle(str) {
+  const o = {};
+  if (!str) return o;
+  str.split(';').forEach(function(part) {
+    const i = part.indexOf(':');
+    if (i < 0) return;
+    o[part.slice(0, i).trim()] = part.slice(i + 1).trim();
+  });
+  return o;
+}
+
+function extractGradColor(styleAttr) {
+  const m = /(?:#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/.exec(styleAttr);
+  return m ? m[0] : '#cccccc';
+}
+
+function importarHTML(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const doc = new DOMParser().parseFromString(ev.target.result, 'text/html');
+      const secEls = Array.from(doc.querySelectorAll('.sec'));
+      if (secEls.length === 0) { toast('No se encontraron secciones en el HTML'); return; }
+
+      saveState();
+      const nuevasSecciones = [];
+      const nuevosCampos = [];
+
+      secEls.forEach(function(secEl) {
+        const badge = secEl.querySelector('.sec-hdr .badge');
+        let label = 'Seccion ' + (nuevasSecciones.length + 1);
+        if (badge) label = badge.textContent.replace(/\s+de\s+\d+\s*$/, '') || label;
+        const secId = uid();
+        const secBody = secEl.querySelector('.sec-body');
+        let rowGap = 12;
+        if (secBody) {
+          const m = /gap:(\d+)px/.exec(secBody.getAttribute('style') || '');
+          if (m) rowGap = parseInt(m[1]);
+        }
+        nuevasSecciones.push({ id: secId, label: label, bgColor: '#ffffff', rowGap: rowGap });
+
+        if (!secBody) return;
+        Array.from(secBody.querySelectorAll(':scope > .field-row')).forEach(function(rowEl) {
+          const filaId = uid();
+          Array.from(rowEl.children).forEach(function(child) {
+            const c = parseCampoElement(child, secId, filaId);
+            if (c) nuevosCampos.push(c);
+          });
+        });
+      });
+
+      campos = nuevosCampos;
+      secciones = nuevasSecciones;
+      seccionActiva = secciones[0] ? secciones[0].id : 's1';
+      seleccionado = null;
+      guardar();
+      render();
+      mostrarPropiedades();
+      toast('HTML cargado: ' + nuevosCampos.length + ' campos, ' + secciones.length + ' secciones');
+    } catch(err) { toast('Error: ' + err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function parseCampoElement(el, secId, filaId) {
+  if (!el) return null;
+  const base = {
+    id: uid(), name: '', placeholder: '', maxlength: null, pattern: '',
+    fx: 'fx1', seccion: secId, fila: filaId, rows: 3,
+    labelCheckbox: '', firmaLabel: 'Firma', valor: '',
+    bgColor: '', fontColor: '', fontSize: '', fontWeight: '', textAlign: '',
+    borderRadius: '', boxShadow: '', borderGeneral: ''
+  };
+  const st = parseStyle(el.getAttribute('style') || '');
+  base.padding = st.padding || '';
+  base.margin = st.margin || '';
+  if (st['z-index']) base.zIndex = st['z-index'];
+
+  if (el.classList.contains('sub-title')) {
+    return Object.assign(base, {
+      tipo: 'label',
+      label: el.textContent.trim() || 'Titulo',
+      fontSize: st['font-size'] || '',
+      fontWeight: st['font-weight'] || '',
+      textAlign: st['text-align'] || '',
+      fontColor: st.color || ''
+    });
+  }
+
+  if (!el.classList.contains('campo')) {
+    const styleAttr = el.getAttribute('style') || '';
+    if (styleAttr.indexOf('width:100%') >= 0 && styleAttr.indexOf('height:') >= 0) {
+      const w = /height:(\d+)px/.exec(styleAttr);
+      let lineStyle = 'solid', lineColor = '#cccccc';
+      if (styleAttr.indexOf('repeating-linear-gradient') >= 0) { lineStyle = 'dashed'; lineColor = extractGradColor(styleAttr); }
+      else if (styleAttr.indexOf('radial-gradient') >= 0) { lineStyle = 'dotted'; lineColor = extractGradColor(styleAttr); }
+      else { const m = /background:([^;]+)/.exec(styleAttr); if (m) lineColor = m[1].trim(); }
+      return Object.assign(base, {
+        tipo: 'linea',
+        lineColor: lineColor,
+        lineWidth: w ? w[1] + 'px' : '2px',
+        lineStyle: lineStyle,
+        lineFade: styleAttr.indexOf('mask-image') >= 0
+      });
+    }
+    return Object.assign(base, { tipo: 'spacer', label: '' });
+  }
+
+  const labelEl = el.querySelector(':scope > label');
+  const label = labelEl ? labelEl.textContent.trim() : '';
+  const fxMatch = /fx(1|2|3|4|5|auto|none)/.exec(el.className || '');
+  const fx = fxMatch ? 'fx' + fxMatch[1] : 'fx1';
+  base.label = label;
+  base.fx = fx;
+
+  const input = el.querySelector('input[type="text"], input[type="date"], input[type="time"], input:not([type])');
+  const btn = el.querySelector('button');
+  const textarea = el.querySelector('textarea');
+  const chk = el.querySelector('input[type="checkbox"]');
+  const radios = el.querySelectorAll('input[type="radio"]');
+  const selectEl = el.querySelector('select');
+  const table = el.querySelector('table');
+
+  if (selectEl) {
+    base.tipo = 'select';
+    base.opciones = [];
+    Array.from(selectEl.querySelectorAll('option')).forEach(function(o) {
+      const t = o.textContent.trim();
+      if (t) base.opciones.push(t);
+    });
+    if (selectEl.name) base.name = selectEl.name;
+    if (selectEl.multiple) base.multiple = true;
+    return base;
+  }
+  const chkGroup = Array.from(el.querySelectorAll('input[type="checkbox"]'));
+  if (chkGroup.length >= 2 && chkGroup.every(c => c.name === chkGroup[0].name)) {
+    base.tipo = 'select';
+    base.multiple = true;
+    base.opciones = [];
+    Array.from(el.querySelectorAll('label')).forEach(function(l) {
+      if (!l.querySelector('input')) return;
+      const clone = l.cloneNode(true);
+      const cntSpan = clone.querySelector('.cnt');
+      if (cntSpan) cntSpan.remove();
+      const fijoEl = clone.querySelector('.fijo');
+      const fijo = fijoEl ? fijoEl.textContent.trim() : '';
+      if (fijoEl) fijoEl.remove();
+      const tInp = clone.querySelector('input[type="text"]');
+      const wAttr = tInp ? (tInp.getAttribute('data-w') || '') : '';
+      if (tInp) tInp.remove();
+      let t = clone.textContent.trim();
+      if (l.querySelector('.cnt')) t = t + '*';
+      if (l.querySelector('input[type="text"]')) t = t + '#' + wAttr + (fijo ? ', ' + fijo : '');
+      if (t) base.opciones.push(t);
+    });
+    if (chkGroup[0].name) base.name = chkGroup[0].name;
+    if (el.querySelector('.cnt-item')) base.contador = true;
+    return base;
+  }
+  if (radios.length > 0) {
+    base.tipo = 'radio';
+    base.opciones = [];
+    Array.from(el.querySelectorAll('div label')).forEach(function(l) {
+      const t = l.textContent.trim();
+      if (t) base.opciones.push(t);
+    });
+    if (radios[0].name) base.name = radios[0].name;
+    return base;
+  }
+  if (chk) {
+    if (input) {
+      base.tipo = 'text';
+      base.labelCheck = true;
+      if (input.name) base.name = input.name;
+      base.placeholder = input.placeholder || '';
+      return base;
+    }
+    const chkLabel = el.querySelector('.chk-item');
+    base.tipo = 'checkbox';
+    base.labelCheckbox = chkLabel ? chkLabel.textContent.trim() : '';
+    if (chk.name) base.name = chk.name;
+    return base;
+  }
+  if (btn) {
+    base.tipo = 'buscarut';
+    base.label = label || 'RUT';
+    base.botonLabel = btn.textContent.trim() || 'Buscar';
+    if (input) {
+      if (input.name) base.name = input.name;
+      base.placeholder = input.placeholder || '';
+      base.pattern = input.pattern || '';
+    }
+    return base;
+  }
+  if (textarea) {
+    base.tipo = 'textarea';
+    if (textarea.name) base.name = textarea.name;
+    base.placeholder = textarea.placeholder || '';
+    base.rows = parseInt(textarea.rows) || 3;
+    return base;
+  }
+  if (table) {
+    base.tipo = 'tabla';
+    base.tablaCabeceras = Array.from(table.querySelectorAll('thead th')).map(function(th) { return th.textContent.trim(); });
+    base.tablaFilas = table.querySelectorAll('tbody tr').length || 3;
+    return base;
+  }
+  if (el.querySelector('div[style*="border-bottom"]')) {
+    const firmDivs = Array.from(el.querySelectorAll(':scope > div'));
+    const firmDiv = firmDivs.length > 0 ? firmDivs[firmDivs.length - 1] : null;
+    base.tipo = 'firma';
+    base.firmaLabel = (firmDiv && firmDiv.textContent.trim()) || label || 'Firma';
+    return base;
+  }
+  const tipoInput = input ? (input.type === 'date' ? 'date' : input.type === 'time' ? 'time' : 'text') : 'text';
+  base.tipo = tipoInput;
+  if (input) {
+    if (input.name) base.name = input.name;
+    base.placeholder = input.placeholder || '';
+    base.pattern = input.pattern || '';
+    if (input.getAttribute('maxlength')) base.maxlength = parseInt(input.maxlength);
+  }
+  return base;
+}
+
+// â”€â”€â”€ Search filter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function filtrarCampos(q) {
   const btns = document.querySelectorAll('#lista-campos-btns button');
   const tmpls = document.querySelectorAll('.template-btn');
@@ -876,7 +1213,7 @@ function filtrarCampos(q) {
   tmpls.forEach(b => { b.style.display = b.textContent.toLowerCase().includes(term) ? '' : 'none'; });
 }
 
-// ─── Templates ─────────────────────────────────────────────
+// â”€â”€â”€ Templates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function agregarTemplate(tipo) {
   saveState();
   const filasSec = obtenerFilas(seccionActiva);
@@ -924,7 +1261,7 @@ function agregarTemplate(tipo) {
   toast('Template: ' + tipo);
 }
 
-// ─── Responsive preview ────────────────────────────────────
+// â”€â”€â”€ Responsive preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let previewMode = 'desktop';
 function togglePreview() {
   previewMode = previewMode === 'desktop' ? 'mobile' : 'desktop';
@@ -940,13 +1277,13 @@ function togglePreview() {
   }
 }
 
-// ─── Name validation ───────────────────────────────────────
+// â”€â”€â”€ Name validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function validarName(val) {
   if (!val) return true;
   return /^[a-z][a-z0-9_]*$/.test(val);
 }
 
-// ─── Within-row reorder (drop zones) ───────────────────────
+// â”€â”€â”€ Within-row reorder (drop zones) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let campoDropTarget = null;
 
 function campoDropZone(filaId, secId, beforeId) {
@@ -1004,7 +1341,7 @@ function campoDropZoneInRow(e, filaId, secId, beforeId) {
   render();
 }
 
-// ─── Init ───────────────────────────────────────────────────
+// â”€â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 try {
   const s = localStorage.getItem(STORAGE_KEY);
   if (s) {
@@ -1012,12 +1349,13 @@ try {
     campos = d.campos || [];
     secciones = d.secciones || [{ id: 's1', label: 'Seccion 1', bgColor: '#ffffff' }];
     seccionActiva = d.seccionActiva || secciones[0].id;
+    if (d.nombreForm && document.getElementById('nombre-form')) document.getElementById('nombre-form').value = d.nombreForm;
   }
 } catch(e) {}
 
 render();
 
-// ─── Keyboard shortcuts ────────────────────────────────────
+// â”€â”€â”€ Keyboard shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.addEventListener('keydown', function(e) {
   // Ctrl+Z = undo
   if (e.ctrlKey && !e.shiftKey && e.key === 'z') { e.preventDefault(); undo(); }

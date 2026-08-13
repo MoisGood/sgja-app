@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ajuste de Coordenadas - PDF Accidente Escolar</title>
+<title>Ajuste de Coordenadas - Autorización Uso de Imagen</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -24,7 +24,6 @@ body {
 }
 .btn-primary { background: #e94560; color: #fff; }
 .btn-secondary { background: #0f3460; color: #fff; }
-.btn-success { background: #27ae60; color: #fff; }
 .toolbar label { font-size: 11px; color: #aaa; display: flex; align-items: center; gap: 4px; }
 .toolbar input[type="number"] { width: 50px; padding: 3px 6px; font-size: 11px; border-radius: 3px; border: 1px solid #333; background: #222; color: #eee; }
 .info { font-size: 11px; color: #888; margin-left: auto; }
@@ -38,9 +37,9 @@ body {
 }
 .grid-area {
   position: relative;
-  width: 892px;   /* 595 × 1.5 */
-  height: 1263px; /* 842 × 1.5 */
-  background: url('pdf_fondo.png') no-repeat center center;
+  width: 918px;   /* 612 × 1.5 */
+  height: 1512px; /* 1008 × 1.5 */
+  background: url('autorizacion_fondo-1.png') no-repeat center center;
   background-size: 100% 100%;
   box-shadow: 0 0 40px rgba(0,0,0,0.5);
 }
@@ -89,7 +88,7 @@ body {
 <body>
 
 <div class="toolbar">
-  <h2>🎯 Coordenadas</h2>
+  <h2>🎯 Coordenadas - Autorización</h2>
   <button class="btn-primary" onclick="exportarCoords()">📋 Exportar</button>
   <button class="btn-secondary" onclick="resetearCoords()">↺ Reset</button>
   <label>Zoom <input type="number" id="zoomInput" value="1.0" min="0.3" max="3" step="0.1" onchange="reRender()"></label>
@@ -112,47 +111,18 @@ body {
 
 <script>
 // ═══════════════════════════════════════════════
-// Coordenadas en puntos PDF (595 × 842)
+// Coordenadas en puntos PDF (612 × 1008)
 // ═══════════════════════════════════════════════
 
-const PDF_PT_W = 595;
-const PDF_PT_H = 842;
+const PDF_PT_W = 612;
+const PDF_PT_H = 1008;
 const PNG_SCALE = 1.5; // escala a la que se renderizó el PNG
 
 const CAMPOS_INICIALES = [
-  { key: 'tipoEstablecimiento', x: 519, y: 720 },
-  { key: 'nombreEstablecimiento', x: 70, y: 702 },
-  { key: 'ciudad', x: 252, y: 703 },
-  { key: 'comuna', x: 346, y: 705 },
-  { key: 'curso', x: 88, y: 671 },
-  { key: 'horario', x: 202, y: 672 },
-  { key: 'fechaRegistroDia', x: 336, y: 660 },
-  { key: 'fechaRegistroMes', x: 363, y: 660 },
-  { key: 'fechaRegistroAno', x: 399, y: 660 },
-  { key: 'apellidoPaterno', x: 82, y: 617 },
-  { key: 'apellidoMaterno', x: 186, y: 617 },
-  { key: 'nombres', x: 308, y: 619 },
-  { key: 'sexo', x: 422, y: 606 },
-  { key: 'anoNacimiento', x: 453, y: 605 },
-  { key: 'edad', x: 514, y: 604 },
-  { key: 'calle', x: 114, y: 563 },
-  { key: 'numero', x: 221, y: 563 },
-  { key: 'poblacion', x: 288, y: 561 },
-  { key: 'comunaResidencia', x: 377, y: 563 },
-  { key: 'ciudadResidencia', x: 447, y: 565 },
-  { key: 'codifCom', x: 504, y: 565 },
-  { key: 'hora', x: 73, y: 487 },
-  { key: 'minutos', x: 101, y: 487 },
-  { key: 'fechaAccidenteAno', x: 138, y: 486 },
-  { key: 'fechaAccidenteMes', x: 203, y: 483 },
-  { key: 'fechaAccidenteDia', x: 261, y: 485 },
-  { key: 'diaSemana', x: 136, y: 429 },
-  { key: 'accidenteTipo', x: 247, y: 431 },
-  { key: 'testigo1Nombre', x: 293, y: 449 },
-  { key: 'testigo1Cedula', x: 466, y: 451 },
-  { key: 'testigo2Nombre', x: 292, y: 411 },
-  { key: 'testigo2Cedula', x: 468, y: 412 },
-  { key: 'circunstancia', x: 71, y: 362 },
+  { key: 'nombre', x: 127, y: 455 },
+  { key: 'run', x: 397, y: 455 },
+  { key: 'fecha', x: 117, y: 432 },
+  { key: 'firma', x: 253, y: 410 },
 ];
 
 let campos = JSON.parse(JSON.stringify(CAMPOS_INICIALES));
@@ -183,11 +153,7 @@ function dibujarMarcadores() {
     div.dataset.y = c.y;
     div.style.left = cx + 'px';
     div.style.top = cy + 'px';
-    // Color por sección
-    const section = c.key.match(/^(tipo|nombre|ciudad|comuna|curso|horario|fechaRegistro)/) ? '#e94560' :
-                    c.key.match(/^(apellido|nombres|sexo|anoNacimiento|edad|calle|numero|poblacion|comunaResidencia|ciudadResidencia|codifCom)/) ? '#f39c12' :
-                    '#27ae60';
-    div.style.background = section;
+    div.style.background = '#e94560';
     div._key = c.key;
 
     div.addEventListener('mousedown', (e) => {

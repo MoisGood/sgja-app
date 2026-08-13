@@ -55,10 +55,36 @@ function loadData() {
 
 function obtenerFilas(campos, secId) {
   const filas = [];
-  campos.filter(c => c.seccion === secId).forEach(c => {
-    if (c.fila && !filas.includes(c.fila)) filas.push(c.fila);
+  const vistos = new Set();
+  campos.forEach(c => {
+    if (c.seccion === secId && c.fila && !vistos.has(c.fila)) {
+      vistos.add(c.fila);
+      filas.push(c.fila);
+    }
   });
   return filas;
+}
+
+function itemLista(op) {
+  const isCnt = op.charAt(op.length - 1) === '*';
+  const body = isCnt ? op.slice(0, -1) : op;
+  const isInp = body.indexOf('#') !== -1;
+  let label = body;
+  let n = '';
+  let fijo = '';
+  let ancho = 70;
+  if (isInp) {
+    const idx = body.indexOf('#');
+    label = body.slice(0, idx).trim();
+    let rest = body.slice(idx + 1);
+    const fm = rest.match(/^(\d+)/);
+    if (fm) { n = fm[1]; rest = rest.slice(fm[1].length); }
+    fijo = rest.replace(/^\s*,\s*/, '').trim();
+    ancho = n ? (35 * parseInt(n, 10) + 30) : 70;
+  } else {
+    label = body.trim();
+  }
+  return { isCnt, isInp, label, n, fijo, ancho };
 }
 
 function campoHTML(c) {
@@ -68,7 +94,7 @@ function campoHTML(c) {
   const st = pSt ? ' style="'+pSt.trim()+'"' : '';
   switch (c.tipo) {
     case 'text':
-      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="text" name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + ' autocomplete="off"></div>';
+      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;align-items:center;gap:6px;">' + (c.labelCheck ? '<input type="checkbox" name="' + (c.name ? c.name+'_check' : '') + '" value="1" style="width:auto;flex:0 0 auto;">' : '') + '<input type="text" name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + ' autocomplete="off" style="flex:1;">' + '</div></div>';
     case 'textarea':
       return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><textarea name="' + (c.name||'') + '" placeholder="' + (c.placeholder||'') + '"' + (c.maxlength ? ' maxlength="'+c.maxlength+'"' : '') + '></textarea></div>';
     case 'date':
@@ -77,6 +103,28 @@ function campoHTML(c) {
       return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><input type="time" name="' + (c.name||'') + '"></div>';
     case 'checkbox':
       return '<div class="campo fx1"' + st + '><label class="chk-item"><input type="checkbox" name="' + (c.name||'') + '" value="1"> ' + (c.labelCheckbox || lbl || 'Casilla') + '</label></div>';
+    case 'radio':
+      var opsRadio = c.opciones && c.opciones.length ? c.opciones : ['Masculino','Femenino'];
+      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;gap:10px;flex-wrap:wrap;">' + opsRadio.map(function(op){ return '<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="radio" name="' + (c.name||'') + '" value="' + op + '"> ' + op + '</label>'; }).join('') + '</div></div>';
+    case 'select':
+      var optsSel = c.opciones && c.opciones.length ? c.opciones : ['Opcion 1','Opcion 2'];
+      if (c.multiple) {
+        var layGrid = c.layout === '2fil' ? 'grid-auto-flow:column;grid-template-rows:1fr 1fr;overflow-x:auto;' : 'grid-template-columns:1fr 1fr;overflow-y:auto;';
+        if (c.contador) {
+          return '<div class="campo ' + fx + '" style="position:relative;' + pSt + '"><label>' + lbl + ' <span class="cnt-total" style="color:#1A3C6B;font-weight:700;">0</span></label><button type="button" onclick="resetLista(this)" aria-label="Reiniciar contadores" style="position:absolute;top:4px;right:4px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:#1A3C6B;padding:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button><div style="display:grid;gap:6px;max-height:150px;' + layGrid + '">' + optsSel.map(function(op, i){
+            var p = itemLista(op);
+            var inp = p.isInp ? ' <input type="text" name="' + (c.name ? c.name+'_'+i : '') + '" data-w="' + p.n + '" placeholder="valor" style="width:' + p.ancho + 'px;padding:3px 6px;border:1px solid #d1d5db;border-radius:3px;font-size:12px;"' + (p.isCnt ? ' onclick="event.stopPropagation()"' : '') + '>' + (p.fijo ? ' <span class="fijo">' + p.fijo + '</span>' : '') : '';
+            if (p.isCnt) return '<label class="cnt-item" onclick="event.preventDefault();incrementar(this)" ondblclick="event.preventDefault();resetItem(this)" style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;white-space:nowrap;user-select:none;"><input type="checkbox" name="' + (c.name||'') + '" value="' + op + '" style="pointer-events:none;"> ' + p.label + inp + ' <span class="cnt">(x0)</span></label>';
+            return '<label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;white-space:nowrap;"><input type="checkbox" name="' + (c.name||'') + '" value="' + op + '" onchange="actTotal(this.closest(\'.campo\'))"> ' + p.label + inp + '</label>';
+          }).join('') + '</div></div>';
+        }
+        return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:grid;gap:6px;max-height:150px;' + layGrid + '">' + optsSel.map(function(op, i){
+          var p = itemLista(op);
+          var inp = p.isInp ? ' <input type="text" name="' + (c.name ? c.name+'_'+i : '') + '" data-w="' + p.n + '" placeholder="valor" style="width:' + p.ancho + 'px;padding:3px 6px;border:1px solid #d1d5db;border-radius:3px;font-size:12px;">' + (p.fijo ? ' <span class="fijo">' + p.fijo + '</span>' : '') : '';
+          return '<label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;white-space:nowrap;"><input type="checkbox" name="' + (c.name||'') + '" value="' + op + '"> ' + p.label + inp + '</label>';
+        }).join('') + '</div></div>';
+      }
+      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><select name="' + (c.name||'') + '" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-family:inherit;background:#fff;">' + optsSel.map(function(op){ return '<option value="' + op + '">' + op + '</option>'; }).join('') + '</select></div>';
     case 'label':
       var lblSt = (c.fontSize ? 'font-size:'+c.fontSize+';' : '') + (c.fontWeight ? 'font-weight:'+c.fontWeight+';' : '') + (c.textAlign ? 'text-align:'+c.textAlign+';' : '') + (c.fontColor ? 'color:'+c.fontColor+';' : '') + (c.zIndex ? 'position:relative;z-index:'+c.zIndex+';' : '');
       return '<div class="sub-title"' + (lblSt ? ' style="'+lblSt+'"' : '') + '>' + lbl + '</div>';
@@ -93,7 +141,7 @@ function campoHTML(c) {
     case 'spacer':
       return '<div class="' + fx + '"' + st + '></div>';
     case 'buscarut':
-      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;gap:4px;align-items:center;"><input type="text" name="' + (c.name||'rut') + '" placeholder="12.345.678-9" pattern="[0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}-[0-9kK]" autocomplete="off" style="flex:1;"><button type="button" style="padding:7px 14px;background:#1A3C6B;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">' + (c.botonLabel || 'Buscar') + '</button></div></div>';
+      return '<div class="campo ' + fx + '"' + st + '><label>' + lbl + '</label><div style="display:flex;align-items:center;position:relative;"><input type="text" name="' + (c.name||'rut') + '" placeholder="12.345.678-9" pattern="[0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}-[0-9kK]" autocomplete="off" style="flex:1;padding-right:32px;"><button type="button" aria-label="Buscar" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);background:none;border:none;color:#1A3C6B;cursor:pointer;padding:4px;display:flex;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button></div></div>';
     case 'tabla':
       var cab = c.tablaCabeceras || ['Columna 1','Columna 2','Columna 3'];
       var nfilas = c.tablaFilas || 3;
@@ -180,6 +228,47 @@ function navegar(idx) {
   app.innerHTML = '';
   app.appendChild(header);
   app.insertAdjacentHTML('beforeend', mostrarSeccion(idx, data.campos));
+}
+
+function actTotal(campo) {
+  let tot = 0;
+  Array.from(campo.querySelectorAll('.cnt-item')).forEach(function(l) {
+    tot += parseInt(l.querySelector('.cnt').textContent.replace(/\D/g, '')) || 0;
+  });
+  Array.from(campo.querySelectorAll('input[type=checkbox]')).forEach(function(chk) {
+    if (!chk.closest('.cnt-item') && chk.checked) tot++;
+  });
+  const el = campo.querySelector('.cnt-total');
+  if (el) el.textContent = tot;
+}
+
+function incrementar(lbl) {
+  const chk = lbl.querySelector('input');
+  const cnt = lbl.querySelector('.cnt');
+  const n = parseInt((cnt.textContent || '').replace(/\D/g, '')) || 0;
+  chk.checked = true;
+  cnt.textContent = '(x' + (n + 1) + ')';
+  actTotal(lbl.closest('.campo'));
+}
+
+function resetItem(lbl) {
+  const chk = lbl.querySelector('input');
+  const cnt = lbl.querySelector('.cnt');
+  chk.checked = false;
+  cnt.textContent = '(x0)';
+  actTotal(lbl.closest('.campo'));
+}
+
+function resetLista(btn) {
+  const campo = btn.closest('.campo');
+  Array.from(campo.querySelectorAll('.cnt-item')).forEach(function(l) {
+    l.querySelector('input').checked = false;
+    l.querySelector('.cnt').textContent = '(x0)';
+  });
+  Array.from(campo.querySelectorAll('input[type=checkbox]')).forEach(function(chk) {
+    if (!chk.closest('.cnt-item')) chk.checked = false;
+  });
+  actTotal(campo);
 }
 
 render();

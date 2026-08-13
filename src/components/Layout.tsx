@@ -65,6 +65,7 @@ const MENU_ITEMS: MenuItem[] = [
       { icono: <BookOpen size={20}/>, etiqueta: 'Crear Pase',           ruta: '/inspectoria/crear-pase',      roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR] },
       { icono: <ClipboardList size={20}/>, etiqueta: 'Gestión Pases',       ruta: '/inspectoria/gestion-pases',  roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PARADOCENTE] },
       { icono: <FileText size={20}/>, etiqueta: 'Formulario Accidente', ruta: '/registrar-accidente',          roles: [Rol.ADMIN, Rol.INSPECTOR, Rol.PROFESOR, Rol.PARADOCENTE] },
+      { icono: <FileText size={20}/>, etiqueta: 'Matrículas',             ruta: '/inspectoria/matriculas',    roles: [Rol.ADMIN, Rol.INSPECTOR] },
     ]
   },
   {

@@ -624,3 +624,106 @@ export interface AccidenteEscolar {
   creado_en: string;
   actualizado_en: string;
 }
+
+// ════════════════════════════════════════════════════════════
+// 📋 MATRÍCULAS DE ESTUDIANTES
+// ════════════════════════════════════════════════════════════
+
+export interface TelefonoApoderado {
+  activo: boolean;
+  valor: string;
+}
+
+export interface ApoderadoDatos {
+  vinculo: string;
+  rut: string;
+  nombres: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  direccion: string;
+  region: string;
+  comuna: string;
+  ocupacion: string;
+  nivel_educacional: string;
+  ingreso_mensual: string;
+  tel_trabajo: TelefonoApoderado;
+  tel_casa: TelefonoApoderado;
+  tel_movil: TelefonoApoderado;
+  correo: string;
+}
+
+export interface MatriculaDatos {
+  // Sección 1 — Datos Personales
+  rut: string;
+  nombres: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  direccion: string;
+  region: string;
+  comuna: string;
+  nacionalidad: string;
+  fecha_nacimiento: string;
+  movil: string;
+  fijo: string;
+  correo_personal: string;
+  correo_institucional: string;
+  nivel: string;
+  curso_repetido: string;
+  edad_30_marzo: string;
+  procedencia_escolar: string;
+
+  // Sección 2 — Datos Familiares
+  tipo_apoderado: string;
+  vive_con: Record<string, number>;
+  apoderado_titular: ApoderadoDatos;
+  apoderado_suplente: ApoderadoDatos;
+
+  // Sección 3 — Datos Sociales
+  becas: string[];
+  beca_etnia: string;
+  programa_salud: string[];
+  porcentaje_rsh: string;
+  suf: string;
+
+  // Sección 4 — Datos de Salud
+  caracteristicas: string[];
+  caracteristicas_detalle: Record<string, string>;
+  enfermedades: string[];
+  enfermedades_detalle: Record<string, string>;
+
+  // Sección 5 — Conectividad y Académicos
+  conectividad: string[];
+  electivos_1_2_medio: string[];
+  apoyo_hogar: string[];
+
+  // Sección 6 — Consentimiento Ley 21.719
+  consentimiento_completo: boolean;
+  consentimiento_fecha: string;
+  consentimiento_aceptados: Record<string, boolean>;
+}
+
+export interface ConsentimientoCasillaConfig {
+  id: string;
+  titulo: string;
+  detalle: string;
+  obligatoria: boolean;
+  plantilla: 'imagen' | 'datos';
+  pdfTitulo: string;
+  pdfTexto: string;
+}
+
+export interface Matricula {
+  id: string;
+  id_establecimiento: string;
+  id_funcionario: string | null;
+  rut: string | null;
+  nombre_completo: string | null;
+  nivel: string | null;
+  curso: string | null;
+  fecha_nacimiento: string | null;
+  estado: string;
+  datos: MatriculaDatos;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}
