@@ -35,18 +35,21 @@ CREATE INDEX IF NOT EXISTS idx_matriculas_rut
 ALTER TABLE public.matriculas ENABLE ROW LEVEL SECURITY;
 
 -- Usuarios autenticados pueden insertar
+DROP POLICY IF EXISTS "Autenticados insertan matriculas" ON public.matriculas;
 CREATE POLICY "Autenticados insertan matriculas"
   ON public.matriculas
   FOR INSERT
   WITH CHECK (auth.uid()::text IS NOT NULL);
 
 -- Usuarios autenticados pueden leer
+DROP POLICY IF EXISTS "Autenticados leen matriculas" ON public.matriculas;
 CREATE POLICY "Autenticados leen matriculas"
   ON public.matriculas
   FOR SELECT
   USING (auth.uid()::text IS NOT NULL);
 
 -- Solo el creador puede actualizar
+DROP POLICY IF EXISTS "Creador actualiza matriculas" ON public.matriculas;
 CREATE POLICY "Creador actualiza matriculas"
   ON public.matriculas
   FOR UPDATE
