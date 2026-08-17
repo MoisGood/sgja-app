@@ -72,6 +72,8 @@ import AyudaProfesor from './pages/AyudaProfesor';
 import AdminAyuda from './pages/AdminAyuda';
 import RegistroAccidente from './pages/RegistrarAccidente';
 import Matricula from './pages/Matricula';
+import VerMatriculas from './pages/VerMatriculas';
+import RetirosMatriculas from './pages/RetirosMatriculas';
 
 export default function AppContent() {
   const { uid, rol, idEstablecimiento, cargando, autorizado, usuarioInactivo, documentoExiste, nombre, apellidos, email, datosPendientes, mantenimientoBloqueo, mttoHorario } = useAuth();
@@ -593,7 +595,11 @@ export default function AppContent() {
           <Route path="/inspectoria/m/ver-pases" element={(rol === 'ADMIN' || rol === 'INSPECTOR' || rol === 'PROFESOR' || rol === 'PARADOCENTE') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} /> : null} />
           <Route path="/inspectoria/m/historial-pases" element={(rol === 'INSPECTOR' || rol === 'PROFESOR') ? <GestionPases idEstablecimiento={idEstablecimiento!} rol={rol!} idUsuarioActual={uid || ''} tabExterno="ver" /> : null} />
           <Route path="/inspectoria/m/perfil" element={<InspectoriaMobilePerfil nombre={nombre || 'Usuario'} email={email || ''} rol={rol as any} />} />
-          <Route path="/inspectoria/matriculas" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <Matricula idEstablecimiento={idEstablecimiento!} idFuncionario={uid || ''} /> : null} />
+          <Route path="/matriculas" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <Navigate to="/matriculas/nueva" replace /> : null} />
+          <Route path="/matriculas/nueva" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <Matricula idEstablecimiento={idEstablecimiento!} idFuncionario={uid || ''} modo="nueva" /> : null} />
+          <Route path="/matriculas/continuidad" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <Matricula idEstablecimiento={idEstablecimiento!} idFuncionario={uid || ''} modo="continuidad" /> : null} />
+          <Route path="/matriculas/ver" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <VerMatriculas idEstablecimiento={idEstablecimiento!} /> : null} />
+          <Route path="/matriculas/retiros" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <RetirosMatriculas idEstablecimiento={idEstablecimiento!} idFuncionario={uid || ''} /> : null} />
           {/* Secretaría mobile */}
           <Route path="/secretaria/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
           <Route path="/secretaria/m/ausentes" element={puedeVer('/secretaria', 'ADMIN') ? <SecretariaAusentes /> : null} />

@@ -23,6 +23,7 @@ import type { ApoderadoDatos, ConsentimientoCasillaConfig, MatriculaDatos, Telef
 interface Props {
   idEstablecimiento: string;
   idFuncionario: string;
+  modo?: 'nueva' | 'continuidad';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -209,6 +210,7 @@ const VIVE_CON: ViveConOpcion[] = [
 ];
 
 const PASOS = ['Datos Personales', 'Datos Familiares', 'Datos Sociales', 'Datos de Salud', 'Conectividad'];
+const PASOS_CONTINUIDAD = ['Consulta de RUT', 'Datos Personales', 'Datos Familiares', 'Datos Sociales', 'Datos de Salud', 'Conectividad', 'Consentimiento'];
 
 const BORRADOR_KEY = 'matricula_borrador_v2';
 
@@ -301,6 +303,23 @@ function telefonoValido(valor: string, digitos: number[]): boolean {
   if (!valor.trim()) return true;
   const limpio = valor.replace(/\D/g, '');
   return digitos.includes(limpio.length);
+}
+
+function nivelDesdeCurso(curso: string): string {
+  const c = (curso || '').trim();
+  if (c.startsWith('1')) return '1';
+  if (c.startsWith('2')) return '2';
+  if (c.startsWith('3')) return '3';
+  if (c.startsWith('4')) return '4';
+  return '';
+}
+
+function nivelContinuidadDesdeCurso(curso: string): string {
+  const actual = nivelDesdeCurso(curso);
+  if (actual === '1') return '2';
+  if (actual === '2') return '3';
+  if (actual === '3') return '4';
+  return '';
 }
 
 function calcularEdad30Marzo(fechaISO: string): string {
@@ -506,9 +525,11 @@ function CampoTelefono({ label, error, telefono, onChange }: {
 // Página
 // ─────────────────────────────────────────────────────────────
 
-export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
+export default function Matricula({ idEstablecimiento, idFuncionario, modo = 'nueva' }: Props) {
   const { temaOscuro } = useTheme();
   const { rol } = useAuth();
+  const esContinuidad = modo === 'continuidad';
+  const nivelesDisponibles = esContinuidad ? NIVELES.filter((n) => n.valor !== '1') : NIVELES;
   const [form, setForm] = useState<MatriculaDatos>(() => {
     const normalizar = (f: MatriculaDatos): MatriculaDatos => ({
       ...f,
@@ -527,18 +548,20 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
       if (b) {
         const parsed = JSON.parse(b);
         if (parsed && typeof parsed === 'object' && 'rut' in parsed) {
-          return normalizar({ ...formInicial(), ...parsed });
+          return normalizar({ ...formInicial(), ...parsed, ...(esContinuidad ? { nivel: '2' } : {}) });
         }
       }
     } catch {
       /* borrador corrupto → iniciar vacío */
     }
-    return formInicial();
+    return normalizar({ ...formInicial(), ...(esContinuidad ? { nivel: '2' } : {}) });
   });
   const [paso, setPaso] = useState(1);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
   const [buscando, setBuscando] = useState(false);
+  const [rutConsulta, setRutConsulta] = useState('');
+  const [consultaOk, setConsultaOk] = useState<string | null>(null);
   const [focoVinculo, setFocoVinculo] = useState(false);
   const vinculoRef = useRef<HTMLSelectElement | null>(null);
   const [matriculaGuardada, setMatriculaGuardada] = useState<import('../types').Matricula | null>(null);
@@ -548,6 +571,14 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
   const [anulando, setAnulando] = useState(false);
 
   const edad30Marzo = calcularEdad30Marzo(form.fecha_nacimiento);
+
+  const pasosVisibles = esContinuidad ? PASOS_CONTINUIDAD : PASOS;
+  const totalPasos = pasosVisibles.length;
+  const seccionActiva = esContinuidad ? (paso === 1 ? 0 : paso - 1) : paso;
+  const pasoDeSeccion = (seccion: number): number => (esContinuidad ? seccion + 1 : seccion);
+  const ultimoPasoFormulario = esContinuidad ? PASOS_CONTINUIDAD.length - 1 : PASOS.length;
+  const esUltimoForm = paso === ultimoPasoFormulario;
+  const esPasoConsentimiento = esContinuidad && paso === PASOS_CONTINUIDAD.length;
 
   // Autoguardar borrador
   useEffect(() => {
@@ -588,7 +619,8 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
       fijo: '412345678',
       correo_personal: 'maria.gonzalez@ejemplo.cl',
       correo_institucional: 'matricula@liceoninas.cl',
-      nivel: '1',
+      nivel: esContinuidad ? '2' : '1',
+      curso_actual: esContinuidad ? '1A' : undefined,
       curso_repetido: '',
       edad_30_marzo: '',
       procedencia_escolar: 'Colegio San Andrés',
@@ -731,14 +763,18 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
   };
 
   const irA = (n: number) => {
+    if (esContinuidad && n === PASOS_CONTINUIDAD.length && !matriculaGuardada) {
+      toast.info('Primero presiona Matricular en Datos Personales.');
+      return;
+    }
     let erroresNuevos: Record<string, string> = {};
     if (n > paso) {
-      if (paso === 1) erroresNuevos = validarSeccion1(form);
-      else if (paso === 2) {
+      if (seccionActiva === 1) erroresNuevos = validarSeccion1(form);
+      else if (seccionActiva === 2) {
         erroresNuevos = validarSeccion2(form);
         if (Object.keys(erroresNuevos).length > 0) enfocarApoderadoFaltante(erroresNuevos);
       }
-      else if (paso === 3) erroresNuevos = validarSeccion3(form);
+      else if (seccionActiva === 3) erroresNuevos = validarSeccion3(form);
     }
     setErrores(erroresNuevos);
     if (Object.keys(erroresNuevos).length > 0) {
@@ -775,9 +811,44 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
       apellido_paterno: apellidoPaterno || f.apellido_paterno,
       apellido_materno: apellidoMaterno || f.apellido_materno,
       nombres: nombres || f.nombres,
-      nivel: encontrado.curso || f.nivel,
+      nivel: nivelDesdeCurso(encontrado.curso) || f.nivel,
     }));
     toast.success('Estudiante encontrado. Datos autocompletados');
+  };
+
+  const consultarRutContinuidad = async () => {
+    if (!rutConsulta.trim()) {
+      toast.info('Ingresa el RUT para consultar');
+      return;
+    }
+    if (!validarRUT(rutConsulta)) {
+      toast.error('El RUT ingresado no es válido');
+      return;
+    }
+    setBuscando(true);
+    const encontrado = await buscarEstudiantePorRut(rutConsulta, idEstablecimiento);
+    setBuscando(false);
+    if (!encontrado) {
+      setConsultaOk(null);
+      setForm((f) => ({ ...f, rut: formatearRUT(rutConsulta) }));
+      toast.info(`RUT ${formatearRUT(rutConsulta)} no encontrado. Puedes ingresar los datos manualmente.`);
+      return;
+    }
+    const partes = (encontrado.nombre_completo || '').trim().split(/\s+/);
+    const apellidoPaterno = partes[0] || '';
+    const apellidoMaterno = partes[1] || '';
+    const nombres = partes.slice(2).join(' ') || '';
+    setForm((f) => ({
+      ...f,
+      rut: formatearRUT(rutConsulta),
+      apellido_paterno: apellidoPaterno || f.apellido_paterno,
+      apellido_materno: apellidoMaterno || f.apellido_materno,
+      nombres: nombres || f.nombres,
+      curso_actual: encontrado.curso || f.curso_actual,
+      nivel: nivelContinuidadDesdeCurso(encontrado.curso) || f.nivel,
+    }));
+    setConsultaOk(encontrado.nombre_completo);
+    toast.success('Estudiante encontrado. Revisa las secciones y actualiza los datos que hayan cambiado.');
   };
 
   const finalizar = async () => {
@@ -788,7 +859,7 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
         Object.keys(validarSeccion1(form)).length > 0 ? 1 :
         Object.keys(validarSeccion2(form)).length > 0 ? 2 :
         Object.keys(validarSeccion3(form)).length > 0 ? 3 : 4;
-      setPaso(seccionConError);
+      setPaso(pasoDeSeccion(seccionConError));
       if (seccionConError === 2) enfocarApoderadoFaltante(todos);
       toast.error('Corrige los campos marcados');
       return;
@@ -798,13 +869,15 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
       idEstablecimiento,
       idFuncionario,
       datos: { ...form, edad_30_marzo: edad30Marzo },
+      tipo: esContinuidad ? 'continuidad' : 'nueva',
     });
     setEnviando(false);
     if (!resultado) return;
     try { localStorage.removeItem(BORRADOR_KEY); } catch { /* noop */ }
-    toast.success(`Matrícula guardada. Completa los consentimientos de Ley 21.719.`);
+    toast.success(esContinuidad ? 'Matrícula de continuidad guardada. Completa los consentimientos de Ley 21.719.' : `Matrícula guardada. Completa los consentimientos de Ley 21.719.`);
     setMatriculaGuardada(resultado);
     setConsentimientoAceptados(resultado.datos?.consentimiento_aceptados || {});
+    if (esContinuidad) setPaso(PASOS_CONTINUIDAD.length);
   };
 
   const guardarConsentimientoHandler = async () => {
@@ -868,9 +941,11 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
   const nuevaMatricula = () => {
     setMatriculaGuardada(null);
     setConsentimientoAceptados({});
-    setForm(formInicial());
+    setForm(esContinuidad ? { ...formInicial(), nivel: '2' } : formInicial());
     setErrores({});
     setPaso(1);
+    setRutConsulta('');
+    setConsultaOk(null);
     try { localStorage.removeItem(BORRADOR_KEY); } catch { /* noop */ }
   };
 
@@ -878,10 +953,166 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
   const borde = temaOscuro ? '#374151' : '#E5E7EB';
   const ultimaMarcada = !!consentimientoAceptados['declaracion_conocimiento'];
 
+  const contenidoConsentimiento = (
+    <>
+      <div style={s.tarjetaHdr}>
+        <h2 style={s.tarjetaTitulo}>Consentimiento Ley 21.719 — Protección de Datos Personales</h2>
+        <span style={{ fontSize: '11px', color: '#6B7280' }}>Completar después de guardar</span>
+      </div>
+
+      <p style={{ fontSize: '13px', color: '#374151', marginBottom: '16px', lineHeight: '1.6' }}>
+        De acuerdo a la <strong>Ley 21.719 de Protección de Datos Personales</strong>, se requiere el
+        consentimiento del apoderado/a para el tratamiento de datos personales y el uso de imágenes
+        del estudiante. A continuación, pregunte al apoderado/a y marque las casillas según corresponda:
+      </p>
+
+      <p style={{ fontSize: '14px', color: '#1A3C6B', fontWeight: 600, marginBottom: '20px' }}>
+        Acepta usted que su hijo/a sea fotografiado/a y se publiquen sus imágenes en redes sociales,
+        sitio web u otros fines institucionales, según se detalla:
+      </p>
+
+      {CONSENTIMIENTO_CASILLAS.map((casilla) => {
+        const marcado = !!consentimientoAceptados[casilla.id];
+        return (
+          <div key={casilla.id} style={{ marginBottom: '18px' }}>
+            <label
+              style={{
+                display: 'flex', alignItems: 'flex-start', gap: '10px',
+                padding: '10px 12px', borderRadius: '8px',
+                border: `1px solid ${marcado ? '#1A3C6B' : '#E5E7EB'}`,
+                background: marcado ? '#EFF6FF' : '#FFFFFF',
+                cursor: 'pointer',
+                fontSize: '13px', color: '#374151',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={marcado}
+                onChange={(e) => toggleConsentimiento(casilla.id, e.target.checked)}
+                style={{ flex: '0 0 auto', marginTop: '2px' }}
+              />
+              <span style={{ flex: 1 }}>
+                {casilla.obligatoria && <span style={{ color: '#DC2626', fontWeight: 700 }}>* </span>}
+                {casilla.titulo}
+              </span>
+            </label>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '4px', paddingLeft: '32px', fontSize: '12px' }}>
+              <button
+                type="button"
+                onClick={() => setModalDetalle(casilla)}
+                style={{ background: 'none', border: 'none', color: '#1A3C6B', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Ver detalle
+              </button>
+            </div>
+          </div>
+        );
+      })}
+
+      {ultimaMarcada && (
+        <div
+          style={{
+            marginTop: '20px', padding: '14px 16px', borderRadius: '8px',
+            border: `1px solid ${temaOscuro ? '#3B82F6' : '#1A3C6B'}`,
+            background: temaOscuro ? 'rgba(59,130,246,0.12)' : '#EFF6FF',
+          }}
+        >
+          <div style={{ fontSize: '13px', fontWeight: 700, color: temaOscuro ? '#93C5FD' : '#1A3C6B', marginBottom: '10px' }}>
+            📄 Imprimir documentos para la firma del apoderado/a:
+          </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => imprimirPlantilla('imagen')}
+              style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF' }}
+            >
+              <Printer size={16} /> Autorización Uso de Imagen
+            </button>
+            <button
+              type="button"
+              onClick={() => imprimirPlantilla('datos')}
+              style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF' }}
+            >
+              <Printer size={16} /> Consentimiento Datos Personales
+            </button>
+          </div>
+        </div>
+      )}
+
+      {matriculaGuardada?.estado !== 'anulada' ? (
+        <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+          <button
+            type="button"
+            onClick={guardarConsentimientoHandler}
+            disabled={guardandoCons}
+            style={{ ...s.botonNav, background: '#10B981', color: '#FFFFFF', opacity: guardandoCons ? 0.6 : 1 }}
+          >
+            {guardandoCons ? <Spinner tamaño={16} /> : <Check size={16} />}
+            {guardandoCons ? 'Guardando...' : 'Guardar Consentimientos'}
+          </button>
+          <button
+            type="button"
+            onClick={anularHandler}
+            disabled={anulando}
+            style={{ ...s.botonNav, background: '#F3F4F6', color: '#DC2626', border: '1px solid #DC2626' }}
+          >
+            {anulando ? <Spinner tamaño={16} /> : '✕'} Anular Matrícula
+          </button>
+        </div>
+      ) : (
+        <p style={{ fontSize: '14px', color: '#DC2626', fontWeight: 600, margin: '20px 0 0 0' }}>
+          Esta matrícula ha sido anulada. No se requiere consentimiento.
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={nuevaMatricula}
+        style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF', marginTop: '16px', width: '50%', justifyContent: 'center', alignContent:'center' }}
+      >
+        {esContinuidad ? 'Nueva Matrícula de Continuidad' : 'Nueva Matrícula'}
+      </button>
+
+      {modalDetalle && (
+        <div
+          onClick={() => setModalDetalle(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: '20px',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#FFFFFF', borderRadius: '12px', padding: '24px',
+              maxWidth: '520px', width: '100%', maxHeight: '80vh',
+              overflowY: 'auto', boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+            }}
+          >
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1A3C6B', margin: '0 0 8px 0' }}>
+              {modalDetalle.obligatoria && '* '}{modalDetalle.pdfTitulo}
+            </h3>
+            <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.6', marginBottom: '16px' }}>
+              {modalDetalle.detalle}
+            </p>
+            <button
+              type="button"
+              onClick={() => setModalDetalle(null)}
+              style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF', width: '100%', justifyContent: 'center' }}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div style={{ ...s.contenedor, color: temaOscuro ? '#F3F4F6' : undefined }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-        <h1 style={s.titulo}>📋 Matrícula de Nuevos Estudiantes</h1>
+        <h1 style={s.titulo}>{esContinuidad ? '📋 Matrícula de Continuidad (2°, 3° y 4° Medio)' : '📋 Matrícula de Nuevos Estudiantes'}</h1>
         {esAdmin && !matriculaGuardada && (
           <button
             onClick={autocompletarFormulario}
@@ -895,166 +1126,20 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
           </button>
         )}
       </div>
-      {matriculaGuardada ? (
+      {matriculaGuardada && !esContinuidad ? (
         <div style={{ ...s.tarjeta, background: fondo, borderColor: borde }}>
-          <div style={s.tarjetaHdr}>
-            <h2 style={s.tarjetaTitulo}>Consentimiento Ley 21.719 — Protección de Datos Personales</h2>
-            <span style={{ fontSize: '11px', color: '#6B7280' }}>Completar después de guardar</span>
-          </div>
-
-          <p style={{ fontSize: '13px', color: '#374151', marginBottom: '16px', lineHeight: '1.6' }}>
-            De acuerdo a la <strong>Ley 21.719 de Protección de Datos Personales</strong>, se requiere el
-            consentimiento del apoderado/a para el tratamiento de datos personales y el uso de imágenes
-            del estudiante. A continuación, pregunte al apoderado/a y marque las casillas según corresponda:
-          </p>
-
-          <p style={{ fontSize: '14px', color: '#1A3C6B', fontWeight: 600, marginBottom: '20px' }}>
-            Acepta usted que su hijo/a sea fotografiado/a y se publiquen sus imágenes en redes sociales,
-            sitio web u otros fines institucionales, según se detalla:
-          </p>
-
-          {CONSENTIMIENTO_CASILLAS.map((casilla) => {
-            const marcado = !!consentimientoAceptados[casilla.id];
-            return (
-              <div key={casilla.id} style={{ marginBottom: '18px' }}>
-                <label
-                  style={{
-                    display: 'flex', alignItems: 'flex-start', gap: '10px',
-                    padding: '10px 12px', borderRadius: '8px',
-                    border: `1px solid ${marcado ? '#1A3C6B' : '#E5E7EB'}`,
-                    background: marcado ? '#EFF6FF' : '#FFFFFF',
-                    cursor: 'pointer',
-                    fontSize: '13px', color: '#374151',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={marcado}
-                    onChange={(e) => toggleConsentimiento(casilla.id, e.target.checked)}
-                    style={{ flex: '0 0 auto', marginTop: '2px' }}
-                  />
-                  <span style={{ flex: 1 }}>
-                    {casilla.obligatoria && <span style={{ color: '#DC2626', fontWeight: 700 }}>* </span>}
-                    {casilla.titulo}
-                  </span>
-                </label>
-                <div style={{ display: 'flex', gap: '12px', marginTop: '4px', paddingLeft: '32px', fontSize: '12px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setModalDetalle(casilla)}
-                    style={{ background: 'none', border: 'none', color: '#1A3C6B', cursor: 'pointer', textDecoration: 'underline' }}
-                  >
-                    Ver detalle
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-
-          {ultimaMarcada && (
-            <div
-              style={{
-                marginTop: '20px', padding: '14px 16px', borderRadius: '8px',
-                border: `1px solid ${temaOscuro ? '#3B82F6' : '#1A3C6B'}`,
-                background: temaOscuro ? 'rgba(59,130,246,0.12)' : '#EFF6FF',
-              }}
-            >
-              <div style={{ fontSize: '13px', fontWeight: 700, color: temaOscuro ? '#93C5FD' : '#1A3C6B', marginBottom: '10px' }}>
-                📄 Imprimir documentos para la firma del apoderado/a:
-              </div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => imprimirPlantilla('imagen')}
-                  style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF' }}
-                >
-                  <Printer size={16} /> Autorización Uso de Imagen
-                </button>
-                <button
-                  type="button"
-                  onClick={() => imprimirPlantilla('datos')}
-                  style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF' }}
-                >
-                  <Printer size={16} /> Consentimiento Datos Personales
-                </button>
-              </div>
-            </div>
-          )}
-
-          {matriculaGuardada?.estado !== 'anulada' ? (
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-              <button
-                type="button"
-                onClick={guardarConsentimientoHandler}
-                disabled={guardandoCons}
-                style={{ ...s.botonNav, background: '#10B981', color: '#FFFFFF', opacity: guardandoCons ? 0.6 : 1 }}
-              >
-                {guardandoCons ? <Spinner tamaño={16} /> : <Check size={16} />}
-                {guardandoCons ? 'Guardando...' : 'Guardar Consentimientos'}
-              </button>
-              <button
-                type="button"
-                onClick={anularHandler}
-                disabled={anulando}
-                style={{ ...s.botonNav, background: '#F3F4F6', color: '#DC2626', border: '1px solid #DC2626' }}
-              >
-                {anulando ? <Spinner tamaño={16} /> : '✕'} Anular Matrícula
-              </button>
-            </div>
-          ) : (
-            <p style={{ fontSize: '14px', color: '#DC2626', fontWeight: 600, margin: '20px 0 0 0' }}>
-              Esta matrícula ha sido anulada. No se requiere consentimiento.
-            </p>
-          )}
-
-          <button
-            type="button"
-            onClick={nuevaMatricula}
-            style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF', marginTop: '16px', width: '50%', justifyContent: 'center', alignContent:'center' }}
-          >
-            Nueva Matrícula
-          </button>
-
-          {modalDetalle && (
-            <div
-              onClick={() => setModalDetalle(null)}
-              style={{
-                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 1000, padding: '20px',
-              }}
-            >
-              <div
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  background: '#FFFFFF', borderRadius: '12px', padding: '24px',
-                  maxWidth: '520px', width: '100%', maxHeight: '80vh',
-                  overflowY: 'auto', boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
-                }}
-              >
-                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1A3C6B', margin: '0 0 8px 0' }}>
-                  {modalDetalle.obligatoria && '* '}{modalDetalle.pdfTitulo}
-                </h3>
-                <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.6', marginBottom: '16px' }}>
-                  {modalDetalle.detalle}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setModalDetalle(null)}
-                  style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF', width: '100%', justifyContent: 'center' }}
-                >
-                  Cerrar
-                </button>
-              </div>
-            </div>
-          )}
+          {contenidoConsentimiento}
         </div>
       ) : (
         <>
-        <p style={s.subtitulo}>Completa los 5 pasos del formulario. El borrador se guarda automáticamente en este dispositivo.</p>
+        <p style={s.subtitulo}>
+          {esContinuidad
+            ? 'Consulta el RUT y revisa las secciones, actualizando los datos que hayan cambiado. El borrador se guarda automáticamente.'
+            : 'Completa los 5 pasos del formulario. El borrador se guarda automáticamente en este dispositivo.'}
+        </p>
 
       <div style={s.progreso}>
-        {PASOS.map((label, i) => {
+        {pasosVisibles.map((label, i) => {
           const n = i + 1;
           const activo = n === paso;
           return (
@@ -1077,12 +1162,56 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
       </div>
 
       <div style={{ ...s.tarjeta, background: fondo, borderColor: borde }}>
-        {/* ── PASO 1 ── */}
-        {paso === 1 && (
+        {/* ── CONSULTA DE RUT (continuidad) ── */}
+        {esContinuidad && paso === 1 && (
+          <>
+            <div style={s.tarjetaHdr}>
+              <h2 style={s.tarjetaTitulo}>Consulta de Estudiante por RUT</h2>
+              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso 1 de {totalPasos}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '16px 0' }}>
+              <p style={{ fontSize: '13px', color: '#6B7280', textAlign: 'center', maxWidth: '480px', lineHeight: '1.6', margin: 0 }}>
+                Ingresa el RUT del estudiante para cargar sus datos actuales y verificar si hubo
+                cambios de dirección u otros datos. Si el estudiante no aparece, puedes ingresar los datos manualmente.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <input
+                  type="text"
+                  value={rutConsulta}
+                  placeholder="12.345.678-9"
+                  onChange={(e) => setRutConsulta(formatearRUT(e.target.value.replace(/[^0-9kK]/g, '')))}
+                  style={{ ...s.input, flex: '1 1 200px', maxWidth: '260px' }}
+                />
+                <button
+                  type="button"
+                  onClick={consultarRutContinuidad}
+                  disabled={buscando}
+                  style={{ ...s.botonNav, background: '#10B981', color: '#FFFFFF', opacity: buscando ? 0.6 : 1, cursor: buscando ? 'not-allowed' : 'pointer' }}
+                >
+                  {buscando ? <Spinner tamaño={16} /> : <Search size={16} />} Consultar
+                </button>
+              </div>
+              {consultaOk && (
+                <div style={{
+                  background: temaOscuro ? 'rgba(16,185,129,0.1)' : '#D1FAE5',
+                  border: '1px solid #10B981', borderRadius: '8px', padding: '12px 16px',
+                  fontSize: '13px', color: temaOscuro ? '#6EE7B7' : '#065F46',
+                  fontWeight: 600, textAlign: 'center', maxWidth: '520px', lineHeight: '1.6',
+                }}>
+                  ✓ Estudiante <strong>{consultaOk}</strong> encontrado. Curso actual: <strong>{form.curso_actual || '—'}</strong>.
+                  Los datos se cargaron en las secciones. Revisa cada una y actualiza solo lo que haya cambiado.
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ── PASO: DATOS PERSONALES ── */}
+        {seccionActiva === 1 && (
           <>
             <div style={s.tarjetaHdr}>
               <h2 style={s.tarjetaTitulo}>Datos Personales del Estudiante</h2>
-              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso 1 de 5</span>
+              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso {paso} de {totalPasos}</span>
             </div>
 
             <div style={s.fila}>
@@ -1190,11 +1319,18 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
             </div>
 
             <div style={s.fila}>
+              {esContinuidad && (
+                <div style={{ flex: '1 1 140px', minWidth: 0 }}>
+                  <Campo label="Curso Actual">
+                    <input type="text" value={form.curso_actual || ''} readOnly placeholder="Ej: 1A" style={{ ...s.input, background: '#F3F4F6', color: '#6B7280' }} />
+                  </Campo>
+                </div>
+              )}
               <div style={{ flex: '1 1 160px', minWidth: 0 }}>
                 <Campo label="Nivel" requerido error={errores.nivel}>
                   <select value={form.nivel} onChange={(e) => cambiarNivel(e.target.value)} style={s.input}>
                     <option value="">Selecciona nivel</option>
-                    {NIVELES.map((n) => (
+                    {nivelesDisponibles.map((n) => (
                       <option key={n.valor} value={n.valor}>{n.etiqueta}</option>
                     ))}
                   </select>
@@ -1224,12 +1360,12 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
           </>
         )}
 
-        {/* ── PASO 2 ── */}
-        {paso === 2 && (
+        {/* ── PASO: DATOS FAMILIARES ── */}
+        {seccionActiva === 2 && (
           <>
             <div style={s.tarjetaHdr}>
               <h2 style={s.tarjetaTitulo}>Datos Familiares del Estudiante</h2>
-              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso 2 de 5</span>
+              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso {paso} de {totalPasos}</span>
             </div>
 
             <div style={s.fila}>
@@ -1479,12 +1615,12 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
           </>
         )}
 
-        {/* ── PASO 3 ── */}
-        {paso === 3 && (
+        {/* ── PASO: DATOS SOCIALES ── */}
+        {seccionActiva === 3 && (
           <>
             <div style={s.tarjetaHdr}>
               <h2 style={s.tarjetaTitulo}>Datos Sociales del Estudiante</h2>
-              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso 3 de 5</span>
+              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso {paso} de {totalPasos}</span>
             </div>
 
             <div style={s.fila}>
@@ -1557,12 +1693,12 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
           </>
         )}
 
-        {/* ── PASO 4 ── */}
-        {paso === 4 && (
+        {/* ── PASO: DATOS DE SALUD ── */}
+        {seccionActiva === 4 && (
           <>
             <div style={s.tarjetaHdr}>
               <h2 style={s.tarjetaTitulo}>Datos de Salud del Estudiante</h2>
-              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso 4 de 5</span>
+              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso {paso} de {totalPasos}</span>
             </div>
 
             <div style={s.fila}>
@@ -1640,12 +1776,12 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
           </>
         )}
 
-        {/* ── PASO 5 ── */}
-        {paso === 5 && (
+        {/* ── PASO: CONECTIVIDAD ── */}
+        {seccionActiva === 5 && (
           <>
             <div style={s.tarjetaHdr}>
               <h2 style={s.tarjetaTitulo}>Conectividad y Datos Académicos</h2>
-              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso 5 de 5</span>
+              <span style={{ fontSize: '11px', color: '#6B7280' }}>Paso {paso} de {totalPasos}</span>
             </div>
 
             <div style={s.fila}>
@@ -1720,6 +1856,16 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
           </>
         )}
 
+        {/* ── PASO: CONSENTIMIENTO (continuidad, último paso) ── */}
+        {esContinuidad && esPasoConsentimiento && (
+          <>
+            <div style={{ background: temaOscuro ? 'rgba(16,185,129,0.1)' : '#D1FAE5', border: '1px solid #10B981', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', fontSize: '13px', color: temaOscuro ? '#6EE7B7' : '#065F46', fontWeight: 600, lineHeight: '1.6' }}>
+              ✅ Matrícula de Continuidad guardada para <strong>{matriculaGuardada?.nombre_completo || 'el estudiante'}</strong> ({matriculaGuardada?.nivel || 'nivel'}). Completa los consentimientos de Ley 21.719 para finalizar.
+            </div>
+            {contenidoConsentimiento}
+          </>
+        )}
+
         <div style={s.nav}>
           <button
             type="button"
@@ -1730,24 +1876,26 @@ export default function Matricula({ idEstablecimiento, idFuncionario }: Props) {
             <ChevronLeft size={16} /> Anterior
           </button>
 
-          {paso < 5 ? (
-            <button
-              type="button"
-              onClick={() => irA(paso + 1)}
-              style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF' }}
-            >
-              Siguiente <ChevronRight size={16} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={finalizar}
-              disabled={enviando}
-              style={{ ...s.botonNav, background: '#10B981', color: '#FFFFFF', opacity: enviando ? 0.6 : 1, cursor: enviando ? 'not-allowed' : 'pointer' }}
-            >
-              {enviando ? <Spinner tamaño={16} /> : <Send size={16} />}
-              {enviando ? 'Guardando...' : 'Finalizar y Guardar'}
-            </button>
+          {!esPasoConsentimiento && (
+            esUltimoForm ? (
+              <button
+                type="button"
+                onClick={finalizar}
+                disabled={enviando}
+                style={{ ...s.botonNav, background: '#10B981', color: '#FFFFFF', opacity: enviando ? 0.6 : 1, cursor: enviando ? 'not-allowed' : 'pointer' }}
+              >
+                {enviando ? <Spinner tamaño={16} /> : (esContinuidad ? <Check size={16} /> : <Send size={16} />)}
+                {enviando ? 'Guardando...' : (esContinuidad ? 'Matricular' : 'Finalizar y Guardar')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => irA(paso + 1)}
+                style={{ ...s.botonNav, background: '#1A3C6B', color: '#FFFFFF' }}
+              >
+                Siguiente <ChevronRight size={16} />
+              </button>
+            )
           )}
         </div>
       </div>

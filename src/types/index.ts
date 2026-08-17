@@ -671,6 +671,7 @@ export interface MatriculaDatos {
   curso_repetido: string;
   edad_30_marzo: string;
   procedencia_escolar: string;
+  curso_actual?: string;
 
   // Sección 2 — Datos Familiares
   tipo_apoderado: string;
@@ -722,7 +723,35 @@ export interface Matricula {
   curso: string | null;
   fecha_nacimiento: string | null;
   estado: string;
+  tipo: string | null;
   datos: MatriculaDatos;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+export interface RetiroDatos {
+  rut: string;
+  nombres: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  nivel: string;
+  curso: string;
+  fecha_retiro: string;
+  motivo: string;
+}
+
+export interface RetiroEstudiante {
+  id: string;
+  id_establecimiento: string;
+  id_funcionario: string | null;
+  rut: string | null;
+  nombre_completo: string | null;
+  nivel: string | null;
+  curso: string | null;
+  fecha_retiro: string | null;
+  motivo: string | null;
+  datos: RetiroDatos;
   activo: boolean;
   creado_en: string;
   actualizado_en: string;
