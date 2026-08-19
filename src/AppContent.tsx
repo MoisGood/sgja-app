@@ -74,6 +74,7 @@ import RegistroAccidente from './pages/RegistrarAccidente';
 import Matricula from './pages/Matricula';
 import VerMatriculas from './pages/VerMatriculas';
 import RetirosMatriculas from './pages/RetirosMatriculas';
+import AsignacionCursos from './pages/AsignacionCursos';
 
 export default function AppContent() {
   const { uid, rol, idEstablecimiento, cargando, autorizado, usuarioInactivo, documentoExiste, nombre, apellidos, email, datosPendientes, mantenimientoBloqueo, mttoHorario } = useAuth();
@@ -600,6 +601,7 @@ export default function AppContent() {
           <Route path="/matriculas/continuidad" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <Matricula idEstablecimiento={idEstablecimiento!} idFuncionario={uid || ''} modo="continuidad" /> : null} />
           <Route path="/matriculas/ver" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <VerMatriculas idEstablecimiento={idEstablecimiento!} /> : null} />
           <Route path="/matriculas/retiros" element={(rol === 'ADMIN' || rol === 'INSPECTOR') ? <RetirosMatriculas idEstablecimiento={idEstablecimiento!} idFuncionario={uid || ''} /> : null} />
+          <Route path="/asignacion-cursos" element={rol === 'ADMIN' ? <AsignacionCursos idEstablecimiento={idEstablecimiento!} /> : null} />
           {/* Secretaría mobile */}
           <Route path="/secretaria/m/inicio" element={<InspectoriaMobileInicio nombre={nombre || 'Usuario'} />} />
           <Route path="/secretaria/m/ausentes" element={puedeVer('/secretaria', 'ADMIN') ? <SecretariaAusentes /> : null} />
