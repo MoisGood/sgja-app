@@ -148,6 +148,7 @@ export async function crearSolicitud(solicitud: Solicitud): Promise<void> {
       tipo_respaldo: solicitud.tipo_respaldo || null,
       id_token_qr: solicitud.id_token_qr || null,
       bloques_afectados: solicitud.bloques_afectados || 1,
+      tipo_pase: solicitud.tipo_pase || null,
       activo: true,
     };
 

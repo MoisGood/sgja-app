@@ -109,6 +109,7 @@ export interface Solicitud {
   id_bloque?:          string;         // ID del bloque donde ocurrió la ausencia
   bloques_afectados?:  number;         // Cuántos bloques consecutivos está ausente
   creado_en?:          string;         // Timestamp de registro en el sistema (orden de llegada)
+  tipo_pase?:          TipoPase;       // Tipo extendido de pase
 }
 
 export interface TokenQR {
@@ -756,3 +757,64 @@ export interface RetiroEstudiante {
   creado_en: string;
   actualizado_en: string;
 }
+
+// ============================================================
+// Asignación de cursos a paradocente
+// ============================================================
+
+export interface AsignacionParadocente {
+  id: string;
+  id_funcionario: string;
+  id_establecimiento: string;
+  nivel: string;
+  curso: string;
+  creado_en: string;
+}
+
+// ============================================================
+// Consolidados de inasistencias
+// ============================================================
+
+export interface ConsolidadoEnviado {
+  id: string;
+  id_paradocente: string;
+  id_establecimiento: string;
+  fecha: string;
+  cursos_json: CursoConsolidado[];
+  enviado_en: string;
+  observaciones: string | null;
+}
+
+export interface CursoConsolidado {
+  nivel: string;
+  curso: string;
+  total_estudiantes: number;
+  presentes: number;
+  atrasados: number;
+  ausentes: number;
+}
+
+// ============================================================
+// Tipos extendidos de pase
+// ============================================================
+
+export type TipoPase =
+  | 'atraso'
+  | 'inasistencia'
+  | 'salida_pedagogica'
+  | 'acto'
+  | 'desfile'
+  | 'salida_medica'
+  | 'dental'
+  | 'otro';
+
+export const TIPOS_PASE: { valor: TipoPase; etiqueta: string }[] = [
+  { valor: 'atraso', etiqueta: 'Atraso' },
+  { valor: 'inasistencia', etiqueta: 'Inasistencia' },
+  { valor: 'salida_pedagogica', etiqueta: 'Salida Pedagógica' },
+  { valor: 'acto', etiqueta: 'Acto' },
+  { valor: 'desfile', etiqueta: 'Desfile' },
+  { valor: 'salida_medica', etiqueta: 'Salida Médica' },
+  { valor: 'dental', etiqueta: 'Dental' },
+  { valor: 'otro', etiqueta: 'Otro' },
+];
